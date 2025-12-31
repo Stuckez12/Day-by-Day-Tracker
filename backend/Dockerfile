@@ -1,0 +1,14 @@
+FROM python:3.13
+ENV PYTHONDONTWRITEBYTECODE=1 \
+    PYTHONUNBUFFERED=1 \
+    PYTHONFAULTHANDLER=1
+
+WORKDIR /api
+
+RUN pip install uv
+
+COPY . .
+RUN uv sync
+
+ENV PATH="/api/.venv/bin:$PATH"
+ENV PYTHONPATH="/api:$PYTHONPATH"

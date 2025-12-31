@@ -1,0 +1,49 @@
+services:
+  db:
+    image: postgres:17 
+    ports:
+      - ${DATABASE_PORT}:${DATABASE_PORT}
+    networks:
+      - app-network
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    environment:
+        POSTGRES_USER: ${DATABASE_USERNAME}
+        POSTGRES_PASSWORD: ${DATABASE_PASSWORD}
+        POSTGRES_PORT: ${DATABASE_PORT}
+    env_file: .env
+    attach: false
+
+  pgadmin:
+    image: dpage/pgadmin4:latest
+    environment:
+      PGADMIN_DEFAULT_EMAIL: ${PGADMIN_EMAIL}
+      PGADMIN_DEFAULT_PASSWORD: ${PGADMIN_PASSWORD}
+    ports:
+      - "5050:80"
+    volumes:
+      - pgadmin-data:/var/lib/pgadmin
+    networks:
+      - app-network
+    attach: false
+
+  api:
+    build:
+      context: .
+      dockerfile: backend/Dockerfile
+    ports:
+      - ${API_PORT}:${API_PORT}
+    networks:
+      - app-network
+    volumes:
+      - ./backend:/api/backend
+    command: uvicorn backend:app --host 0.0.0.0 --port 8000
+
+
+networks:
+  app-network:
+
+
+volumes:
+  pgadmin-data:
+  postgres_data:
