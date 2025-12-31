@@ -1,0 +1,6 @@
+@use "colour_pallets";
+
+body {
+    color: var(--primary);
+    background-color: var(--base);
+}

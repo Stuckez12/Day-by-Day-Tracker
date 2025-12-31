@@ -1,0 +1,17 @@
+$palettes: (
+  base: (
+    base: #FFFFFF,
+    primary: #00171F,
+    secondary: #003459,
+    action: #007EA7,
+    accent: #00A8E8,
+  ),
+);
+
+@each $theme, $colors in $palettes {
+  [data-theme="#{$theme}"] {
+    @each $name, $value in $colors {
+      --#{$name}: #{$value};
+    }
+  }
+}
