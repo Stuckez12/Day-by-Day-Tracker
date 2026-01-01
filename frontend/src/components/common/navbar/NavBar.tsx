@@ -13,13 +13,13 @@ function NavBar() {
     <Router>
       <nav id="navigation-bar">
         <PageWrapper>
-          <ul>
+          <ul className="nav-left-side">
             <NavBarButton frontend_url="/" display_text="Tracker" />
             <NavBarButton frontend_url="/ranks" display_text="Rank" />
             <NavBarButton frontend_url="/tasks" display_text="Tasks" />
             <NavBarButton frontend_url="/stats" display_text="Stats" />
           </ul>
-          <ul>
+          <ul className="nav-right-side">
             <NavBarButton frontend_url="/personnel" display_text="Personnel" />
           </ul>
         </PageWrapper>
@@ -30,7 +30,7 @@ function NavBar() {
         <Route path="/ranks" element={<Message text="Rank" />} />
         <Route path="/tasks" element={<Message text="Tasks" />} />
         <Route path="/stats" element={<Message text="Stats" />} />
-        <Route path="/personnel" element={<Message text="Stats" />} />
+        <Route path="/personnel" element={<Message text="Personnel" />} />
       </Routes>
     </Router>
   );
