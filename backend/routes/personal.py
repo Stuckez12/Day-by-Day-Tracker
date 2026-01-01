@@ -16,9 +16,17 @@ api = APIRouter(prefix="/personal", tags=["Personal"])
 @api.get("/", status_code=status.HTTP_200_OK)
 def get_personnel(
     service: PersonalServiceDep,
-    id: uuid.UUID = Query(title="Personal ID"),
+    personnel_id: uuid.UUID = Query(title="Personal ID"),
 ):
-    return service.get_by_id(id)
+    return service.get_by_id(personnel_id)
+
+
+@api.get("/me", status_code=status.HTTP_200_OK)
+def get_personnel_self(
+    service: PersonalServiceDep,
+    personnel_id: uuid.UUID = Cookie("personnel_id", include_in_schema=False),
+):
+    return service.get_by_id(personnel_id)
 
 
 @api.get("/all", status_code=status.HTTP_200_OK)
@@ -40,7 +48,7 @@ def create_personnel(
 def update_personnel(
     request: UpdatePersonnelRequest,
     service: PersonalServiceDep,
-    personnel_id: uuid.UUID = Cookie("personnel_id"),
+    personnel_id: uuid.UUID = Cookie("personnel_id", include_in_schema=False),
 ):
     return service.update_personnel(personnel_id, request)
 

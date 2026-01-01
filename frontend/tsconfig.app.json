@@ -29,6 +29,7 @@
     "paths": {
       "components/*": ["src/components/*"],
       "pages/*": ["src/pages/*"],
+      "scripts/*": ["src/scripts/*"],
       "styles/*": ["src/styles/*"]
     },
   },

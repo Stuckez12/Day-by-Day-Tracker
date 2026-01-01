@@ -25,7 +25,7 @@ class BaseDBService(Generic[Model]):
                 .first()
             )
 
-        except:
+        except NoResultFound:
             raise ValueError("ID not within database")
 
     def get_paginated(self: Self, page: int, page_size: int):

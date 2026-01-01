@@ -13,7 +13,7 @@ api = APIRouter(prefix="/ranking", tags=["Ranking"])
 @api.get("/", status_code=status.HTTP_200_OK)
 def get_ranking(
     service: RankingServiceDep,
-    personnel_id: uuid.UUID = Cookie("personnel_id"),
+    personnel_id: uuid.UUID = Cookie("personnel_id", include_in_schema=False),
     date: date = Query(default_factory=date.today, title="Date"),
 ):
     return service.fetch_date(personnel_id, date)
@@ -28,7 +28,7 @@ def get_all_rankings(service: RankingServiceDep):
 def rank_day(
     request: RankingSchema,
     service: RankingServiceDep,
-    personnel_id: uuid.UUID = Cookie("personnel_id"),
+    personnel_id: uuid.UUID = Cookie("personnel_id", include_in_schema=False),
 ):
     rank_data = service.fetch_date(personnel_id, request.day)
 
