@@ -6,6 +6,7 @@ from sqlalchemy.orm import Session
 
 from backend.models import RankerModel
 from backend.services.base import BaseDBService
+from backend.schemas import RankingSchema
 
 
 class RankingService(BaseDBService[RankerModel]):
@@ -49,4 +50,4 @@ class RankingService(BaseDBService[RankerModel]):
         self.db.commit()
         self.db.refresh(rank_row)
 
-        return rank_row
+        return RankingSchema(**rank_row.to_dict())

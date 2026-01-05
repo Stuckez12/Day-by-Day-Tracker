@@ -1,8 +1,16 @@
+import uuid
+
 from datetime import date
 from pydantic import BaseModel, model_validator
 
 
 class RankingSchema(BaseModel):
+    personal_id: uuid.UUID
+    day: date
+    ranking: int | None
+
+
+class RankingRequest(BaseModel):
     day: date
     ranking: int
 
@@ -19,7 +27,7 @@ class RankingSchema(BaseModel):
 class RankingListSchema(BaseModel):
     min: date
     max: date
-    rankings: list[RankingSchema]
+    rankings: list[RankingRequest]
 
 
 class GetAllRankingsResponse(RankingListSchema):

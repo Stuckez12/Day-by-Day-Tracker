@@ -4,7 +4,7 @@ from datetime import date
 from fastapi import APIRouter, status, Cookie, Query
 
 from backend.common import RankingServiceDep
-from backend.schemas import RankingSchema
+from backend.schemas import RankingRequest, RankingSchema
 
 
 api = APIRouter(prefix="/ranking", tags=["Ranking"])
@@ -24,9 +24,13 @@ def get_all_rankings(service: RankingServiceDep):
     return service.get_all()
 
 
-@api.put("/rank", status_code=status.HTTP_202_ACCEPTED)
+@api.put(
+    "/rank",
+    response_model=RankingSchema,
+    status_code=status.HTTP_202_ACCEPTED,
+)
 def rank_day(
-    request: RankingSchema,
+    request: RankingRequest,
     service: RankingServiceDep,
     personnel_id: uuid.UUID = Cookie("personnel_id", include_in_schema=False),
 ):

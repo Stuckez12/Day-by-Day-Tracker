@@ -26,6 +26,8 @@ class BaseModel(Base):
         nullable=False,
     )
 
+    def to_dict(self):
+        return {c.name: getattr(self, c.name) for c in self.__table__.columns}
+
     def __repr__(self) -> str:
-        cols = {c.name: getattr(self, c.name) for c in self.__table__.columns}
-        return f"{self.__class__.__name__}({cols})"
+        return f"{self.__class__.__name__}({self.to_dict()})"

@@ -11,16 +11,26 @@ def create_app():
         description="A web application that records user inputs regarding their day rankings, activities and summaries.",
     )
 
-    app.include_router(api, prefix="/api/v1")
-
-    origins = ["http://localhost:3000"]
+    origins = [
+        "http://localhost:3000",
+        "http://localhost:3000/",
+    ]
 
     app.add_middleware(
         CORSMiddleware,
         allow_origins=origins,
         allow_credentials=True,
-        allow_methods=["*"],
+        allow_methods=[
+            "GET",
+            "POST",
+            "PUT",
+            "DELETE",
+            "OPTIONS",
+        ],  # Explicitly include OPTIONS
         allow_headers=["*"],
+        expose_headers=["*"],
     )
+
+    app.include_router(api, prefix="/api/v1")
 
     return app
