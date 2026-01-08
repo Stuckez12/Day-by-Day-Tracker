@@ -5,6 +5,7 @@ import NavBarButton from "components/common/navbar/NavBarButton.tsx";
 import Message from "components/Message";
 
 import LandingPage from "pages/LandingPage";
+import PersonnelPage from "pages/PersonnelPage";
 
 import "styles/navbar.scss";
 
@@ -30,7 +31,7 @@ function NavBar() {
         <Route path="/ranks" element={<Message text="Rank" />} />
         <Route path="/tasks" element={<Message text="Tasks" />} />
         <Route path="/stats" element={<Message text="Stats" />} />
-        <Route path="/personnel" element={<Message text="Personnel" />} />
+        <Route path="/personnel" element={<PersonnelPage />} />
       </Routes>
     </Router>
   );

@@ -1,14 +1,15 @@
 import React from "react";
+import { Temporal } from "@js-temporal/polyfill";
 
 import RateValueButton from "components/rating/RatingValueButton";
 import APICall from "scripts/api.ts";
 
 interface DayRanking {
-  ranking: number;
-  day: Date;
-  created_at: Date;
   id: string;
   personal_id: string;
+  day: Date;
+  ranking: number;
+  created_at: Date;
   updated_at: Date;
 }
 
@@ -25,7 +26,7 @@ function RatingBar() {
     const [success, response, err_message] = await APICall.put<DayRanking>(
       "/ranking/rank",
       {
-        day: "2026-01-05",
+        day: Temporal.Now.plainDateISO().toString(),
         ranking: Number(clicked.textContent),
       }
     );

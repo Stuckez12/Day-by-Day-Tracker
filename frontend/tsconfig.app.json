@@ -28,6 +28,7 @@
     "baseUrl": ".",
     "paths": {
       "components/*": ["src/components/*"],
+      "interfaces/*": ["src/interfaces/*"],
       "pages/*": ["src/pages/*"],
       "scripts/*": ["src/scripts/*"],
       "styles/*": ["src/styles/*"]
