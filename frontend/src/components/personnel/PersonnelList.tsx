@@ -29,6 +29,7 @@ function PersonnelList() {
         <th>ID</th>
         <th>Full Name</th>
         <th>Date Created</th>
+        <th>Select Personnel</th>
       </tr>
       {personnels.map(({ id, first_name, last_name, created_at }) => (
         <PersonnelRow

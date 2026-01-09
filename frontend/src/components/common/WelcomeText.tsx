@@ -16,12 +16,6 @@ function WelcomeText() {
 
   useEffect(() => {
     async function fetchPersonnel() {
-      const [q, w, e] = await APICall.put("/personal/select", {
-        id: "43eb1880-c4a2-4948-a91b-b6f8181f6933",
-      });
-
-      console.log(q, w, e);
-
       const [success, response, message] = await APICall.get<PersonnelData>(
         "/personal/me"
       );

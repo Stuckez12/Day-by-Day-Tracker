@@ -1,5 +1,7 @@
 import type { PersonnelRowProps } from "interfaces/personnel";
 
+import SelectPersonnelButton from "components/personnel/SelectPersonnelButton";
+
 function PersonnelRow({
   id,
   first_name,
@@ -13,6 +15,9 @@ function PersonnelRow({
       <td>{id}</td>
       <td>{full_name}</td>
       <td>{created_at}</td>
+      <td>
+        <SelectPersonnelButton id={id} />
+      </td>
     </tr>
   );
 }

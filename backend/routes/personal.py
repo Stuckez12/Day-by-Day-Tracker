@@ -1,6 +1,6 @@
 import uuid
 
-from fastapi import APIRouter, Response, status, Cookie, Query
+from fastapi import APIRouter, HTTPException, Response, status, Cookie, Query
 
 from backend.common import PersonalServiceDep
 from backend.schemas import (
@@ -59,6 +59,20 @@ def delete_personnel(
     id: uuid.UUID = Query(title="Personal ID"),
 ):
     return service.delete_personnel(id)
+
+
+@api.get("/me", status_code=status.HTTP_200_OK)
+def get_personnel_self(
+    service: PersonalServiceDep,
+    personnel_id: uuid.UUID = Cookie("personnel_id", include_in_schema=False),
+):
+    try:
+        return service.get_by_id(personnel_id)
+
+    except ValueError:
+        return HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail="Personnel does not exist"
+        )
 
 
 @api.put("/select", status_code=status.HTTP_204_NO_CONTENT)
