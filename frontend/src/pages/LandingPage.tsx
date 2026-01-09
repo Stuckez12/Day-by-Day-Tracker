@@ -6,7 +6,6 @@ function LandingPage() {
   return (
     <PageWrapper>
       <h1>Landing Page</h1>
-      <p>Lorem Ipsum</p>
       <WelcomeText />
       <RatingBar />
     </PageWrapper>

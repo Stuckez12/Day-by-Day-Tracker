@@ -16,7 +16,7 @@ function NavBar() {
         <PageWrapper>
           <ul className="nav-left-side">
             <NavBarButton frontend_url="/" display_text="Tracker" />
-            <NavBarButton frontend_url="/ranks" display_text="Rank" />
+            <NavBarButton frontend_url="/rates" display_text="Rates" />
             <NavBarButton frontend_url="/tasks" display_text="Tasks" />
             <NavBarButton frontend_url="/stats" display_text="Stats" />
           </ul>
@@ -28,7 +28,7 @@ function NavBar() {
 
       <Routes>
         <Route path="/" element={<LandingPage />} />
-        <Route path="/ranks" element={<Message text="Rank" />} />
+        <Route path="/rates" element={<Message text="Rates" />} />
         <Route path="/tasks" element={<Message text="Tasks" />} />
         <Route path="/stats" element={<Message text="Stats" />} />
         <Route path="/personnel" element={<PersonnelPage />} />

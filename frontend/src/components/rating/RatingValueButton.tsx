@@ -4,8 +4,8 @@ interface RatingValueProps {
 
 function RatingValueButton({ value }: RatingValueProps) {
   return (
-    <div className="detect-click">
-      <p>{value}</p>
+    <div className="detect-click rate-button">
+      <p className="rate-text">{value}</p>
     </div>
   );
 }

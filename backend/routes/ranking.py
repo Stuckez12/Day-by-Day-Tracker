@@ -24,6 +24,16 @@ def get_all_rankings(service: RankingServiceDep):
     return service.get_all()
 
 
+@api.get("/today", status_code=status.HTTP_200_OK)
+def get_todays_ranking(
+    service: RankingServiceDep,
+    personnel_id: uuid.UUID = Cookie("personnel_id", include_in_schema=False),
+):
+    today = date.today()
+
+    return service.fetch_date(personnel_id, today)
+
+
 @api.put(
     "/rank",
     response_model=RankingSchema,
