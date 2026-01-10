@@ -11,7 +11,7 @@ function PersonnelList() {
 
   useEffect(() => {
     const fetchPersonnel = async () => {
-      const [success, data, err] = await APICall.get<PersonnelRowProps[]>(
+      const [success, data, _] = await APICall.get<PersonnelRowProps[]>(
         "/personal/all"
       );
 

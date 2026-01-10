@@ -1,5 +1,10 @@
 @use "styles/colour_pallets.scss";
 
+.rating-button-bar {
+  display: flex;
+  flex-wrap: wrap;
+}
+
 .rate-button {
   background-color: var(--action);
   border-radius: 8px;
@@ -7,9 +12,10 @@
   width: 64px;
   height: 64px;
 
-  margin: 0 4px;
+  margin: 4px;
 
   display: flex;
+
   align-items: center;
   justify-content: center;
 
@@ -19,7 +25,8 @@
     background-color: var(--accent);
   }
 
-  &:active {
+  &:active,
+  &.is-selected {
     background-color: var(--accent);
   }
 }

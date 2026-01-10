@@ -1,17 +1,20 @@
 start:
-	docker compose -f docker-compose.yaml up -d
+	@docker compose -f docker-compose.yaml up -d
 
 stop:
-	docker compose -f docker-compose.yaml stop
+	@docker compose -f docker-compose.yaml stop
 
 build:
-	docker compose -f docker-compose.yaml build
+	@docker compose -f docker-compose.yaml build > build.log 2>&1
+
+build-no-cache:
+	@docker compose -f docker-compose.yaml build --no-cache
 
 remove:
-	docker compose -f docker-compose.yaml down
+	@docker compose -f docker-compose.yaml down
 
 logs:
-	docker compose -f docker-compose.yaml logs -f
+	@docker compose -f docker-compose.yaml logs -f
 
 restart:
 	$(MAKE) stop
@@ -20,6 +23,11 @@ restart:
 full-restart:
 	$(MAKE) stop
 	$(MAKE) build
+	$(MAKE) start
+
+hard-restart:
+	$(MAKE) stop
+	$(MAKE) build-no-cache
 	$(MAKE) start
 
 
@@ -36,3 +44,6 @@ ifndef MESSAGE
 	$(error 'MESSAGE is not set. Usage: make auto-revision-db MESSAGE="message"')
 endif
 	@docker-compose -f docker-compose.yaml exec api alembic -c /api/alembic.ini revision --autogenerate -m "$(MESSAGE)"
+
+npm-install:
+	@cd frontend && npm i $@

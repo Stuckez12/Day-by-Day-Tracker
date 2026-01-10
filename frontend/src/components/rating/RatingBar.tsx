@@ -84,18 +84,22 @@ function RatingBar() {
   return (
     <>
       <RatingToday ranking={ranking} />
-      <div onClick={detect_click} style={{ display: "flex" }}>
-        <RateValueButton value="0" />
-        <RateValueButton value="1" />
-        <RateValueButton value="2" />
-        <RateValueButton value="3" />
-        <RateValueButton value="4" />
-        <RateValueButton value="5" />
-        <RateValueButton value="6" />
-        <RateValueButton value="7" />
-        <RateValueButton value="8" />
-        <RateValueButton value="9" />
-        <RateValueButton value="10" />
+      <div
+        className="rating-button-bar"
+        onClick={detect_click}
+        style={{ display: "flex" }}
+      >
+        <RateValueButton value="0" selected={ranking} />
+        <RateValueButton value="1" selected={ranking} />
+        <RateValueButton value="2" selected={ranking} />
+        <RateValueButton value="3" selected={ranking} />
+        <RateValueButton value="4" selected={ranking} />
+        <RateValueButton value="5" selected={ranking} />
+        <RateValueButton value="6" selected={ranking} />
+        <RateValueButton value="7" selected={ranking} />
+        <RateValueButton value="8" selected={ranking} />
+        <RateValueButton value="9" selected={ranking} />
+        <RateValueButton value="10" selected={ranking} />
       </div>
     </>
   );
