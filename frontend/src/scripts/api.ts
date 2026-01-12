@@ -1,3 +1,4 @@
+// TODO: Change to be an env variable [host]
 const BASE_URL = "http://localhost:8000/api/v1";
 
 class APICalls {

@@ -11,7 +11,7 @@ function PersonnelRow({
   const full_name = first_name + " " + last_name;
 
   return (
-    <tr>
+    <tr key={id}>
       <td>{id}</td>
       <td>{full_name}</td>
       <td>{created_at}</td>

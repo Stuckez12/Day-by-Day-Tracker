@@ -1,6 +1,5 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from sqlalchemy_utils import create_database
 
 from backend.api import api
 
@@ -11,6 +10,7 @@ def create_app():
         description="A web application that records user inputs regarding their day rankings, activities and summaries.",
     )
 
+    # TODO: Change to be an env variable [host]
     origins = [
         "http://localhost:3000",
         "http://localhost:3000/",

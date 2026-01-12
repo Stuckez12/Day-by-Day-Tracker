@@ -25,20 +25,24 @@ function PersonnelList() {
 
   return (
     <table>
-      <tr>
-        <th>ID</th>
-        <th>Full Name</th>
-        <th>Date Created</th>
-        <th>Select Personnel</th>
-      </tr>
-      {personnels.map(({ id, first_name, last_name, created_at }) => (
-        <PersonnelRow
-          id={id}
-          first_name={first_name}
-          last_name={last_name}
-          created_at={created_at}
-        />
-      ))}
+      <thead>
+        <tr>
+          <th>ID</th>
+          <th>Full Name</th>
+          <th>Date Created</th>
+          <th>Select Personnel</th>
+        </tr>
+      </thead>
+      <tbody>
+        {personnels.map(({ id, first_name, last_name, created_at }) => (
+          <PersonnelRow
+            id={id}
+            first_name={first_name}
+            last_name={last_name}
+            created_at={created_at}
+          />
+        ))}
+      </tbody>
     </table>
   );
 }
