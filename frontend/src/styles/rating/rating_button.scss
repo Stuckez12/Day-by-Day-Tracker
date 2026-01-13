@@ -1,0 +1,41 @@
+@use "styles/colour_pallets.scss";
+
+.rating-button-bar {
+  display: flex;
+  flex-wrap: wrap;
+}
+
+.rate-button {
+  background-color: var(--action);
+  border-radius: 8px;
+
+  width: 64px;
+  height: 64px;
+
+  margin: 4px;
+
+  display: flex;
+
+  align-items: center;
+  justify-content: center;
+
+  cursor: pointer;
+
+  &:hover {
+    background-color: var(--accent);
+  }
+
+  &:active,
+  &.is-selected {
+    background-color: var(--accent);
+  }
+}
+
+.rate-text {
+  color: var(--inverted-text-color);
+  font-size: 24px;
+
+  text-align: center;
+
+  margin: 0;
+}

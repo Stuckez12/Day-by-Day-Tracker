@@ -8,5 +8,6 @@ from backend.schemas.ranking import (
     GetAllRankingsResponse,
     GetRangedRankingsResponse,
     RankingListSchema,
+    RankingRequest,
     RankingSchema,
 )

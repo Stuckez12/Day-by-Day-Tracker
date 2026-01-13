@@ -1,0 +1,19 @@
+$palettes: (
+  base: (
+    base: #ffffff,
+    primary: #00171f,
+    secondary: #003459,
+    action: #007ea7,
+    accent: #00a8e8,
+    default-text-color: #000000,
+    inverted-text-color: #ffffff,
+  ),
+);
+
+@each $theme, $colors in $palettes {
+  [data-theme="#{$theme}"] {
+    @each $name, $value in $colors {
+      --#{$name}: #{$value};
+    }
+  }
+}

@@ -1,0 +1,52 @@
+@use "colour_pallets";
+
+#navigation-bar {
+  background-color: var(--secondary);
+  width: auto;
+  height: 48px;
+
+  #content-wrapper {
+    ul {
+      list-style-type: none;
+      margin: 0;
+      padding: 4px;
+      overflow: hidden;
+
+      width: auto;
+      height: 48px;
+
+      li {
+        width: auto;
+        height: auto;
+
+        a {
+          display: flex;
+          font-size: 20px;
+
+          padding: 8px 16px;
+
+          height: 40px;
+          max-height: 48px;
+
+          color: var(--inverted-text-color);
+        }
+      }
+    }
+
+    ul.nav-left-side {
+      float: left;
+
+      li {
+        float: left;
+      }
+    }
+
+    ul.nav-right-side {
+      float: right;
+
+      li {
+        float: right;
+      }
+    }
+  }
+}
