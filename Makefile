@@ -5,7 +5,7 @@ stop:
 	@docker compose -f docker-compose.yaml stop
 
 build:
-	@docker compose -f docker-compose.yaml build > build.log 2>&1
+	@docker compose -f docker-compose.yaml build
 
 build-no-cache:
 	@docker compose -f docker-compose.yaml build --no-cache

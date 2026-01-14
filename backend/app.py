@@ -2,6 +2,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from backend.api import api
+from backend.settings import app_config
 
 
 def create_app():
@@ -12,8 +13,8 @@ def create_app():
 
     # TODO: Change to be an env variable [host]
     origins = [
-        "http://localhost:3000",
-        "http://localhost:3000/",
+        app_config.frontend_url,
+        app_config.frontend_url + "/",
     ]
 
     app.add_middleware(

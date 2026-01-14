@@ -37,14 +37,14 @@ services:
       - app-network
     volumes:
       - ./backend:/api/backend
-    command: uvicorn backend:app --host 0.0.0.0 --port 8000
+    command: uvicorn backend:app --host ${API_HOST} --port ${API_PORT}
 
   react-app:
     build:
       context: ./frontend
       dockerfile: Dockerfile
     ports:
-      - "3000:3000"
+      - "${FRONTEND_PORT}:${FRONTEND_PORT}"
     networks:
       - app-network
     volumes:
