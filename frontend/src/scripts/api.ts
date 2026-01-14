@@ -1,5 +1,8 @@
 // TODO: Change to be an env variable [host]
-const BASE_URL = "http://localhost:8000/api/v1";
+const HOST = import.meta.env.VITE_BACKEND_HOST;
+const PORT = import.meta.env.VITE_BACKEND_PORT;
+
+const BASE_URL = `http://${HOST}:${PORT}/api/v1`;
 
 class APICalls {
   base_url: string;
@@ -58,6 +61,8 @@ class APICalls {
     payload: { [key: string]: any }
   ): Promise<[boolean, TYPE | null, string | null]> {
     let response;
+
+    console.log(import.meta.env);
 
     try {
       console.log("URL [POST]: " + this.base_url + url);

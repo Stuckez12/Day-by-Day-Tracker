@@ -52,6 +52,8 @@ services:
       - /app/node_modules
     environment:
       - CHOKIDAR_USEPOLLING=true
+      - VITE_BACKEND_HOST=localhost
+      - VITE_BACKEND_PORT=${API_PORT}
 
 
 networks:
