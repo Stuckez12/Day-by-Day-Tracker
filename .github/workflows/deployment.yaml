@@ -59,7 +59,7 @@ jobs:
           flavor: latest=false
           images: ${{ secrets.DOCKER_HUB_USERNAME }}/${{ matrix.image }}
           # Enable when workflow is set to release
-          tags: type=ref, event=tag
+          tags: "${{ github.event.release.tag_name }}"
 
           # # Enable when workflow is set to workflow_dispatch
           # tags: type=raw,value=${{ github.event.inputs.version }}
