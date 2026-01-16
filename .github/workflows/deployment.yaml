@@ -1,14 +1,14 @@
 name: Deployment
 
 on:
-  workflow_dispatch:
-    inputs:
-      version:
-        description: "App version / tag"
-        required: true
+  # workflow_dispatch:
+  #   inputs:
+  #     version:
+  #       description: "App version / tag"
+  #       required: true
 
-  # release:
-  #   types: [published]
+  release:
+    types: [published]
 
   # workflow_run:
   #   workflows: []
@@ -17,6 +17,7 @@ on:
 
 jobs:
   deployment:
+    # # Uncomment when using "on: workflow_run:"
     # if: github.event.workflow_run.event == 'release' || github.event_name == 'release'
 
     name: Deployment
@@ -26,7 +27,7 @@ jobs:
       fail-fast: true
       matrix:
         include:
-          - context: "backend"
+          - context: "."
             file: backend/Dockerfile
             image: "day-by-day-tracker-api"
             platforms: linux/amd64,linux/arm64

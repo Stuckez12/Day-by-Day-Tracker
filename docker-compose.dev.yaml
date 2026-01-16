@@ -37,9 +37,10 @@ services:
       - app-network
     volumes:
       - ./backend:/api/backend
+    env_file: .env
     command: uvicorn backend.main:app --host ${API_HOST} --port ${API_PORT}
 
-  react-app:
+  frontend:
     build:
       context: ./frontend
       dockerfile: Dockerfile
@@ -51,9 +52,10 @@ services:
       - ./frontend:/app
       - /app/node_modules
     environment:
-      - CHOKIDAR_USEPOLLING=true
-      - VITE_BACKEND_HOST=localhost
-      - VITE_BACKEND_PORT=${API_PORT}
+      CHOKIDAR_USEPOLLING: true
+      VITE_BACKEND_HOST: ${API_HOST_NAME}
+      VITE_BACKEND_PORT: ${API_PORT}
+    env_file: .env
 
 
 networks:

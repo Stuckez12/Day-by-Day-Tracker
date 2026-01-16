@@ -9,21 +9,21 @@ from backend.services.base import BaseDBService
 
 
 class PersonalService(BaseDBService[PersonalModel]):
-    model = PersonalModel
+    def __init__(self, db: Session) -> None:
+        super().__init__(db=db, model=PersonalModel)
 
-    def __init__(self, db: Session):
-        super().__init__(db)
+    def create_personnel(self, data: CreatePersonnelRequest) -> PersonalModel:
+        personnel = PersonalModel(**data.model_dump())
 
-    def create_personnel(self, data: CreatePersonnelRequest):
-        row = PersonalModel(**data.model_dump())
-
-        self.add(row)
+        self.add(personnel)
         self.db.commit()
-        self.db.refresh(row)
+        self.db.refresh(personnel)
 
-        return row
+        return personnel
 
-    def update_personnel(self, personnel_id: str, data: UpdatePersonnelRequest):
+    def update_personnel(
+        self, personnel_id: str, data: UpdatePersonnelRequest
+    ) -> PersonalModel:
         personnel = self.get_by_id(personnel_id)
 
         self.update_data_columns(personnel, data)
@@ -32,7 +32,7 @@ class PersonalService(BaseDBService[PersonalModel]):
 
         return personnel
 
-    def delete_personnel(self, id: uuid.UUID):
+    def delete_personnel(self, id: uuid.UUID) -> PersonalModel:
         personnel = self.get_by_id(id)
         self.delete(personnel)
         self.db.commit()

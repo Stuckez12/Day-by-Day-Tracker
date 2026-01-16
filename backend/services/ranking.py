@@ -10,22 +10,20 @@ from backend.schemas import RankingSchema
 
 
 class RankingService(BaseDBService[RankerModel]):
-    model = RankerModel
-
     def __init__(self, db: Session):
-        super().__init__(db)
+        super().__init__(db=db, model=RankerModel)
 
-    def get_by_date(self, personnel_id: uuid.UUID, date: date):
+    def get_by_date(self, personnel_id: uuid.UUID, date: date) -> RankerModel | None:
         return (
             self.db.query(RankerModel)
             .filter(
                 RankerModel.personal_id == personnel_id,
                 RankerModel.day == date,
             )
-            .one()
+            .first()
         )
 
-    def insert_new_date(self, personnel_id: uuid.UUID, date: date):
+    def insert_new_date(self, personnel_id: uuid.UUID, date: date) -> RankerModel:
         row = RankerModel(
             personal_id=personnel_id,
             day=date,
@@ -34,15 +32,17 @@ class RankingService(BaseDBService[RankerModel]):
 
         self.add(row)
         self.db.commit()
+        self.db.refresh(row)
 
-        return self.get_by_date(personnel_id, date)
+        return row
 
-    def fetch_date(self, personnel_id: str, date: date):
-        try:
-            return self.get_by_date(personnel_id, date)
+    def fetch_date(self, personnel_id: str, date: date) -> RankerModel:
+        row = self.get_by_date(personnel_id, date)
 
-        except NoResultFound:
+        if row is None:
             return self.insert_new_date(personnel_id, date)
+
+        return row
 
     def rank_day(self, rank_row: RankerModel, set_rank: int):
         rank_row.ranking = set_rank
