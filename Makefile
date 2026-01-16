@@ -71,5 +71,11 @@ start-prod:
 stop-prod:
 	@docker compose -f docker-compose.prod.yaml --env-file .env.prod stop
 
+restart-prod:
+	$(MAKE) stop-prod
+	$(MAKE) start-prod
+
 remove-prod:
 	@docker compose -f docker-compose.prod.yaml --env-file .env.prod down
+
+
