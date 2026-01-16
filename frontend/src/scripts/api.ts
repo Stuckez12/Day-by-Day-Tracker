@@ -1,4 +1,3 @@
-// TODO: Change to be an env variable [host]
 const HOST = import.meta.env.VITE_BACKEND_HOST;
 const PORT = import.meta.env.VITE_BACKEND_PORT;
 

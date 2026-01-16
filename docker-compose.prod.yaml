@@ -28,21 +28,17 @@ services:
     attach: false
 
   api:
-    build:
-      context: .
-      dockerfile: backend/Dockerfile
+    image: stukez12/day-by-day-tracker:${APP_VERSION}-api
     ports:
       - ${API_PORT}:${API_PORT}
     networks:
       - app-network
     volumes:
       - ./backend:/api/backend
-    command: uvicorn backend.main:app --host ${API_HOST} --port ${API_PORT}
+    command: uvicorn backend:app --host ${API_HOST} --port ${API_PORT}
 
-  react-app:
-    build:
-      context: ./frontend
-      dockerfile: Dockerfile
+  frontend:
+    image: stukez12/day-by-day-tracker:${APP_VERSION}-frontend
     ports:
       - "${FRONTEND_PORT}:${FRONTEND_PORT}"
     networks:

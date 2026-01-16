@@ -7,7 +7,12 @@ WORKDIR /api
 
 RUN pip install uv
 
-COPY . .
+COPY ./backend ./backend
+COPY uv.lock .
+COPY pyproject.toml .
+COPY alembic.ini .
+COPY .env .
+
 RUN uv sync
 
 ENV PATH="/api/.venv/bin:$PATH"

@@ -31,6 +31,11 @@ hard-restart:
 	$(MAKE) start
 
 
+################################################################################
+# Database
+################################################################################
+
+
 upgrade-db:
 	@docker-compose -f docker-compose.dev.yaml exec api alembic -c /api/alembic.ini upgrade head
 
@@ -45,5 +50,29 @@ ifndef MESSAGE
 endif
 	@docker-compose -f docker-compose.dev.yaml exec api alembic -c /api/alembic.ini revision --autogenerate -m "$(MESSAGE)"
 
+
+################################################################################
+# Frontend
+################################################################################
+
+
 npm-install:
 	@cd frontend && npm i $@
+
+
+################################################################################
+# Production
+################################################################################
+
+
+start-prod:
+	@docker compose -f docker-compose.prod.yaml up -d
+
+stop-prod:
+	@docker compose -f docker-compose.prod.yaml stop
+
+build-prod:
+	@docker compose -f docker-compose.prod.yaml build
+
+remove-prod:
+	@docker compose -f docker-compose.prod.yaml down
