@@ -11,7 +11,6 @@ COPY ./backend ./backend
 COPY uv.lock .
 COPY pyproject.toml .
 COPY alembic.ini .
-COPY .env .
 
 RUN uv sync
 
