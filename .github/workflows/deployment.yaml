@@ -58,8 +58,11 @@ jobs:
         with:
           flavor: latest=false
           images: ${{ secrets.DOCKER_HUB_USERNAME }}/${{ matrix.image }}
-          # tags: type=ref, event=tag
-          tags: type=raw,value=${{ github.event.inputs.version }}
+          # Enable when workflow is set to release
+          tags: type=ref, event=tag
+
+          # # Enable when workflow is set to workflow_dispatch
+          # tags: type=raw,value=${{ github.event.inputs.version }}
 
       - name: Docker Build Images
         uses: docker/build-push-action@v6.9.0
