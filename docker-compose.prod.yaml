@@ -28,23 +28,19 @@ services:
     attach: false
 
   api:
-    build:
-      context: .
-      dockerfile: backend/Dockerfile
+    image: stukez12/day-by-day-tracker:${APP_VERSION}-api
     ports:
       - ${API_PORT}:${API_PORT}
     networks:
       - app-network
     volumes:
       - ./backend:/api/backend
-    command: uvicorn backend:app --host 0.0.0.0 --port 8000
+    command: uvicorn backend:app --host ${API_HOST} --port ${API_PORT}
 
-  react-app:
-    build:
-      context: ./frontend
-      dockerfile: Dockerfile
+  frontend:
+    image: stukez12/day-by-day-tracker:${APP_VERSION}-frontend
     ports:
-      - "3000:3000"
+      - "${FRONTEND_PORT}:${FRONTEND_PORT}"
     networks:
       - app-network
     volumes:
@@ -52,6 +48,8 @@ services:
       - /app/node_modules
     environment:
       - CHOKIDAR_USEPOLLING=true
+      - VITE_BACKEND_HOST=localhost
+      - VITE_BACKEND_PORT=${API_PORT}
 
 
 networks:

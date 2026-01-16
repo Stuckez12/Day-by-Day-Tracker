@@ -2,11 +2,11 @@ from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.pool import QueuePool
 
+from backend.settings import app_config
 
-DATABASE_URL = "postgresql+psycopg2://postgres:postgres@db:5432/tracker"
 
 engine = create_engine(
-    DATABASE_URL,
+    app_config.db_url,
     poolclass=QueuePool,
     pool_pre_ping=True,
     pool_size=10,
