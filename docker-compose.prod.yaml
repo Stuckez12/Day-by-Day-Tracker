@@ -2,7 +2,7 @@ services:
   db:
     image: postgres:17 
     ports:
-      - ${DATABASE_PORT}:${DATABASE_PORT}
+      - ${DATABASE_PORT}:5432
     networks:
       - app-network
     volumes:
@@ -28,7 +28,7 @@ services:
     attach: false
 
   api:
-    image: stukez12/day-by-day-tracker:${APP_VERSION}-api
+    image: stukez12/day-by-day-tracker-api:${APP_VERSION}
     ports:
       - ${API_PORT}:${API_PORT}
     networks:
@@ -36,11 +36,11 @@ services:
     volumes:
       - ./backend:/api/backend
     env_file:
-      - .env
-    command: uvicorn backend:app --host ${API_HOST} --port ${API_PORT}
+      - .env.prod
+    command: uvicorn backend.main:app --host ${API_HOST} --port ${API_PORT}
 
   frontend:
-    image: stukez12/day-by-day-tracker:${APP_VERSION}-frontend
+    image: stukez12/day-by-day-tracker-frontend:${APP_VERSION}
     ports:
       - "${FRONTEND_PORT}:${FRONTEND_PORT}"
     networks:
@@ -48,11 +48,11 @@ services:
     volumes:
       - ./frontend:/app
       - /app/node_modules
-    env_file:
-      - .env
     environment:
-      - CHOKIDAR_USEPOLLING=true
-      - VITE_BACKEND_HOST=localhost
+      CHOKIDAR_USEPOLLING: true
+      VITE_BACKEND_HOST: ${API_HOST}
+      VITE_BACKEND_PORT: ${API_PORT}
+    env_file: .env.prod
 
 
 networks:

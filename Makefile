@@ -66,13 +66,10 @@ npm-install:
 
 
 start-prod:
-	@docker compose -f docker-compose.prod.yaml up -d
+	@docker compose -f docker-compose.prod.yaml --env-file .env.prod up -d
 
 stop-prod:
-	@docker compose -f docker-compose.prod.yaml stop
-
-build-prod:
-	@docker compose -f docker-compose.prod.yaml build
+	@docker compose -f docker-compose.prod.yaml --env-file .env.prod stop
 
 remove-prod:
-	@docker compose -f docker-compose.prod.yaml down
+	@docker compose -f docker-compose.prod.yaml --env-file .env.prod down

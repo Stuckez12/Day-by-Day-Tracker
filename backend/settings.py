@@ -20,6 +20,7 @@ class AppConfig(BaseSettings):
     API_PORT: int
 
     FRONTEND_HOST: str
+    FRONTEND_HOST_NAME: str | None
     FRONTEND_PORT: int
 
     @property
@@ -28,6 +29,9 @@ class AppConfig(BaseSettings):
 
     @property
     def frontend_url(self):
+        if self.FRONTEND_HOST_NAME is not None:
+            return f"http://{self.FRONTEND_HOST_NAME}:{self.FRONTEND_PORT}"
+
         return f"http://{self.FRONTEND_HOST}:{self.FRONTEND_PORT}"
 
 
