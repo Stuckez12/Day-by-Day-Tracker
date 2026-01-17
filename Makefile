@@ -63,7 +63,7 @@ endif
 
 .PHONY: tests
 tests:
-	pytest -vv --cov
+	pytest -vv
 
 
 test-db:
@@ -96,5 +96,3 @@ restart-prod:
 
 remove-prod:
 	@docker compose -f docker-compose.prod.yaml --env-file .env.prod down
-
-
