@@ -7,7 +7,13 @@ from sqlalchemy.orm import Session
 from typing import Generator
 
 from backend.common import get_db
-from backend.services import PersonalService
+from backend.models import PersonalModel
+from backend.services import PersonalService, RankingService
+
+
+################################################################################
+# Misc
+################################################################################
 
 
 @pytest.fixture(scope="session", autouse=True)
@@ -35,6 +41,37 @@ def test_session() -> Generator[Session, None, None]:
     db_gen.close()
 
 
+################################################################################
+# Services
+################################################################################
+
+
 @pytest.fixture(scope="function")
 def test_personal_service(test_session: Session):
     yield PersonalService(db=test_session)
+
+
+@pytest.fixture(scope="function")
+def test_ranking_service(test_session: Session):
+    yield RankingService(db=test_session)
+
+
+################################################################################
+# Models
+################################################################################
+
+
+@pytest.fixture(scope="function")
+def test_personnel(test_session: Session):
+    model = PersonalModel(
+        first_name="Test",
+        last_name="Fixture",
+    )
+
+    test_session.add(model)
+    test_session.commit()
+
+    yield model
+
+    test_session.delete(model)
+    test_session.commit()
