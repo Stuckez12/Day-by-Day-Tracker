@@ -13,7 +13,11 @@ class PersonalService(BaseDBService[PersonalModel]):
         super().__init__(db=db, model=PersonalModel)
 
     def create_personnel(self, data: CreatePersonnelRequest) -> PersonalModel:
-        personnel = PersonalModel(**data.model_dump())
+        try:
+            personnel = PersonalModel(**data.model_dump())
+
+        except TypeError:
+            raise TypeError("Invalid data format provided for personnel")
 
         self.add(personnel)
         self.db.commit()
@@ -22,9 +26,12 @@ class PersonalService(BaseDBService[PersonalModel]):
         return personnel
 
     def update_personnel(
-        self, personnel_id: str, data: UpdatePersonnelRequest
+        self, personnel_id: uuid.UUID, data: UpdatePersonnelRequest
     ) -> PersonalModel:
         personnel = self.get_by_id(personnel_id)
+
+        if personnel is None:
+            raise NoResultFound(f"Personnel {personnel_id} not found")
 
         self.update_data_columns(personnel, data)
         self.db.commit()
@@ -32,8 +39,12 @@ class PersonalService(BaseDBService[PersonalModel]):
 
         return personnel
 
-    def delete_personnel(self, id: uuid.UUID) -> PersonalModel:
-        personnel = self.get_by_id(id)
+    def delete_personnel(self, personnel_id: uuid.UUID) -> PersonalModel:
+        personnel = self.get_by_id(personnel_id)
+
+        if personnel is None:
+            raise NoResultFound(f"Personnel {personnel_id} not found")
+
         self.delete(personnel)
         self.db.commit()
 

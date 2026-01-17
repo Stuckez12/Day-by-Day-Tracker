@@ -4,12 +4,12 @@ from sqlalchemy import engine_from_config
 from sqlalchemy import pool
 
 from backend.models.base import Base
+from backend.settings import app_config
 
 
 config = context.config
-
-if config.config_file_name is not None:
-    fileConfig(config.config_file_name)
+fileConfig(config.config_file_name)
+config.set_main_option("sqlalchemy.url", app_config.db_url)
 
 target_metadata = Base.metadata
 
