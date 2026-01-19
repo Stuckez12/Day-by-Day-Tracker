@@ -26,26 +26,14 @@ class PersonalService(BaseDBService[PersonalModel]):
         return personnel
 
     def update_personnel(
-        self, personnel_id: uuid.UUID, data: UpdatePersonnelRequest
+        self, personnel: PersonalModel, data: UpdatePersonnelRequest
     ) -> PersonalModel:
-        personnel = self.get_by_id(personnel_id)
-
-        if personnel is None:
-            raise NoResultFound(f"Personnel {personnel_id} not found")
-
-        self.update_data_columns(personnel, data)
+        personnel = self.update_data_columns(personnel, data)
         self.db.commit()
         self.db.refresh(personnel)
 
         return personnel
 
-    def delete_personnel(self, personnel_id: uuid.UUID) -> PersonalModel:
-        personnel = self.get_by_id(personnel_id)
-
-        if personnel is None:
-            raise NoResultFound(f"Personnel {personnel_id} not found")
-
+    def delete_personnel(self, personnel: PersonalModel) -> None:
         self.delete(personnel)
         self.db.commit()
-
-        return personnel

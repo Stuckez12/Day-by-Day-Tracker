@@ -62,8 +62,9 @@ endif
 
 
 .PHONY: tests
+TEST_PATH =
 tests:
-	pytest -vv
+	pytest -vv $(TEST_PATH)
 
 
 test-db:

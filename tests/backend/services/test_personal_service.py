@@ -14,7 +14,7 @@ from backend.services import PersonalService
 
 
 class TestPersonalService:
-    def test_create_user_success(
+    def test_create_personnel_success(
         self, test_session: Session, test_personal_service: PersonalService
     ):
         data = CreatePersonnelRequest(
@@ -30,7 +30,7 @@ class TestPersonalService:
         test_session.delete(personnel)
         test_session.commit()
 
-    def test_create_user_invalid_pydantic_model(
+    def test_create_personnel_invalid_pydantic_model(
         self, test_personal_service: PersonalService
     ):
         with pytest.raises(
@@ -38,7 +38,7 @@ class TestPersonalService:
         ):
             test_personal_service.create_personnel(InvalidSchema())
 
-    def test_update_user_all_details(
+    def test_update_personnel_all_details(
         self, test_personnel: PersonalModel, test_personal_service: PersonalService
     ):
         data = UpdatePersonnelRequest(
@@ -46,68 +46,39 @@ class TestPersonalService:
             last_name="Updated",
         )
 
-        updated_personnel = test_personal_service.update_personnel(
-            test_personnel.id, data
-        )
+        updated_personnel = test_personal_service.update_personnel(test_personnel, data)
 
         assert updated_personnel.first_name == "Updated"
         assert updated_personnel.last_name == "Updated"
 
-    def test_update_user_first_name(
+    def test_update_personnel_first_name(
         self, test_personnel: PersonalModel, test_personal_service: PersonalService
     ):
         data = UpdatePersonnelRequest(
             first_name="Updated",
         )
 
-        updated_personnel = test_personal_service.update_personnel(
-            test_personnel.id, data
-        )
+        updated_personnel = test_personal_service.update_personnel(test_personnel, data)
 
         assert updated_personnel.first_name == "Updated"
         assert updated_personnel.last_name == test_personnel.last_name
 
-    def test_update_user_last_name(
+    def test_update_personnel_last_name(
         self, test_personnel: PersonalModel, test_personal_service: PersonalService
     ):
         data = UpdatePersonnelRequest(
             last_name="Updated",
         )
 
-        updated_personnel = test_personal_service.update_personnel(
-            test_personnel.id, data
-        )
+        updated_personnel = test_personal_service.update_personnel(test_personnel, data)
 
         assert updated_personnel.first_name == test_personnel.first_name
         assert updated_personnel.last_name == "Updated"
 
-    def test_update_user_no_personnel_found(
-        self, test_personal_service: PersonalService
-    ):
-        data = UpdatePersonnelRequest(
-            first_name="Updated",
-            last_name="Updated",
-        )
-
-        invalid_personnel_id = UUID("12345678-1234-5678-1234-567812345678")
-
-        with pytest.raises(
-            NoResultFound, match=f"Personnel {invalid_personnel_id} not found"
-        ):
-            test_personal_service.update_personnel(invalid_personnel_id, data)
-
-    def test_delete_user_success(
+    def test_delete_personnel_success(
         self, test_personnel: PersonalModel, test_personal_service: PersonalService
     ):
-        test_personal_service.delete_personnel(test_personnel.id)
+        test_personal_service.delete_personnel(test_personnel)
         no_personnel = test_personal_service.get_by_id(test_personnel.id)
 
         assert no_personnel is None
-
-    def test_delete_user_does_not_exist(self, test_personal_service: PersonalService):
-        invalid_personnel_id = UUID("12345678-1234-5678-1234-567812345678")
-
-        with pytest.raises(
-            NoResultFound, match=f"Personnel {invalid_personnel_id} not found"
-        ):
-            test_personal_service.delete_personnel(invalid_personnel_id)

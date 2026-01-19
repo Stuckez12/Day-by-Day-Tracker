@@ -32,9 +32,11 @@ class BaseDBService(Generic[Model]):
         self.db.add_all(rows)
         self.db.flush()
 
-    def update_data_columns(self: Self, row: Model, data: Type[BaseModel]) -> None:
+    def update_data_columns(self, model: Model, data: Type[BaseModel]) -> Model:
         for key, value in data.model_dump(exclude="id", exclude_none=True).items():
-            setattr(row, key, value)
+            setattr(model, key, value)
+
+        return model
 
     def delete(self: Self, row: Model) -> None:
         self.db.delete(row)

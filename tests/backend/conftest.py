@@ -4,9 +4,11 @@ import pytest
 from alembic import command
 from alembic.config import Config
 from datetime import date
+from fastapi.testclient import TestClient
 from sqlalchemy.orm import Session
 from typing import Generator
 
+from backend.main import app
 from backend.common import get_db
 from backend.models import PersonalModel, RankerModel
 from backend.services import PersonalService, RankingService
@@ -43,6 +45,23 @@ def test_session() -> Generator[Session, None, None]:
 
 
 @pytest.fixture(scope="session")
+def test_client_v1():
+    yield TestClient(app, base_url="http://testserver/api/v1")
+
+
+@pytest.fixture(scope="function")
+def test_set_cookies(test_client_v1: TestClient, test_personnel: PersonalModel):
+    test_client_v1.put(f"/personal/select", json={"id": str(test_personnel.id)})
+
+
+@pytest.fixture(scope="function")
+def test_set_cookies_wrong_user(
+    test_client_v1: TestClient, test_personnel_2: PersonalModel
+):
+    test_client_v1.put(f"/personal/select", json={"id": str(test_personnel_2.id)})
+
+
+@pytest.fixture(scope="session")
 def test_date_today() -> Generator[date, None, None]:
     yield date.today()
 
@@ -72,6 +91,38 @@ def test_personnel(test_session: Session):
     model = PersonalModel(
         first_name="Test",
         last_name="Fixture",
+    )
+
+    test_session.add(model)
+    test_session.commit()
+
+    yield model
+
+    test_session.delete(model)
+    test_session.commit()
+
+
+@pytest.fixture(scope="function")
+def test_personnel_2(test_session: Session):
+    model = PersonalModel(
+        first_name="Test 2",
+        last_name="Fixture 2",
+    )
+
+    test_session.add(model)
+    test_session.commit()
+
+    yield model
+
+    test_session.delete(model)
+    test_session.commit()
+
+
+@pytest.fixture(scope="function")
+def test_personnel_3(test_session: Session):
+    model = PersonalModel(
+        first_name="Test 3",
+        last_name="Fixture 3",
     )
 
     test_session.add(model)
