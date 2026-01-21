@@ -15,10 +15,16 @@ api = APIRouter(prefix="/personal", tags=["Personal"])
 
 @api.get("/", status_code=status.HTTP_200_OK)
 def get_personnel(
-    service: PersonalServiceDep,
-    personnel_id: uuid.UUID = Query(title="Personal ID"),
+    service: PersonalServiceDep, personnel_id: uuid.UUID = Query(title="Personal ID")
 ):
-    return service.get_by_id(personnel_id)
+    personnel = service.get_by_id(personnel_id)
+
+    if personnel:
+        return personnel
+
+    raise HTTPException(
+        status_code=status.HTTP_404_NOT_FOUND, detail="Personnel does not exist"
+    )
 
 
 @api.get("/me", status_code=status.HTTP_200_OK)
@@ -26,13 +32,11 @@ def get_personnel_self(
     service: PersonalServiceDep,
     personnel_id: uuid.UUID = Cookie("personnel_id", include_in_schema=False),
 ):
-    return service.get_by_id(personnel_id)
+    return service.personnel_exists(personnel_id)
 
 
 @api.get("/all", status_code=status.HTTP_200_OK)
-def get_all_personnel(
-    service: PersonalServiceDep,
-):
+def get_all_personnel(service: PersonalServiceDep):
     return service.get_all()
 
 
@@ -50,7 +54,9 @@ def update_personnel(
     service: PersonalServiceDep,
     personnel_id: uuid.UUID = Cookie("personnel_id", include_in_schema=False),
 ):
-    return service.update_personnel(personnel_id, request)
+    personnel = service.personnel_exists(personnel_id)
+
+    return service.update_personnel(personnel, request)
 
 
 @api.delete("/", status_code=status.HTTP_200_OK)
@@ -58,21 +64,9 @@ def delete_personnel(
     service: PersonalServiceDep,
     id: uuid.UUID = Query(title="Personal ID"),
 ):
-    return service.delete_personnel(id)
+    personnel = service.personnel_exists(id)
 
-
-@api.get("/me", status_code=status.HTTP_200_OK)
-def get_personnel_self(
-    service: PersonalServiceDep,
-    personnel_id: uuid.UUID = Cookie("personnel_id", include_in_schema=False),
-):
-    try:
-        return service.get_by_id(personnel_id)
-
-    except ValueError:
-        return HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND, detail="Personnel does not exist"
-        )
+    return service.delete_personnel(personnel)
 
 
 @api.put("/select", status_code=status.HTTP_204_NO_CONTENT)
@@ -81,7 +75,9 @@ def selected_personnel(
     response: Response,
     service: PersonalServiceDep,
 ):
-    personnel = service.get_by_id(request.id)
+    personnel = service.personnel_exists(request.id)
+
+    print(personnel)
 
     response.set_cookie("personnel_id", str(personnel.id))
     response.status_code = status.HTTP_204_NO_CONTENT

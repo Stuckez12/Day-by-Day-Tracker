@@ -1,3 +1,8 @@
+################################################################################
+# Development
+################################################################################
+
+
 start:
 	@docker compose -f docker-compose.dev.yaml up -d
 
@@ -31,6 +36,13 @@ hard-restart:
 	$(MAKE) start
 
 
+linters:
+	@uv run black --check backend
+	@uv run mypy backend
+	@uv run flake8 backend --select=E225,E231,E302,E305,F403,F404,F405,F821,F822,F823,F824 --exclude "*/__init__.py"
+	@uv run flake8 backend --select=F403,F405 --filename="*/__init__.py" --exclude ".venv"
+
+
 ################################################################################
 # Database
 ################################################################################
@@ -49,6 +61,21 @@ ifndef MESSAGE
 	$(error 'MESSAGE is not set. Usage: make auto-revision-db MESSAGE="message"')
 endif
 	@docker-compose -f docker-compose.dev.yaml exec api alembic -c /api/alembic.ini revision --autogenerate -m "$(MESSAGE)"
+
+
+################################################################################
+# Testing
+################################################################################
+
+
+.PHONY: tests
+TEST_PATH =
+tests:
+	pytest -vv $(TEST_PATH)
+
+
+test-db:
+	docker run -d --name postgres-testing -e POSTGRES_PASSWORD=testing -e POSTGRES_USER=testing -e POSTGRES_DB=testing -p 5435:5432 postgres:latest
 
 
 ################################################################################
@@ -77,5 +104,3 @@ restart-prod:
 
 remove-prod:
 	@docker compose -f docker-compose.prod.yaml --env-file .env.prod down
-
-

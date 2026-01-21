@@ -1,0 +1,14 @@
+[run]
+branch = True
+source = backend
+
+[report]
+fail_under = 90
+show_missing = True
+omit =
+    backend/__init__.py
+    backend/api.py
+    backend/app.py
+    backend/main.py
+    backend/settings.py
+    backend/migrations/*

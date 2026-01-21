@@ -1,16 +1,27 @@
 import uuid
 
-from pydantic import BaseModel
+from pydantic import BaseModel, ValidationInfo, field_validator, Field
 
 
-class CreatePersonnelRequest(BaseModel):
+class PersonnelSchema(BaseModel):
     first_name: str
     last_name: str
 
+    @field_validator("first_name", "last_name")
+    @classmethod
+    def validate_name(cls, value: str, info: ValidationInfo) -> str:
+        if len(value) <= 0:
+            raise ValueError(f"{info.field_name} must not be empty")
 
-class UpdatePersonnelRequest(BaseModel):
-    first_name: str | None = None
-    last_name: str | None = None
+        return value
+
+
+class CreatePersonnelRequest(PersonnelSchema): ...
+
+
+class UpdatePersonnelRequest(PersonnelSchema):
+    first_name: str | None = None  # type: ignore[assignment]
+    last_name: str | None = None  # type: ignore[assignment]
 
 
 class SelectPersonnelRequest(BaseModel):

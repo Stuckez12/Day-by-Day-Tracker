@@ -1,6 +1,6 @@
 import uuid
 
-from datetime import datetime, timezone
+from datetime import date, datetime, timezone
 from sqlalchemy import DateTime
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column
@@ -26,8 +26,28 @@ class BaseModel(Base):
         nullable=False,
     )
 
-    def to_dict(self):
+    def to_dict(self, clean: bool = False):
+        if clean:
+            # Return a purely clean dictionary by converting non string params into string
+            result = {}
+
+            for c in self.__table__.columns:
+                value = getattr(self, c.name)
+
+                if isinstance(value, datetime):
+                    value = value.strftime("%Y-%m-%dT%H:%M:%S.%f")
+
+                if isinstance(value, date):
+                    value = value.strftime("%Y-%m-%d")
+
+                if isinstance(value, uuid.UUID):
+                    value = str(value)
+
+                result[c.name] = value
+
+            return result
+
         return {c.name: getattr(self, c.name) for c in self.__table__.columns}
 
     def __repr__(self) -> str:
-        return f"{self.__class__.__name__}({self.to_dict()})"
+        return f"{self.__class__.__name__}({self.to_dict()})"  # pragma: no cover
