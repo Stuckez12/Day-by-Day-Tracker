@@ -39,8 +39,8 @@ hard-restart:
 linters:
 	@uv run black --check backend
 	@uv run mypy backend
-	@uv run flake8 --select=E225,E231,E302,E305,F403,F404,F405,F821,F822,F823,F824 --exclude "*/__init__.py"
-	@uv run flake8 --select=F403,F405 --filename="*/__init__.py" --exclude ".venv"
+	@uv run flake8 backend --select=E225,E231,E302,E305,F403,F404,F405,F821,F822,F823,F824 --exclude "*/__init__.py"
+	@uv run flake8 backend --select=F403,F405 --filename="*/__init__.py" --exclude ".venv"
 
 
 ################################################################################
