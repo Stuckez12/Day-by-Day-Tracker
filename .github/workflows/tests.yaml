@@ -19,9 +19,9 @@ jobs:
           python-version: "3.13"
 
       - name: Install Black
-        run: pip install black
+        run: pip install black==25.12.0
 
-      - name: Run Black (check only)
+      - name: Run Black
         run: black --check backend
 
   linting:
