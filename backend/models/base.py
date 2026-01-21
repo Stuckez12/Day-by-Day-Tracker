@@ -1,6 +1,6 @@
 import uuid
 
-from datetime import datetime, timezone
+from datetime import date, datetime, timezone
 from sqlalchemy import DateTime
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column
@@ -36,6 +36,9 @@ class BaseModel(Base):
 
                 if isinstance(value, datetime):
                     value = value.strftime("%Y-%m-%dT%H:%M:%S.%f")
+
+                if isinstance(value, date):
+                    value = value.strftime("%Y-%m-%d")
 
                 if isinstance(value, uuid.UUID):
                     value = str(value)

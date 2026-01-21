@@ -32,14 +32,7 @@ def get_personnel_self(
     service: PersonalServiceDep,
     personnel_id: uuid.UUID = Cookie("personnel_id", include_in_schema=False),
 ):
-    personnel = service.get_by_id(personnel_id)
-
-    if personnel is None:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND, detail="Personnel does not exist"
-        )
-
-    return personnel
+    return service.personnel_exists(personnel_id)
 
 
 @api.get("/all", status_code=status.HTTP_200_OK)
@@ -61,13 +54,7 @@ def update_personnel(
     service: PersonalServiceDep,
     personnel_id: uuid.UUID = Cookie("personnel_id", include_in_schema=False),
 ):
-    personnel = service.get_by_id(personnel_id)
-
-    if personnel is None:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail=f"Personnel {personnel_id} not found",
-        )
+    personnel = service.personnel_exists(personnel_id)
 
     return service.update_personnel(personnel, request)
 
@@ -77,12 +64,7 @@ def delete_personnel(
     service: PersonalServiceDep,
     id: uuid.UUID = Query(title="Personal ID"),
 ):
-    personnel = service.get_by_id(id)
-
-    if personnel is None:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND, detail=f"Personnel {id} not found"
-        )
+    personnel = service.personnel_exists(id)
 
     return service.delete_personnel(personnel)
 
@@ -93,13 +75,9 @@ def selected_personnel(
     response: Response,
     service: PersonalServiceDep,
 ):
-    personnel = service.get_by_id(request.id)
+    personnel = service.personnel_exists(request.id)
 
-    if personnel is None:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail=f"Personnel {request.id} not found",
-        )
+    print(personnel)
 
     response.set_cookie("personnel_id", str(personnel.id))
     response.status_code = status.HTTP_204_NO_CONTENT

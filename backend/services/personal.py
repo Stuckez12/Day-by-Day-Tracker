@@ -1,6 +1,6 @@
 import uuid
 
-from sqlalchemy.exc import NoResultFound
+from fastapi import HTTPException, status
 from sqlalchemy.orm import Session
 
 from backend.models import PersonalModel
@@ -37,3 +37,14 @@ class PersonalService(BaseDBService[PersonalModel]):
     def delete_personnel(self, personnel: PersonalModel) -> None:
         self.delete(personnel)
         self.db.commit()
+
+    def personnel_exists(self, personnel_id: uuid.UUID) -> PersonalModel:
+        personnel = self.get_by_id(personnel_id)
+
+        if personnel is None:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail=f"Personnel {personnel_id} not found",
+            )
+
+        return personnel

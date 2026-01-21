@@ -23,6 +23,14 @@ class RankingService(BaseDBService[RankerModel]):
             .first()
         )
 
+    def get_all_personnel_rankings(self, personnel_id: uuid.UUID):
+        return (
+            self.db.query(RankerModel)
+            .filter(RankerModel.personal_id == personnel_id)
+            .order_by(RankerModel.day.desc())
+            .all()
+        )
+
     def insert_new_date(self, personnel_id: uuid.UUID, date: date) -> RankerModel:
         row = RankerModel(
             personal_id=personnel_id,
