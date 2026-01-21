@@ -3,7 +3,7 @@ import uuid
 from datetime import date
 from sqlalchemy import Date, ForeignKey, Integer
 from sqlalchemy.orm import Mapped, mapped_column, relationship
-from typing import TYPE_CHECKING
+from typing import Optional, TYPE_CHECKING
 
 from backend.models.base import BaseModel
 
@@ -18,7 +18,7 @@ class RankerModel(BaseModel):
         ForeignKey("personal.id"), nullable=False
     )
     day: Mapped[date] = mapped_column(Date, nullable=False)
-    ranking: Mapped[int] = mapped_column(Integer, default=None, nullable=True)
+    ranking: Mapped[Optional[int]] = mapped_column(Integer, default=None, nullable=True)
 
     personal: Mapped["PersonalModel"] = relationship(back_populates="ranker")
 

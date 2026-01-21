@@ -1,7 +1,7 @@
 import os
 
 from pydantic_settings import BaseSettings, SettingsConfigDict
-from typing import Literal
+from typing import Literal, cast
 
 
 class AppConfig(BaseSettings):
@@ -59,31 +59,32 @@ class TestAppConfig(AppConfig):
     DATABASE_DB_NAME: str = "testing"
 
     # PGADMIN
-    PGADMIN_EMAIL: None = None
-    PGADMIN_PASSWORD: None = None
+    PGADMIN_EMAIL: None = None  # type: ignore[assignment]
+    PGADMIN_PASSWORD: None = None  # type: ignore[assignment]
 
     # API
-    API_HOST: None = None
-    API_PORT: None = None
+    API_HOST: None = None  # type: ignore[assignment]
+    API_PORT: None = None  # type: ignore[assignment]
 
     # FRONTEND
-    FRONTEND_HOST: None = None
-    FRONTEND_HOST_NAME: None = None
-    FRONTEND_PORT: None = None
+    FRONTEND_HOST: None = None  # type: ignore[assignment]
+    FRONTEND_HOST_NAME: None = None  # type: ignore[assignment]
+    FRONTEND_PORT: None = None  # type: ignore[assignment]
 
     # API KEYS
-    TAILSCALE_API_KEY: None = None
+    TAILSCALE_API_KEY: None = None  # type: ignore[assignment]
 
 
 APP_SETTINGS = AppConfig | TestAppConfig
+ENVS = Literal["dev", "prod", "test"]
 
 
 def get_app_config() -> APP_SETTINGS:
-    environment: Literal["dev", "prod", "test"] = os.getenv("APP_ENV", "dev")
+    environment: ENVS = cast(ENVS, os.getenv("APP_ENV", "dev"))
 
     match environment:
         case "dev":
-            return AppConfig()
+            return AppConfig()  # type: ignore[call-arg]
 
         case "prod":
             raise NotImplementedError(

@@ -1,0 +1,93 @@
+name: Backend API CI
+
+on:
+  workflow_dispatch:
+  push:
+  pull_request:
+  release:
+    types: [published]
+
+jobs:
+  format:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+
+      - name: Install Black
+        run: pip install black
+
+      - name: Run Black (check only)
+        run: black --check .
+
+  linting:
+    needs: format
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v3
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: "3.13"
+
+      - name: Sync Packages
+        run: |
+          pip install uv
+          uv sync
+
+      - name: Run mypy
+        run: |
+          uv run mypy .
+
+      - name: Run flake8
+        run: |
+          uv run flake8 --select=E225,E231,E302,E305,F403,F404,F405,F821,F822,F823,F824 --exclude ".venv,*/__init__.py"
+          uv run flake8 --select=F403,F405 --filename="*/__init__.py" --exclude ".venv"
+
+  tests:
+    needs: linting
+    runs-on: ubuntu-latest
+
+    services:
+      postgres-testing:
+        image: postgres:17
+        env:
+          POSTGRES_USER: testing
+          POSTGRES_PASSWORD: testing
+        ports:
+          - 5435:5432
+        options: >-
+          --health-cmd="pg_isready -U myuser"
+          --health-interval=5s
+          --health-timeout=5s
+          --health-retries=10
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v3
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: "3.13"
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v3
+        with:
+          version: 0.9.11
+
+      - name: Sync Packages
+        run: |
+          uv sync
+
+      - name: Tests Execution
+        run: uv run pytest -vv
+        env:
+          APP_ENV: test

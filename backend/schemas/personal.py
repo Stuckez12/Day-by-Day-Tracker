@@ -1,7 +1,5 @@
 import uuid
 
-import logging
-
 from pydantic import BaseModel, ValidationInfo, field_validator, Field
 
 
@@ -22,8 +20,8 @@ class CreatePersonnelRequest(PersonnelSchema): ...
 
 
 class UpdatePersonnelRequest(PersonnelSchema):
-    first_name: str | None = None
-    last_name: str | None = None
+    first_name: str | None = None  # type: ignore[assignment]
+    last_name: str | None = None  # type: ignore[assignment]
 
 
 class SelectPersonnelRequest(BaseModel):

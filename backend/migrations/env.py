@@ -8,7 +8,7 @@ from backend.settings import app_config
 
 
 config = context.config
-fileConfig(config.config_file_name)
+fileConfig(config.config_file_name)  # type: ignore[arg-type]
 config.set_main_option("sqlalchemy.url", app_config.db_url)
 
 target_metadata = Base.metadata

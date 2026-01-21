@@ -44,7 +44,7 @@ class RankingService(BaseDBService[RankerModel]):
 
         return row
 
-    def fetch_date(self, personnel_id: str, date: date) -> RankerModel:
+    def fetch_date(self, personnel_id: uuid.UUID, date: date) -> RankerModel:
         row = self.get_by_date(personnel_id, date)
 
         if row is None:
