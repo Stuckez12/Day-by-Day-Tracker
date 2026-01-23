@@ -7,6 +7,8 @@ import type {
 
 import APICall from "scripts/api.ts";
 
+import "styles/common/form-inputs.scss";
+
 function CreatePersonnel() {
   const [form, setForm] = useState<CreatePersonnelProps>({
     first_name: "",
@@ -32,7 +34,7 @@ function CreatePersonnel() {
         {
           first_name: form.first_name,
           last_name: form.last_name,
-        }
+        },
       );
 
       if (success) {
@@ -48,28 +50,32 @@ function CreatePersonnel() {
 
   return (
     <form>
-      <label>
-        Enter your name:
+      <div className="text-input">
         <input
           type="text"
           name="first_name"
           value={form.first_name}
           onChange={handleChange}
+          placeholder=""
+          autoComplete="new-field"
         />
-      </label>
-      <label>
-        Enter your last name:
+        <label>First Name</label>
+      </div>
+
+      <div className="text-input">
         <input
           type="text"
           name="last_name"
           value={form.last_name}
           onChange={handleChange}
+          placeholder=""
+          autoComplete="new-field"
         />
-      </label>
-      <p>
-        Current data: {form.first_name} | {form.last_name}
-      </p>
-      <button onClick={onSubmit}>Submit</button>
+        <label>Last Name</label>
+      </div>
+      <button className="submit-button" onClick={onSubmit}>
+        Submit
+      </button>
     </form>
   );
 }
