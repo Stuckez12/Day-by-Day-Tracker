@@ -1,0 +1,74 @@
+@use "styles/colour_pallets";
+
+.form-title {
+  margin: 16px 0px;
+}
+
+.text-input {
+  width: 100%;
+
+  position: relative;
+
+  margin: 16px 0px;
+
+  input {
+    border-radius: 5px;
+    border-width: 2px;
+
+    box-shadow: none;
+
+    padding: 6px 12px;
+
+    width: 100%;
+  }
+
+  label {
+    position: absolute;
+    top: 0.5rem;
+    left: 0.5rem;
+    padding: 0 0.5rem;
+
+    font-size: 1rem;
+
+    user-select: none;
+
+    background-color: white;
+    border-radius: 8px;
+
+    outline: 0px;
+
+    transition: 0.15s;
+    transition-timing-function: ease-in-out;
+  }
+}
+
+.text-input input:not(:placeholder-shown) + label,
+.text-input:focus-within label {
+  top: -0.7rem;
+  left: 1.5rem;
+
+  font-size: 0.8rem;
+}
+
+.submit-button {
+  all: unset;
+  border-radius: 8px;
+
+  width: 100%;
+
+  padding: 4px 0px;
+  margin: 16px 0px;
+
+  color: var(--inverted-text-color);
+  background-color: var(--submit-button);
+
+  text-align: center;
+}
+
+.submit-button:hover {
+  background-color: var(--submit-button-hover);
+}
+
+.submit-button:active {
+  background-color: var(--submit-button-clicked);
+}

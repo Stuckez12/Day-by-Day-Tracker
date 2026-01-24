@@ -6,18 +6,15 @@ import type { IDProps } from "interfaces/common";
 
 import APICall from "scripts/api.ts";
 
-function SelectPersonnelButton({ id }: IDProps) {
+function DeletePersonnelButton({ id }: IDProps) {
   const { setRefreshList } = useContext(ContextRefreshList);
 
-  const selectPersonnel = async (e: React.MouseEvent<HTMLButtonElement>) => {
+  const deletePersonnel = async (e: React.MouseEvent<HTMLButtonElement>) => {
     const clicked = e.currentTarget.dataset.id;
     if (!clicked) return;
 
-    const [success, _, err_message] = await APICall.put<null>(
-      "/personal/select",
-      {
-        id: clicked,
-      },
+    const [success, _, err_message] = await APICall.delete<null>(
+      "/personal?id=" + id,
     );
 
     if (success) {
@@ -26,10 +23,10 @@ function SelectPersonnelButton({ id }: IDProps) {
   };
 
   return (
-    <button data-id={id} onClick={selectPersonnel}>
-      Select
+    <button data-id={id} onClick={deletePersonnel}>
+      Delete
     </button>
   );
 }
 
-export default SelectPersonnelButton;
+export default DeletePersonnelButton;

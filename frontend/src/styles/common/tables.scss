@@ -1,0 +1,38 @@
+@use "styles/colour_pallets";
+
+.table-base {
+  border-collapse: collapse;
+
+  width: 100%;
+
+  padding: 32px 0px 0px 0px;
+
+  table {
+    width: 100%;
+  }
+}
+.table-row > th,
+.table-row > td {
+  border: 1px solid #ddd;
+  padding: 8px;
+}
+
+.table-header-row {
+  padding-top: 12px;
+  padding-bottom: 12px;
+  text-align: left;
+  background-color: var(--table-row-color-header);
+  color: var(--inverted-text-color);
+}
+
+.table-data-row:nth-child(odd) {
+  background-color: var(--table-row-color-odd);
+}
+
+.table-data-row:nth-child(even) {
+  background-color: var(--table-row-color-even);
+}
+
+.table-data-row:hover {
+  background-color: var(--table-row-color-highlight);
+}

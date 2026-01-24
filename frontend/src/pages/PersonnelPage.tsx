@@ -1,12 +1,10 @@
 import PageWrapper from "components/common/PageWrapper";
-import PersonnelList from "components/personnel/PersonnelList";
-import CreatePersonnel from "components/personnel/CreatePersonnel";
+import ContextPersonnelList from "components/personnel/ContextPersonnelList";
 
 function PersonnelPage() {
   return (
     <PageWrapper>
-      <PersonnelList />
-      <CreatePersonnel />
+      <ContextPersonnelList />
     </PageWrapper>
   );
 }

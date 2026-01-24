@@ -1,12 +1,26 @@
 $palettes: (
   base: (
+    // Base colours
     base: #ffffff,
     primary: #00171f,
     secondary: #003459,
     action: #007ea7,
     accent: #00a8e8,
+
+    // Text
     default-text-color: #000000,
     inverted-text-color: #ffffff,
+
+    // Tables
+    table-row-color-header: #007ea7,
+    table-row-color-odd: #e9e9e9,
+    table-row-color-even: #f3f3f3,
+    table-row-color-highlight: #d4d4d4,
+
+    // Form Inputs
+    submit-button: #007ea7,
+    submit-button-hover: #00a1d6,
+    submit-button-clicked: #00a8e8,
   ),
 );
 

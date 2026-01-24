@@ -36,7 +36,7 @@ class APICalls {
   }
 
   public async get<TYPE>(
-    url: string
+    url: string,
   ): Promise<[boolean, TYPE | null, string | null]> {
     let response;
 
@@ -57,7 +57,7 @@ class APICalls {
 
   public async post<TYPE>(
     url: string,
-    payload: { [key: string]: any }
+    payload: { [key: string]: any },
   ): Promise<[boolean, TYPE | null, string | null]> {
     let response;
 
@@ -87,7 +87,7 @@ class APICalls {
 
   public async put<TYPE>(
     url: string,
-    payload: { [key: string]: any }
+    payload: { [key: string]: any },
   ): Promise<[boolean, TYPE | null, string | null]> {
     let response;
 
@@ -99,6 +99,34 @@ class APICalls {
           "Content-Type": "application/json",
         },
         body: JSON.stringify(payload),
+        credentials: "include",
+      });
+    } catch (error) {
+      return [false, null, "An unknown error occured fetching data.\n" + error];
+    }
+
+    if (!response.ok) {
+      const error_message = this.handle_server_errors(response);
+      return [true, null, error_message];
+    }
+
+    if (response.status != 204) {
+      return [true, (await response.json()) as TYPE, null];
+    }
+
+    // Return no response when specified
+    return [true, null, null];
+  }
+
+  public async delete<TYPE>(
+    url: string,
+  ): Promise<[boolean, TYPE | null, string | null]> {
+    let response;
+
+    try {
+      console.log("URL [DELETE]: " + this.base_url + url);
+      response = await fetch(this.base_url + url, {
+        method: "DELETE",
         credentials: "include",
       });
     } catch (error) {

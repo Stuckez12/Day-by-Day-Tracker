@@ -1,20 +1,18 @@
-import React, { useContext, useState } from "react";
+import { useContext, useState } from "react";
 
-import { ContextRefreshList } from "contexts/ContextRefreshList.tsx";
+import { ContextRefreshList } from "contexts/ContextRefreshList";
 
-import type {
-  CreatePersonnelProps,
-  PersonnelRowProps,
-} from "interfaces/personnel";
+import type { RankingProps, RankingRowProps } from "interfaces/ranking";
 
 import APICall from "scripts/api.ts";
 
 import "styles/common/form-inputs.scss";
+import "styles/common/tables.scss";
 
-function CreatePersonnel() {
-  const [form, setForm] = useState<CreatePersonnelProps>({
-    first_name: "",
-    last_name: "",
+function UpdateRating() {
+  const [form, setForm] = useState<RankingRowProps>({
+    day: "",
+    ranking: 0,
   });
 
   const { setRefreshList } = useContext(ContextRefreshList);
@@ -32,12 +30,12 @@ function CreatePersonnel() {
 
     console.log("Form data:", form);
 
-    async function create_personnel(form: CreatePersonnelProps) {
-      const [success, _, message] = await APICall.post<PersonnelRowProps>(
-        "/personal",
+    async function update_ranking(form: RankingRowProps) {
+      const [success, _, message] = await APICall.put<RankingProps>(
+        "/ranking/rank",
         {
-          first_name: form.first_name,
-          last_name: form.last_name,
+          day: form.day,
+          ranking: Number(form.ranking),
         },
       );
 
@@ -50,34 +48,34 @@ function CreatePersonnel() {
       }
     }
 
-    create_personnel(form);
+    update_ranking(form);
   }
 
   return (
     <form>
-      <h1 className="form-title">Create New Personnel</h1>
+      <h1 className="form-title">Rank Specific Day</h1>
       <div className="text-input">
         <input
           type="text"
-          name="first_name"
-          value={form.first_name}
+          name="day"
+          value={form.day}
           onChange={handleChange}
           placeholder=""
           autoComplete="new-field"
         />
-        <label>First Name</label>
+        <label>Day</label>
       </div>
 
       <div className="text-input">
         <input
           type="text"
-          name="last_name"
-          value={form.last_name}
+          name="ranking"
+          value={form.ranking!}
           onChange={handleChange}
           placeholder=""
           autoComplete="new-field"
         />
-        <label>Last Name</label>
+        <label>Ranking</label>
       </div>
       <button className="submit-button" onClick={onSubmit}>
         Submit
@@ -86,4 +84,4 @@ function CreatePersonnel() {
   );
 }
 
-export default CreatePersonnel;
+export default UpdateRating;
