@@ -1,6 +1,7 @@
 import type { PersonnelRowProps } from "interfaces/personnel";
 
 import SelectPersonnelButton from "components/personnel/SelectPersonnelButton";
+import DeletePersonnelButton from "components/personnel/DeletePersonnelButton";
 
 import "styles/common/tables.scss";
 
@@ -22,6 +23,9 @@ function PersonnelRow({
       <td>{dis ? <span>X</span> : null}</td>
       <td>
         <SelectPersonnelButton id={id} />
+      </td>
+      <td>
+        <DeletePersonnelButton id={id} />
       </td>
     </tr>
   );
