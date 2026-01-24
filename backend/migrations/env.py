@@ -1,15 +1,12 @@
+import logging
+
 from alembic import context
-from logging.config import fileConfig
-from sqlalchemy import engine_from_config
+from sqlalchemy import create_engine
 from sqlalchemy import pool
 
 from backend.models.base import Base
 from backend.settings import app_config
 
-
-config = context.config
-fileConfig(config.config_file_name)  # type: ignore[arg-type]
-config.set_main_option("sqlalchemy.url", app_config.db_url)
 
 target_metadata = Base.metadata
 
@@ -26,9 +23,8 @@ def run_migrations_offline() -> None:
     script output.
 
     """
-    url = config.get_main_option("sqlalchemy.url")
     context.configure(
-        url=url,
+        url=app_config.db_url,
         target_metadata=target_metadata,
         literal_binds=True,
         dialect_opts={"paramstyle": "named"},
@@ -45,9 +41,9 @@ def run_migrations_online() -> None:
     and associate a connection with the context.
 
     """
-    connectable = engine_from_config(
-        config.get_section(config.config_ini_section, {}),
-        prefix="sqlalchemy.",
+    print(f"DATABASE URL: {app_config.db_url}")
+    connectable = create_engine(
+        app_config.db_url,
         poolclass=pool.NullPool,
     )
 
