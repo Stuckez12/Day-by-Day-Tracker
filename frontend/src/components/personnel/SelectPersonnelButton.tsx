@@ -1,13 +1,13 @@
 import { useContext } from "react";
 
-import { ContextRefreshPersonnelList } from "contexts/ContextRefreshPersonnelList.tsx";
+import { ContextRefreshList } from "contexts/ContextRefreshList.tsx";
 
 import type { IDProps } from "interfaces/common";
 
 import APICall from "scripts/api.ts";
 
 function SelectPersonnelButton({ id }: IDProps) {
-  const { setRefreshList } = useContext(ContextRefreshPersonnelList);
+  const { setRefreshList } = useContext(ContextRefreshList);
 
   const selectPersonnel = async (e: React.MouseEvent<HTMLButtonElement>) => {
     const clicked = e.currentTarget.dataset.id;

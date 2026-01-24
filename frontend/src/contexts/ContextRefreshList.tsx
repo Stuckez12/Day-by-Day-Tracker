@@ -6,7 +6,7 @@ interface RefreshContextType {
   setRefreshList: Dispatch<SetStateAction<boolean>>;
 }
 
-export const ContextRefreshPersonnelList = createContext<RefreshContextType>({
+export const ContextRefreshList = createContext<RefreshContextType>({
   refreshList: true,
   setRefreshList: () => {},
 });

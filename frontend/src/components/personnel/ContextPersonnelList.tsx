@@ -3,18 +3,16 @@ import { useState } from "react";
 import CreatePersonnel from "components/personnel/CreatePersonnel";
 import PersonnelList from "components/personnel/PersonnelList";
 
-import { ContextRefreshPersonnelList } from "contexts/ContextRefreshPersonnelList";
+import { ContextRefreshList } from "contexts/ContextRefreshList";
 
 function ContextPersonnelList() {
   const [refreshList, setRefreshList] = useState(true);
 
   return (
-    <ContextRefreshPersonnelList.Provider
-      value={{ refreshList, setRefreshList }}
-    >
+    <ContextRefreshList.Provider value={{ refreshList, setRefreshList }}>
       <CreatePersonnel />
       <PersonnelList />
-    </ContextRefreshPersonnelList.Provider>
+    </ContextRefreshList.Provider>
   );
 }
 

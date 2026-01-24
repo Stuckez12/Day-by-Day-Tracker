@@ -1,6 +1,6 @@
 import React, { useContext, useState } from "react";
 
-import { ContextRefreshPersonnelList } from "contexts/ContextRefreshPersonnelList.tsx";
+import { ContextRefreshList } from "contexts/ContextRefreshList.tsx";
 
 import type {
   CreatePersonnelProps,
@@ -17,7 +17,7 @@ function CreatePersonnel() {
     last_name: "",
   });
 
-  const { setRefreshList } = useContext(ContextRefreshPersonnelList);
+  const { setRefreshList } = useContext(ContextRefreshList);
 
   function handleChange(e: React.ChangeEvent<HTMLInputElement>) {
     const { name, value } = e.target;

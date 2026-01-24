@@ -1,15 +1,15 @@
 import { useContext } from "react";
 
-import { ContextRefreshPersonnelList } from "contexts/ContextRefreshPersonnelList.tsx";
+import { ContextRefreshList } from "contexts/ContextRefreshList.tsx";
 
 import type { IDProps } from "interfaces/common";
 
 import APICall from "scripts/api.ts";
 
 function DeletePersonnelButton({ id }: IDProps) {
-  const { setRefreshList } = useContext(ContextRefreshPersonnelList);
+  const { setRefreshList } = useContext(ContextRefreshList);
 
-  const selectPersonnel = async (e: React.MouseEvent<HTMLButtonElement>) => {
+  const deletePersonnel = async (e: React.MouseEvent<HTMLButtonElement>) => {
     const clicked = e.currentTarget.dataset.id;
     if (!clicked) return;
 
@@ -23,7 +23,7 @@ function DeletePersonnelButton({ id }: IDProps) {
   };
 
   return (
-    <button data-id={id} onClick={selectPersonnel}>
+    <button data-id={id} onClick={deletePersonnel}>
       Delete
     </button>
   );

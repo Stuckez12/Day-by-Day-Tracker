@@ -2,7 +2,7 @@ import { useContext, useEffect, useState } from "react";
 
 import PersonnelRow from "components/personnel/PersonnelRow";
 
-import { ContextRefreshPersonnelList } from "contexts/ContextRefreshPersonnelList.tsx";
+import { ContextRefreshList } from "contexts/ContextRefreshList.tsx";
 
 import type { IDProps } from "interfaces/common";
 import type { PersonnelRowProps } from "interfaces/personnel.ts";
@@ -15,9 +15,7 @@ function PersonnelList() {
   const [personnels, setPersonnels] = useState<PersonnelRowProps[]>([]);
   const [selected_personnel, setSelectedPersonnels] = useState<IDProps>();
 
-  const { refreshList, setRefreshList } = useContext(
-    ContextRefreshPersonnelList,
-  );
+  const { refreshList, setRefreshList } = useContext(ContextRefreshList);
 
   useEffect(() => {
     if (!refreshList) {
