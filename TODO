@@ -1,0 +1,38 @@
+# v0.0.0
+
+- BE: Fix deletion of personnel
+- FE: Confirmation popup when deleting personnel
+- FE: Mobile friendly design
+- BE: Auto update database if needed on startup
+
+# v0.1.0
+
+- FE+BE: Push notifications for both desktop/iOS
+  - Per device data stored to direct who gets what notification
+  - Directly taken to webpage where notification is referencing
+  - Email as well?
+- BE: Ranking get range/paginate
+- FE: Pagination tables
+- BE: Daily/Weekly/Monthly backups
+
+# v0.2.0
+
+- BE: Schedules/events (like a calendar)
+- FE: Personnel sub page for schedules
+- BE: Adaptive push notification timings per schedule
+
+# v0.3.0
+
+- BE: Tasks DWM types
+- FE: Task Cards
+- FE: Ranking graph landing page
+- BE: Scoring system linked to tasks
+
+# v0.4.0
+
+- BE: Monthly / Weekly goals (states)
+- FE: Display Goals + multi states
+
+# v0.5.0
+
+- BE: Monthly summary of week/month by GenAI
