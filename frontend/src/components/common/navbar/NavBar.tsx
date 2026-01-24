@@ -6,6 +6,7 @@ import Message from "components/Message";
 
 import LandingPage from "pages/LandingPage";
 import PersonnelPage from "pages/PersonnelPage";
+import RankingPage from "pages/RankingPage";
 
 import "styles/navbar.scss";
 
@@ -28,7 +29,7 @@ function NavBar() {
 
       <Routes>
         <Route path="/" element={<LandingPage />} />
-        <Route path="/rates" element={<Message text="Rates" />} />
+        <Route path="/rates" element={<RankingPage />} />
         <Route path="/tasks" element={<Message text="Tasks" />} />
         <Route path="/stats" element={<Message text="Stats" />} />
         <Route path="/personnel" element={<PersonnelPage />} />

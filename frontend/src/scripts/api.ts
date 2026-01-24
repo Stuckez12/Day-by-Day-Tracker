@@ -127,9 +127,6 @@ class APICalls {
       console.log("URL [DELETE]: " + this.base_url + url);
       response = await fetch(this.base_url + url, {
         method: "DELETE",
-        headers: {
-          "Content-Type": "application/json",
-        },
         credentials: "include",
       });
     } catch (error) {
