@@ -1,4 +1,6 @@
-import React, { useState } from "react";
+import React, { useContext, useState } from "react";
+
+import { ContextRefreshPersonnelList } from "contexts/ContextRefreshPersonnelList.tsx";
 
 import type {
   CreatePersonnelProps,
@@ -14,6 +16,8 @@ function CreatePersonnel() {
     first_name: "",
     last_name: "",
   });
+
+  const { setRefreshList } = useContext(ContextRefreshPersonnelList);
 
   function handleChange(e: React.ChangeEvent<HTMLInputElement>) {
     const { name, value } = e.target;
@@ -39,6 +43,7 @@ function CreatePersonnel() {
 
       if (success) {
         console.log("Success. Now refresh");
+        setRefreshList(true);
       } else {
         console.log("Error when getting data");
         console.log(message);
@@ -50,6 +55,7 @@ function CreatePersonnel() {
 
   return (
     <form>
+      <h1 className="form-title">Create New Personnel</h1>
       <div className="text-input">
         <input
           type="text"

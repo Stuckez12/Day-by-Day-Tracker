@@ -1,6 +1,8 @@
-import { useEffect, useState } from "react";
+import { useContext, useEffect, useState } from "react";
 
 import PersonnelRow from "components/personnel/PersonnelRow";
+
+import { ContextRefreshPersonnelList } from "contexts/ContextRefreshPersonnelList.tsx";
 
 import type { IDProps } from "interfaces/common";
 import type { PersonnelRowProps } from "interfaces/personnel.ts";
@@ -13,7 +15,15 @@ function PersonnelList() {
   const [personnels, setPersonnels] = useState<PersonnelRowProps[]>([]);
   const [selected_personnel, setSelectedPersonnels] = useState<IDProps>();
 
+  const { refreshList, setRefreshList } = useContext(
+    ContextRefreshPersonnelList,
+  );
+
   useEffect(() => {
+    if (!refreshList) {
+      return;
+    }
+
     const fetchPersonnel = async () => {
       const [success, data, _] =
         await APICall.get<PersonnelRowProps[]>("/personal/all");
@@ -34,7 +44,8 @@ function PersonnelList() {
 
     fetchPersonnel();
     fetchSelectedPersonnel();
-  }, []);
+    setRefreshList(false);
+  }, [refreshList]);
 
   const selected = selected_personnel ? selected_personnel.id : "";
 

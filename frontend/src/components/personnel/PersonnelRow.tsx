@@ -12,7 +12,6 @@ function PersonnelRow({
   is_selected,
 }: PersonnelRowProps) {
   const full_name = first_name + " " + last_name;
-
   const dis = is_selected == id;
 
   return (
