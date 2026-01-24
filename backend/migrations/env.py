@@ -41,7 +41,6 @@ def run_migrations_online() -> None:
     and associate a connection with the context.
 
     """
-    print(f"DATABASE URL: {app_config.db_url}")
     connectable = create_engine(
         app_config.db_url,
         poolclass=pool.NullPool,
