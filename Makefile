@@ -49,18 +49,18 @@ linters:
 
 
 upgrade-db:
-	@docker-compose -f docker-compose.dev.yaml exec api alembic -c /api/alembic.ini upgrade head
+	@docker compose -f docker-compose.dev.yaml exec api alembic -c /api/alembic.ini upgrade head
 
 VERSION ?= -1
 downgrade-db:
 	@echo "Downgrading to/by $(VERSION) version"
-	@docker-compose -f docker-compose.dev.yaml exec api alembic -c /api/alembic.ini downgrade $(VERSION)
+	@docker compose -f docker-compose.dev.yaml exec api alembic -c /api/alembic.ini downgrade $(VERSION)
 
 auto-revision-db:
 ifndef MESSAGE
 	$(error 'MESSAGE is not set. Usage: make auto-revision-db MESSAGE="message"')
 endif
-	@docker-compose -f docker-compose.dev.yaml exec api alembic -c /api/alembic.ini revision --autogenerate -m "$(MESSAGE)"
+	@docker compose -f docker-compose.dev.yaml exec api alembic -c /api/alembic.ini revision --autogenerate -m "$(MESSAGE)"
 
 
 ################################################################################
