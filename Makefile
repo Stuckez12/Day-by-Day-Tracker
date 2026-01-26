@@ -4,22 +4,22 @@
 
 
 start:
-	@docker compose -f docker-compose.dev.yaml up -d
+	@docker compose -f docker-compose.dev-ts.yaml up -d
 
 stop:
-	@docker compose -f docker-compose.dev.yaml stop
+	@docker compose -f docker-compose.dev-ts.yaml stop
 
 build:
-	@docker compose -f docker-compose.dev.yaml build
+	@docker compose -f docker-compose.dev-ts.yaml build
 
 build-no-cache:
-	@docker compose -f docker-compose.dev.yaml build --no-cache
+	@docker compose -f docker-compose.dev-ts.yaml build --no-cache
 
 remove:
-	@docker compose -f docker-compose.dev.yaml down
+	@docker compose -f docker-compose.dev-ts.yaml down
 
 logs:
-	@docker compose -f docker-compose.dev.yaml logs -f
+	@docker compose -f docker-compose.dev-ts.yaml logs -f
 
 restart:
 	$(MAKE) stop
