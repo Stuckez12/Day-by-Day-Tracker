@@ -1,7 +1,6 @@
 const HOST = import.meta.env.VITE_BACKEND_HOST;
-const PORT = import.meta.env.VITE_BACKEND_PORT;
 
-const BASE_URL = `http://${HOST}:${PORT}/api/v1`;
+const BASE_URL = `http://${HOST}/api/v1`;
 
 class APICalls {
   base_url: string;
