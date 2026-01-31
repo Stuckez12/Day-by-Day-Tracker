@@ -11,6 +11,7 @@ def create_app():
         title="Day by Day Tracker",
         description="A web application that records user inputs regarding their day rankings, activities and summaries.",
         version=APP_VERSION,
+        root_path="/api",
     )
 
     origins = [
@@ -33,6 +34,6 @@ def create_app():
         expose_headers=["*"],
     )
 
-    app.include_router(api, prefix="/api/v1")
+    app.include_router(api, prefix="/v1")
 
     return app
