@@ -13,6 +13,7 @@ services:
         POSTGRES_PORT: ${DATABASE_PORT}
     env_file: .env
     attach: false
+    restart: unless-stopped
 
   pgadmin:
     image: dpage/pgadmin4:latest
@@ -26,6 +27,7 @@ services:
     networks:
       - app-network
     attach: false
+    restart: unless-stopped
 
 
   nginx:
@@ -40,6 +42,7 @@ services:
       - api
     networks:
       - app-network
+    restart: unless-stopped
 
   api:
     image: stukez12/day-by-day-tracker-api:${APP_VERSION}
@@ -51,6 +54,7 @@ services:
       - ./backend:/api/backend
     env_file:
       - .env.prod
+    restart: unless-stopped
     command: uvicorn backend.main:app --host ${API_HOST} --port ${API_PORT}
 
   frontend:
@@ -67,6 +71,7 @@ services:
       VITE_BACKEND_HOST: ${API_HOST_NAME}
       VITE_BACKEND_PORT: ${API_PORT}
     env_file: .env.prod
+    restart: unless-stopped
 
 
 networks:
