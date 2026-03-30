@@ -1,12 +1,11 @@
 name: Deployment
 
 on:
-  # workflow_dispatch:
-  #   inputs:
-  #     version:
-  #       description: "App version / tag"
-  #       required: true
-
+  workflow_dispatch:
+    inputs:
+      version:
+        description: "App version / tag"
+        required: true
   release:
     types: [published]
 
