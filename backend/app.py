@@ -14,22 +14,13 @@ def create_app():
         root_path="/api",
     )
 
-    origins = [
-        app_config.frontend_url,
-        app_config.frontend_url + "/",
-    ]
+    origins = ["*"]
 
     app.add_middleware(
         CORSMiddleware,
         allow_origins=origins,
         allow_credentials=True,
-        allow_methods=[
-            "GET",
-            "POST",
-            "PUT",
-            "DELETE",
-            "OPTIONS",
-        ],  # Explicitly include OPTIONS
+        allow_methods=["*"],
         allow_headers=["*"],
         expose_headers=["*"],
     )
