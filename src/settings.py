@@ -24,6 +24,12 @@ class AppConfig(BaseSettings):
 
 class TestAppConfig(AppConfig):
     # DATABASE
+    DATABASE_USERNAME: str | None = None  # type: ignore[assignment]
+    DATABASE_PASSWORD: str | None = None  # type: ignore[assignment]
+    DATABASE_HOST: str | None = None  # type: ignore[assignment]
+    DATABASE_PORT: int | None = None  # type: ignore[assignment]
+    DATABASE_DB_NAME: str | None = None  # type: ignore[assignment]
+
     TEST_DATABASE_USERNAME: str = "testing"
     TEST_DATABASE_PASSWORD: str = "testing"
     TEST_DATABASE_HOST: str = "localhost"
