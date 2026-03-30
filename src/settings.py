@@ -24,11 +24,15 @@ class AppConfig(BaseSettings):
 
 class TestAppConfig(AppConfig):
     # DATABASE
-    DATABASE_USERNAME: str = "testing"
-    DATABASE_PASSWORD: str = "testing"
-    DATABASE_HOST: str = "localhost"
-    DATABASE_PORT: int = 5435
-    DATABASE_DB_NAME: str = "testing"
+    TEST_DATABASE_USERNAME: str = "testing"
+    TEST_DATABASE_PASSWORD: str = "testing"
+    TEST_DATABASE_HOST: str = "localhost"
+    TEST_DATABASE_PORT: int = 5435
+    TEST_DATABASE_DB_NAME: str = "testing"
+
+    @property
+    def db_url(self):
+        return f"postgresql+psycopg2://{self.TEST_DATABASE_USERNAME}:{self.TEST_DATABASE_PASSWORD}@{self.TEST_DATABASE_HOST}:{self.TEST_DATABASE_PORT}/{self.TEST_DATABASE_DB_NAME}"
 
 
 APP_SETTINGS = AppConfig | TestAppConfig
