@@ -43,16 +43,16 @@ services:
 
   api:
     build:
-      context: ./backend
+      context: ./src
       dockerfile: Dockerfile
     expose:
       - "8000"
     networks:
       - app-network
     volumes:
-      - ./backend:/api/backend
+      - ./src:/api/src
     env_file: .env
-    command: uvicorn backend.main:app --host 0.0.0.0 --port 8000
+    command: uvicorn src.main:app --host 0.0.0.0 --port 8000
 
   frontend:
     build:
