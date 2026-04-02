@@ -16,7 +16,10 @@ build-no-cache:
 	@docker compose -f docker-compose.dev.yaml build --no-cache
 
 remove:
-	@docker compose -f docker-compose.dev.yaml down
+	@docker compose -f docker-compose.dev.yaml down --remove-orphans
+
+destroy:
+	@docker compose -f docker-compose.dev.yaml down -v --remove-orphans
 
 logs:
 	@docker compose -f docker-compose.dev.yaml logs -f
