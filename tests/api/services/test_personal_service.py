@@ -82,7 +82,10 @@ class TestPersonalService:
         assert no_personnel is None
 
     def test_delete_personnel_with_data_success(
-        self, test_personnel: PersonalModel, test_ranker: RankerModel, test_personal_service: PersonalService
+        self,
+        test_personnel: PersonalModel,
+        test_ranker: RankerModel,
+        test_personal_service: PersonalService,
     ):
         test_personal_service.delete_personnel(test_personnel)
         no_personnel = test_personal_service.get_by_id(test_personnel.id)
