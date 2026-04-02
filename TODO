@@ -1,6 +1,5 @@
 # v0.0.0
 
-- BE: Fix deletion of personnel
 - FE: Confirmation popup when deleting personnel
 - FE: Mobile friendly design
 - BE: Auto update database if needed on startup
