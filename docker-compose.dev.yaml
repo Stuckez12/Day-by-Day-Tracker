@@ -43,8 +43,8 @@ services:
 
   api:
     build:
-      context: ./src
-      dockerfile: Dockerfile
+      context: .
+      dockerfile: src/Dockerfile
     expose:
       - "8000"
     networks:
@@ -52,7 +52,7 @@ services:
     volumes:
       - ./src:/api/src
     env_file: .env
-    command: uvicorn src.main:app --host 0.0.0.0 --port 8000
+    command: uvicorn src.main:app --host 0.0.0.0 --port 8000 --reload --reload-dir src
 
   frontend:
     build:

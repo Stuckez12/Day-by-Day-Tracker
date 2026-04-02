@@ -14,8 +14,8 @@ class PersonalModel(BaseModel):
     first_name: Mapped[str] = mapped_column(String, nullable=False)
     last_name: Mapped[str] = mapped_column(String, nullable=False)
 
-    habits: Mapped["HabitsModel"] = relationship(back_populates="personal")
-    ranker: Mapped["RankerModel"] = relationship(back_populates="personal")
+    habits: Mapped["HabitsModel"] = relationship(back_populates="personal", cascade="all, delete-orphan")
+    ranker: Mapped["RankerModel"] = relationship(back_populates="personal", cascade="all, delete-orphan")
 
     def __init__(self, first_name: str, last_name: str):
         self.first_name = first_name

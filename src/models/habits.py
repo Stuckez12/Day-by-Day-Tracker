@@ -15,7 +15,7 @@ class HabitsModel(BaseModel):
     __tablename__ = "habits"
 
     personal_id: Mapped[uuid.UUID] = mapped_column(
-        ForeignKey("personal.id"), nullable=False
+        ForeignKey("personal.id", ondelete="CASCADE"), nullable=False
     )
 
     name: Mapped[str] = mapped_column(String, nullable=False)
