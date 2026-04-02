@@ -6,7 +6,7 @@ from fastapi.testclient import TestClient
 from sqlalchemy.orm import Session
 from uuid import UUID
 
-from src.models import PersonalModel
+from src.models import PersonalModel, RankerModel
 
 from tests.api.constants import INVALID_PERSONNEL_ID
 
@@ -308,6 +308,19 @@ class TestPersonalRoute:
 
         data = result.json()
         assert data["detail"] == f"Personnel {INVALID_PERSONNEL_ID} not found"
+
+    def test_delete_personnel_w_data_success(
+        self,
+        test_client_v1: TestClient,
+        test_personnel: PersonalModel,
+        test_ranker: RankerModel,
+    ):
+        result = test_client_v1.put(
+            f"/personal/select",
+            json={"id": str(test_personnel.id)},
+        )
+        assert result.status_code == status.HTTP_204_NO_CONTENT
+        assert result.cookies.get("personnel_id") == str(test_personnel.id)
 
     def test_select_personnel_success(
         self,
