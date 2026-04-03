@@ -7,7 +7,7 @@ WORKDIR /api
 
 RUN pip install uv
 
-COPY ./backend ./backend
+COPY ./src ./src
 COPY uv.lock .
 COPY pyproject.toml .
 COPY alembic.ini .
