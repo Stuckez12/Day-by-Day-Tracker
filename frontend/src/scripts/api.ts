@@ -46,7 +46,7 @@ class APICalls {
 
     if (!response.ok) {
       const error_message = this.handle_server_errors(response);
-      return [true, null, error_message];
+      return [false, null, error_message];
     }
 
     return [true, (await response.json()) as TYPE, null];
@@ -76,7 +76,7 @@ class APICalls {
 
     if (!response.ok) {
       const error_message = this.handle_server_errors(response);
-      return [true, null, error_message];
+      return [false, null, error_message];
     }
 
     return [true, (await response.json()) as TYPE, null];
@@ -104,7 +104,7 @@ class APICalls {
 
     if (!response.ok) {
       const error_message = this.handle_server_errors(response);
-      return [true, null, error_message];
+      return [false, null, error_message];
     }
 
     if (response.status != 204) {
@@ -132,7 +132,7 @@ class APICalls {
 
     if (!response.ok) {
       const error_message = this.handle_server_errors(response);
-      return [true, null, error_message];
+      return [false, null, error_message];
     }
 
     if (response.status != 204) {
