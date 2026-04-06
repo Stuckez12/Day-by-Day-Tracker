@@ -3,7 +3,8 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from src import __version__ as APP_VERSION
 from src.api import api
-from src.settings import app_config
+from src.common.upgrade_db import upgrade_db
+from src.settings import is_prod_env
 
 
 def create_app():
@@ -26,5 +27,8 @@ def create_app():
     )
 
     app.include_router(api, prefix="/v1")
+
+    if is_prod_env:
+        upgrade_db()
 
     return app

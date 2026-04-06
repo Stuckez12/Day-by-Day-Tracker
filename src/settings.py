@@ -22,6 +22,13 @@ class AppConfig(BaseSettings):
         return f"postgresql+psycopg2://{self.DATABASE_USERNAME}:{self.DATABASE_PASSWORD}@{self.DATABASE_HOST}:{self.DATABASE_PORT}/{self.DATABASE_DB_NAME}"
 
 
+class ProdAppConfig(AppConfig):
+    model_config = SettingsConfigDict(
+        env_file=".env.prod",
+        extra="ignore",
+    )
+
+
 class TestAppConfig(AppConfig):
     # DATABASE
     DATABASE_USERNAME: str | None = None  # type: ignore[assignment]
@@ -53,12 +60,14 @@ def get_app_config() -> APP_SETTINGS:
             return AppConfig()  # type: ignore[call-arg]
 
         case "prod":
-            raise NotImplementedError(
-                "Settings for production have not yet been configured. May just be a duplicate of dev settings in the future."
-            )
+            return ProdAppConfig()  # type: ignore[call-arg]
 
         case "test":
             return TestAppConfig()
 
 
 app_config: APP_SETTINGS = get_app_config()
+
+is_dev_env: bool = isinstance(app_config, AppConfig)
+is_prod_env: bool = isinstance(app_config, ProdAppConfig)
+is_test_env: bool = isinstance(app_config, TestAppConfig)

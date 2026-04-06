@@ -6,16 +6,12 @@ from alembic.config import Config
 from datetime import date
 from fastapi.testclient import TestClient
 from sqlalchemy.orm import Session
-from types import SimpleNamespace
 from typing import Generator
-
 
 from src.main import app
 from src.common import get_db
-from src.common.dependencies import get_personal_service
 from src.models import PersonalModel, RankerModel
 from src.services import PersonalService, RankingService
-
 
 from tests.api.constants import INVALID_PERSONNEL_ID
 
