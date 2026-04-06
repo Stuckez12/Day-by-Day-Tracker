@@ -28,6 +28,9 @@ function PersonnelList() {
 
       if (success) {
         setPersonnels(data!);
+      } else {
+        console.log("Failed Setting Empty")
+        setPersonnels([]);
       }
     };
 

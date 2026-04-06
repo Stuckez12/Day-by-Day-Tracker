@@ -1,5 +1,6 @@
-from fastapi import FastAPI
+from fastapi import FastAPI, Request, status
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import JSONResponse
 
 from src import __version__ as APP_VERSION
 from src.api import api
@@ -30,5 +31,12 @@ def create_app():
 
     if is_prod_env:
         upgrade_db()
+
+    @app.exception_handler(Exception)
+    def catch_all_exception(_: Request, exc: Exception):
+        return JSONResponse(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            content={"detail": "Internal Server Error"},
+        )
 
     return app

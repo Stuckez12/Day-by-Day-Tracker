@@ -26,6 +26,8 @@ function RatingList() {
 
       if (success) {
         setRankings(data!);
+      } else {
+        setRankings([]);
       }
     };
 
