@@ -7,4 +7,4 @@ RUN npm ci
 
 EXPOSE 3000
 
-CMD ["npm", "run", "dev", "--", "--host", "0.0.0.0", "--port", "3000"]
+CMD ["sh", "-c", "npm run build && npx serve -s dist"]

@@ -22,6 +22,8 @@ function SelectPersonnelButton({ id }: IDProps) {
 
     if (success) {
       setRefreshList(true);
+    } else {
+      console.log(err_message);
     }
   };
 

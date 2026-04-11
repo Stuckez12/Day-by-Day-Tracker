@@ -14,7 +14,6 @@ import "styles/rating/rating_button.scss";
 
 function RatingBar() {
   const [rank_today, setRank] = useState<RankingProps>();
-  const [initialise, initialiseComponent] = useState(false);
 
   useEffect(() => {
     async function fetchRank() {
@@ -30,7 +29,7 @@ function RatingBar() {
       }
     }
     fetchRank();
-  }, [initialise]);
+  }, []);
 
   const detect_click = async (e: React.MouseEvent<HTMLDivElement>) => {
     const target = e.target;
@@ -49,7 +48,7 @@ function RatingBar() {
 
     console.log("Clicked button:", clickedDiv.textContent);
 
-    const [success, response, err_message] = await APICall.put<RankingProps>(
+    const [success, response, message] = await APICall.put<RankingProps>(
       "/ranking/rank",
       {
         day: Temporal.Now.plainDateISO().toString(),
@@ -57,18 +56,17 @@ function RatingBar() {
       }
     );
 
-    console.log(success, response, err_message);
+    console.log(success, response, message);
 
     if (success) {
       setRank(response!)
+    } else {
+      console.log("Error when getting data");
+      console.log(message);
     }
   };
 
   let ranking = rank_today ? rank_today.ranking : null;
-
-  if (!initialise) {
-    initialiseComponent(true);
-  }
 
   return (
     <>

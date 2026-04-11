@@ -20,7 +20,7 @@ services:
       PGADMIN_DEFAULT_EMAIL: ${PGADMIN_EMAIL}
       PGADMIN_DEFAULT_PASSWORD: ${PGADMIN_PASSWORD}
     ports:
-      - "5050:80"
+      - "6000:80"
     volumes:
       - pgadmin-data:/var/lib/pgadmin
     networks:
@@ -58,6 +58,7 @@ services:
     build:
       context: ./frontend
       dockerfile: Dockerfile
+    entrypoint: ["npm", "run", "dev", "--", "--host", "0.0.0.0", "--port", "3000"]
     expose:
       - "3000"
     networks:
