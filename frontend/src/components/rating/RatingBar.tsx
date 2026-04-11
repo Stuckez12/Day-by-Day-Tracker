@@ -11,23 +11,11 @@ import APICall from "scripts/api.ts";
 
 import "styles/rating/rating_button.scss";
 
-interface DayRanking {
-  id: string;
-  personal_id: string;
-  day: Date;
-  ranking: number;
-  created_at: Date;
-  updated_at: Date;
-}
 
 function RatingBar() {
   const [rank_today, setRank] = useState<RankingProps>();
-  const [rerendering, setRenderState] = useState(false);
-  const [initialise, initialiseComponent] = useState(false);
 
   useEffect(() => {
-    if (!rerendering) return;
-
     async function fetchRank() {
       const [success, response, message] = await APICall.get<RankingProps>(
         "/ranking/today"
@@ -41,8 +29,7 @@ function RatingBar() {
       }
     }
     fetchRank();
-    setRenderState(false);
-  }, [initialise, rerendering]);
+  }, []);
 
   const detect_click = async (e: React.MouseEvent<HTMLDivElement>) => {
     const target = e.target;
@@ -53,7 +40,7 @@ function RatingBar() {
 
     if (!clickedDiv || clickedDiv === e.currentTarget) {
       const parentDiv = (clickedDiv as HTMLElement).parentElement?.closest(
-        "div"
+        "div#rating-button-list"
       );
 
       if (!parentDiv) return;
@@ -61,7 +48,7 @@ function RatingBar() {
 
     console.log("Clicked button:", clickedDiv.textContent);
 
-    const [success, response, err_message] = await APICall.put<DayRanking>(
+    const [success, response, message] = await APICall.put<RankingProps>(
       "/ranking/rank",
       {
         day: Temporal.Now.plainDateISO().toString(),
@@ -69,22 +56,23 @@ function RatingBar() {
       }
     );
 
-    console.log(success, response, err_message);
+    console.log(success, response, message);
 
-    setRenderState(success);
+    if (success) {
+      setRank(response!)
+    } else {
+      console.log("Error when getting data");
+      console.log(message);
+    }
   };
 
   let ranking = rank_today ? rank_today.ranking : null;
-
-  if (!initialise) {
-    setRenderState(true);
-    initialiseComponent(true);
-  }
 
   return (
     <>
       <RatingToday ranking={ranking} />
       <div
+        id="rating-button-list"
         className="rating-button-bar"
         onClick={detect_click}
         style={{ display: "flex" }}

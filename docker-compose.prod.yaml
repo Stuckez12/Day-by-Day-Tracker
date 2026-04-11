@@ -21,14 +21,13 @@ services:
       PGADMIN_DEFAULT_EMAIL: ${PGADMIN_EMAIL}
       PGADMIN_DEFAULT_PASSWORD: ${PGADMIN_PASSWORD}
     ports:
-      - "5050:80"
+      - "6000:80"
     volumes:
       - pgadmin-data:/var/lib/pgadmin
     networks:
       - app-network
     attach: false
     restart: unless-stopped
-
 
   nginx:
     image: nginx:alpine
