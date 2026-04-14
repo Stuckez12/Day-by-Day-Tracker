@@ -2,7 +2,6 @@
 
 - FE: Confirmation popup when deleting personnel
 - FE: Mobile friendly design
-- BE: Auto update database if needed on startup
 
 # v0.1.0
 
