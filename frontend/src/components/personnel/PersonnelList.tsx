@@ -1,5 +1,6 @@
 import { useContext, useEffect, useState } from "react";
 
+import PopupConfirmation from "components/common/popup/PopupConfirmation.tsx"
 import PersonnelRow from "components/personnel/PersonnelRow";
 
 import { ContextRefreshList } from "contexts/ContextRefreshList.tsx";
@@ -10,6 +11,7 @@ import type { PersonnelRowProps } from "interfaces/personnel.ts";
 import APICall from "scripts/api.ts";
 
 import "styles/common/tables.scss";
+import type { TRUE } from "sass-embedded";
 
 function PersonnelList() {
   const [personnels, setPersonnels] = useState<PersonnelRowProps[]>([]);
@@ -51,27 +53,37 @@ function PersonnelList() {
   const selected = selected_personnel ? selected_personnel.id : "";
 
   return (
-    <div className="table-base">
-      <table>
-        <tr className="table-row table-header-row">
-          <th>ID</th>
-          <th>Full Name</th>
-          <th>Date Created</th>
-          <th>Selected</th>
-          <th>Select Personnel</th>
-          <th>Delete Personnel</th>
-        </tr>
-        {personnels.map(({ id, first_name, last_name, created_at }) => (
-          <PersonnelRow
-            id={id}
-            first_name={first_name}
-            last_name={last_name}
-            created_at={created_at}
-            is_selected={selected}
-          />
-        ))}
-      </table>
-    </div>
+    <>
+      <PopupConfirmation
+        url="url" 
+        message="message" 
+        confirm_button_first={true} 
+        confirm_button={{text: "confirm text"}} 
+        deny_button={{text: "deny text"}}
+      />
+
+      <div className="table-base">
+        <table>
+          <tr className="table-row table-header-row">
+            <th>ID</th>
+            <th>Full Name</th>
+            <th>Date Created</th>
+            <th>Selected</th>
+            <th>Select Personnel</th>
+            <th>Delete Personnel</th>
+          </tr>
+          {personnels.map(({ id, first_name, last_name, created_at }) => (
+            <PersonnelRow
+              id={id}
+              first_name={first_name}
+              last_name={last_name}
+              created_at={created_at}
+              is_selected={selected}
+            />
+          ))}
+        </table>
+      </div>
+    </>
   );
 }
 
