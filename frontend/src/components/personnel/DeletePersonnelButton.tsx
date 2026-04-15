@@ -1,5 +1,7 @@
 import { useContext } from "react";
 
+import { confirm } from "components/common/popup/PopupConfirmation.tsx"
+
 import { ContextRefreshList } from "contexts/ContextRefreshList.tsx";
 
 import type { IDProps } from "interfaces/common";
@@ -12,6 +14,10 @@ function DeletePersonnelButton({ id }: IDProps) {
   const deletePersonnel = async (e: React.MouseEvent<HTMLButtonElement>) => {
     const clicked = e.currentTarget.dataset.id;
     if (!clicked) return;
+
+    if (!(await confirm({ title: "Title Here", confirmation: "Are you sure?" }))) {
+      return;
+    }
 
     const [success, _, err_message] = await APICall.delete<null>(
       "/personal?id=" + id,

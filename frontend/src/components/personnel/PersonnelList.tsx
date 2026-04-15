@@ -1,6 +1,5 @@
 import { useContext, useEffect, useState } from "react";
 
-import PopupConfirmation from "components/common/popup/PopupConfirmation.tsx"
 import PersonnelRow from "components/personnel/PersonnelRow";
 
 import { ContextRefreshList } from "contexts/ContextRefreshList.tsx";
@@ -11,7 +10,6 @@ import type { PersonnelRowProps } from "interfaces/personnel.ts";
 import APICall from "scripts/api.ts";
 
 import "styles/common/tables.scss";
-import type { TRUE } from "sass-embedded";
 
 function PersonnelList() {
   const [personnels, setPersonnels] = useState<PersonnelRowProps[]>([]);
@@ -54,14 +52,6 @@ function PersonnelList() {
 
   return (
     <>
-      <PopupConfirmation
-        url="url" 
-        message="message" 
-        confirm_button_first={true} 
-        confirm_button={{text: "confirm text"}} 
-        deny_button={{text: "deny text"}}
-      />
-
       <div className="table-base">
         <table>
           <tr className="table-row table-header-row">
