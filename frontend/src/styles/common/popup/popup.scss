@@ -1,3 +1,5 @@
+@use "styles/colour_pallets";
+
 .popup-background {
     position: fixed;
     top: 0;
@@ -7,29 +9,58 @@
     background: rgba(0,0,0,0.5);
 }
 
-.popup-modal-container {
-    max-width: 480px;
+.popup-container {
+    margin-top: 5%;
+    max-width: 384px;
+    max-height: 432px;
 
     margin-left: auto;
     margin-right: auto;
 }
 
 
-.modal-header {
-    background-color: red;
+.popup-header {
+    padding: 8px 32px 4px 32px;
 
-    border-top-left-radius: 32px;
-    border-top-right-radius: 32px;
+    border: 1.5px solid var(--popup-border);
+
+    background-color: var(--popup-header);
+
+    border-top-left-radius: 16px;
+    border-top-right-radius: 16px;
 }
 
-.modal-body {
-    background-color: yellow;
-    
+.popup-body {
+    padding: 16px 32px;
+
+    border: 1.5px solid var(--popup-border);
+    border-top: 0px;
+    border-bottom: 0px;
+
+    background-color: var(--popup-body);
+
+    p {
+        margin: 0;
+
+        white-space: pre-line;
+    }
 }
 
-.modal-footer {
-    background-color: green;
+.popup-footer {
+    width: 100%;
 
-    border-bottom-left-radius: 32px;
-    border-bottom-right-radius: 32px;
+    padding: 12px 32px;
+
+    border: 1.5px solid var(--popup-border);
+
+    display: flex;
+
+    background-color: var(--popup-footer);
+
+    border-bottom-left-radius: 16px;
+    border-bottom-right-radius: 16px;
+
+    :last-child {
+        margin-left: auto;
+    }
 }

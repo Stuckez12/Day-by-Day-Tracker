@@ -72,3 +72,24 @@
 .submit-button:active {
   background-color: var(--submit-button-clicked);
 }
+
+.action-button {
+  all: unset;
+  border-radius: 8px;
+
+  padding: 4px 8px;
+  margin: 0px;
+
+  color: var(--inverted-text-color);
+  background-color: var(--submit-button);
+
+  text-align: center;
+}
+
+.action-button:hover {
+  background-color: var(--submit-button-hover);
+}
+
+.action-button:active {
+  background-color: var(--submit-button-clicked);
+}

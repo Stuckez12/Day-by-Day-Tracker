@@ -18,3 +18,9 @@ export interface CreatePersonnelProps {
   first_name: string;
   last_name: string;
 }
+
+export interface PersonnelNameProps {
+  id: string;
+  first_name: string;
+  last_name: string;
+}
