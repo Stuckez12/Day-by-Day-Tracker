@@ -51,27 +51,29 @@ function PersonnelList() {
   const selected = selected_personnel ? selected_personnel.id : "";
 
   return (
-    <div className="table-base">
-      <table>
-        <tr className="table-row table-header-row">
-          <th>ID</th>
-          <th>Full Name</th>
-          <th>Date Created</th>
-          <th>Selected</th>
-          <th>Select Personnel</th>
-          <th>Delete Personnel</th>
-        </tr>
-        {personnels.map(({ id, first_name, last_name, created_at }) => (
-          <PersonnelRow
-            id={id}
-            first_name={first_name}
-            last_name={last_name}
-            created_at={created_at}
-            is_selected={selected}
-          />
-        ))}
-      </table>
-    </div>
+    <>
+      <div className="table-base">
+        <table>
+          <tr className="table-row table-header-row">
+            <th>ID</th>
+            <th>Full Name</th>
+            <th>Date Created</th>
+            <th>Selected</th>
+            <th>Select Personnel</th>
+            <th>Delete Personnel</th>
+          </tr>
+          {personnels.map(({ id, first_name, last_name, created_at }) => (
+            <PersonnelRow
+              id={id}
+              first_name={first_name}
+              last_name={last_name}
+              created_at={created_at}
+              is_selected={selected}
+            />
+          ))}
+        </table>
+      </div>
+    </>
   );
 }
 

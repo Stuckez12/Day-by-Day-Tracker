@@ -28,7 +28,7 @@ restart:
 	$(MAKE) stop
 	$(MAKE) start
 
-full-restart:
+rebuild:
 	$(MAKE) stop
 	$(MAKE) build
 	$(MAKE) start

@@ -25,7 +25,7 @@ function PersonnelRow({
         <SelectPersonnelButton id={id} />
       </td>
       <td>
-        <DeletePersonnelButton id={id} />
+        <DeletePersonnelButton id={id} first_name={first_name} last_name={last_name} />
       </td>
     </tr>
   );
