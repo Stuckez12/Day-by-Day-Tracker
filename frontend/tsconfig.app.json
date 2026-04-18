@@ -25,6 +25,7 @@
     "noUncheckedSideEffectImports": true,
 
     /* Custom settings added */
+    "ignoreDeprecations": "6.0",
     "baseUrl": ".",
     "paths": {
       "components/*": ["src/components/*"],
