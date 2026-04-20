@@ -15,14 +15,12 @@ function NavBar() {
     <Router>
       <nav id="navigation-bar">
         <PageWrapper>
-          <ul className="nav-left-side">
+          <ul className="nav-list">
             <NavBarButton frontend_url="/" display_text="Tracker" />
             <NavBarButton frontend_url="/rates" display_text="Rates" />
             <NavBarButton frontend_url="/tasks" display_text="Tasks" />
             <NavBarButton frontend_url="/stats" display_text="Stats" />
-          </ul>
-          <ul className="nav-right-side">
-            <NavBarButton frontend_url="/personnel" display_text="Personnel" />
+            <NavBarButton frontend_url="/personnel" display_text="Personnel" right_hand_side={true}/>
           </ul>
         </PageWrapper>
       </nav>

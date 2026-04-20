@@ -3,7 +3,7 @@
 #navigation-bar {
   background-color: var(--secondary);
   width: auto;
-  height: 48px;
+  height: auto;
 
   #content-wrapper {
     ul {
@@ -12,12 +12,24 @@
       padding: 4px;
       overflow: hidden;
 
+      display: flex;
+
       width: auto;
       height: 48px;
 
       li {
-        width: auto;
+        width: fit-content;
         height: auto;
+
+        display: block;
+
+        &.left {
+          float: left;
+        }
+
+        &.right {
+          margin-left: auto;
+        }
 
         a {
           display: flex;
@@ -30,23 +42,43 @@
 
           color: var(--inverted-text-color);
         }
+
+        @media (max-width: 576px) {
+          &:not(:first-child) {
+            display: none;
+          }
+        }
+      }
+
+      @media (max-width: 576px) {
+        &.dropdown {
+          height: auto;
+
+          display: block;
+
+          li {
+            width: 100%;
+
+            display: block;
+          }
+        }
       }
     }
 
-    ul.nav-left-side {
-      float: left;
+    // ul.nav-left-side {
+    //   float: left;
 
-      li {
-        float: left;
-      }
-    }
+    //   li {
+    //     float: left;
+    //   }
+    // }
 
-    ul.nav-right-side {
-      float: right;
+    // ul.nav-right-side {
+    //   float: right;
 
-      li {
-        float: right;
-      }
-    }
+    //   li {
+    //     float: right;
+    //   }
+    // }
   }
 }
