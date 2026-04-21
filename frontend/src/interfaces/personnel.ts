@@ -10,7 +10,6 @@ export interface PersonnelRowProps {
   id: string;
   first_name: string;
   last_name: string;
-  is_selected: string;
 }
 
 export interface CreatePersonnelProps {
