@@ -3,7 +3,7 @@
 #navigation-bar {
   background-color: var(--secondary);
   width: auto;
-  height: 48px;
+  height: auto;
 
   #content-wrapper {
     ul {
@@ -12,12 +12,30 @@
       padding: 4px;
       overflow: hidden;
 
+      position: relative;
+
+      display: flex;
+
       width: auto;
       height: 48px;
 
       li {
-        width: auto;
+        width: fit-content;
         height: auto;
+
+        display: block;
+
+        &.left {
+          float: left;
+        }
+
+        &.right {
+          margin-left: auto;
+        }
+
+        &.nav-toggle {
+          display: none;
+        }
 
         a {
           display: flex;
@@ -30,22 +48,46 @@
 
           color: var(--inverted-text-color);
         }
+
+        @media (max-width: 576px) {
+          &:not(:first-child) {
+            display: none;
+          }
+
+          &.nav-toggle {
+            position: absolute;
+            right: 0;
+            top: 4px;
+
+            width: fit-content;
+
+            display: block;
+          }
+        }
       }
-    }
 
-    ul.nav-left-side {
-      float: left;
+      @media (max-width: 576px) {
+        &.dropdown {
+          height: auto;
 
-      li {
-        float: left;
-      }
-    }
+          display: block;
 
-    ul.nav-right-side {
-      float: right;
+          li {
+            width: 100%;
 
-      li {
-        float: right;
+            display: block;
+
+            &.nav-toggle {
+              position: absolute;
+              right: 0;
+              top: 4px;
+
+              width: fit-content;
+
+              display: block;
+            }
+          }
+        }
       }
     }
   }

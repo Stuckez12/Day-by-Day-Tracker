@@ -1,6 +1,9 @@
 # v0.0.0
 
-- FE: Mobile friendly design
+- BE: Login per personnel
+- BE: Personnel Account CRUD
+- FE: Login Page
+- FE: Personnel Page
 
 # v0.1.0
 
@@ -11,6 +14,7 @@
 - BE: Ranking get range/paginate
 - FE: Pagination tables
 - BE: Daily/Weekly/Monthly backups
+- BE: Input to record what happened that day
 
 # v0.2.0
 
@@ -20,7 +24,7 @@
 
 # v0.3.0
 
-- BE: Tasks DWM types
+- BE: Tasks Day/Week/Month types
 - FE: Task Cards
 - FE: Ranking graph landing page
 - BE: Scoring system linked to tasks
