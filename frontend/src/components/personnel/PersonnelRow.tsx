@@ -9,10 +9,8 @@ function PersonnelRow({
   id,
   first_name,
   last_name,
-  is_selected,
 }: PersonnelRowProps) {
   const full_name = first_name + " " + last_name;
-  const dis = is_selected == id;
 
   return (
     <tr className="table-row table-data-row" key={id}>

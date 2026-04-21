@@ -4,7 +4,7 @@ import PersonnelRow from "components/personnel/PersonnelRow";
 
 import { ContextRefreshList } from "contexts/ContextRefreshList.tsx";
 
-import type { IDProps } from "interfaces/common";
+// import type { IDProps } from "interfaces/common";
 import type { PersonnelRowProps } from "interfaces/personnel.ts";
 
 import APICall from "scripts/api.ts";
@@ -13,7 +13,7 @@ import "styles/common/tables.scss";
 
 function PersonnelList() {
   const [personnels, setPersonnels] = useState<PersonnelRowProps[]>([]);
-  const [selected_personnel, setSelectedPersonnels] = useState<IDProps>();
+  // const [selected_personnel, setSelectedPersonnels] = useState<IDProps>();
 
   const { refreshList, setRefreshList } = useContext(ContextRefreshList);
 
@@ -34,21 +34,21 @@ function PersonnelList() {
       }
     };
 
-    const fetchSelectedPersonnel = async () => {
-      const [success, data, _] =
-        await APICall.get<PersonnelRowProps>("/personal/me");
+    // const fetchSelectedPersonnel = async () => {
+    //   const [success, data, _] =
+    //     await APICall.get<PersonnelRowProps>("/personal/me");
 
-      if (success) {
-        setSelectedPersonnels(data!);
-      }
-    };
+    //   if (success) {
+    //     setSelectedPersonnels(data!);
+    //   }
+    // };
 
     fetchPersonnel();
-    fetchSelectedPersonnel();
+    // fetchSelectedPersonnel();
     setRefreshList(false);
   }, [refreshList]);
 
-  const selected = selected_personnel ? selected_personnel.id : "";
+  // const selected = selected_personnel ? selected_personnel.id : "";
 
   return (
     <>
@@ -64,7 +64,7 @@ function PersonnelList() {
               id={id}
               first_name={first_name}
               last_name={last_name}
-              is_selected={selected}
+              // is_selected={selected}
             />
           ))}
         </table>
