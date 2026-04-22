@@ -11,6 +11,9 @@ if TYPE_CHECKING:
 class PersonalModel(BaseModel):
     __tablename__ = "personal"
 
+    email: Mapped[str] = mapped_column(String, nullable=False, unique=True)
+    password: Mapped[str] = mapped_column(String, nullable=False)
+
     first_name: Mapped[str] = mapped_column(String, nullable=False)
     last_name: Mapped[str] = mapped_column(String, nullable=False)
 
@@ -21,6 +24,10 @@ class PersonalModel(BaseModel):
         back_populates="personal", cascade="all, delete-orphan"
     )
 
-    def __init__(self, first_name: str, last_name: str):
+    def __init__(
+        self, email: str, password: str, first_name: str, last_name: str
+    ) -> None:
+        self.email = email
+        self.password = password
         self.first_name = first_name
         self.last_name = last_name
