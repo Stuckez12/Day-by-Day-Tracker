@@ -40,12 +40,13 @@ def get_all_personnel(service: PersonalServiceDep):
     return service.get_all()
 
 
-@api.post("/", status_code=status.HTTP_201_CREATED)
+@api.post("/", status_code=status.HTTP_201_CREATED, deprecated=True)
 def create_personnel(
     request: CreatePersonnelRequest,
     service: PersonalServiceDep,
 ):
-    return service.create_personnel(request)
+    raise ValueError("Route broken")
+    # return service.create_personnel(request)
 
 
 @api.put("/", status_code=status.HTTP_202_ACCEPTED)
@@ -69,15 +70,13 @@ def delete_personnel(
     return service.delete_personnel(personnel)
 
 
-@api.put("/select", status_code=status.HTTP_204_NO_CONTENT)
+@api.put("/select", status_code=status.HTTP_204_NO_CONTENT, deprecated=True)
 def selected_personnel(
     request: SelectPersonnelRequest,
     response: Response,
     service: PersonalServiceDep,
 ):
     personnel = service.personnel_exists(request.id)
-
-    print(personnel)
 
     response.set_cookie("personnel_id", str(personnel.id))
     response.status_code = status.HTTP_204_NO_CONTENT

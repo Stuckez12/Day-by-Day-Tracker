@@ -32,8 +32,16 @@ def create_app():
     if is_prod_env:
         upgrade_db()
 
+    @app.exception_handler(TypeError)
+    @app.exception_handler(ValueError)
+    def controlled_user_errors_exception(_: Request, exc: Exception) -> JSONResponse:
+        return JSONResponse(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            content={"detail": str(exc)},
+        )
+
     @app.exception_handler(Exception)
-    def catch_all_exception(_: Request, exc: Exception):
+    def catch_all_exception(_: Request, exc: Exception) -> JSONResponse:
         return JSONResponse(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             content={"detail": "Internal Server Error"},

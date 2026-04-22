@@ -1,3 +1,4 @@
+from fastapi import Response
 from sqlalchemy.orm import Session
 
 from src.common.password_hash import pwd_hash
@@ -28,5 +29,26 @@ class AuthService(PersonalService):
 
         return self.create_personnel(data)
 
-    def log_in(self, data: LogInRequest):
-        pass
+    def log_in(self, data: LogInRequest) -> PersonalModel:
+        failed_login_message = "Invalid email or password"
+
+        personnel = (
+            self.db.query(PersonalModel)
+            .filter(PersonalModel.email == data.email)
+            .first()
+        )
+
+        if not personnel:
+            raise ValueError(failed_login_message)
+
+        confirm_password = pwd_hash.verify(data.password, personnel.password)
+
+        if not confirm_password:
+            raise ValueError(failed_login_message)
+
+        return personnel
+
+    def set_login_cookies(self, response: Response, personnel: PersonalModel):
+        response.set_cookie("personnel_id", str(personnel.id))
+
+        return response

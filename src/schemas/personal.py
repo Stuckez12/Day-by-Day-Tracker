@@ -5,12 +5,11 @@ from pydantic import BaseModel, ValidationInfo, field_validator
 
 class PersonnelSchema(BaseModel):
     email: str
-    password: str
 
     first_name: str
     last_name: str
 
-    @field_validator("email", "password", "first_name", "last_name")
+    @field_validator("email", "first_name", "last_name")
     @classmethod
     def validate_name(cls, value: str, info: ValidationInfo) -> str:
         if len(value) <= 0:
@@ -19,12 +18,21 @@ class PersonnelSchema(BaseModel):
         return value
 
 
-class CreatePersonnelRequest(PersonnelSchema): ...
+class CreatePersonnelRequest(PersonnelSchema):
+    password: str
+
+    @field_validator("password")
+    @classmethod
+    def validate_name(cls, value: str, info: ValidationInfo) -> str:
+        if len(value) <= 0:
+            raise ValueError(f"{info.field_name} must not be empty")
+
+        return value
 
 
-class UpdatePersonnelRequest(PersonnelSchema):
-    first_name: str | None = None  # type: ignore[assignment]
-    last_name: str | None = None  # type: ignore[assignment]
+class UpdatePersonnelRequest(BaseModel):
+    first_name: str | None = None
+    last_name: str | None = None
 
 
 class SelectPersonnelRequest(BaseModel):
