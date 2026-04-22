@@ -1,13 +1,16 @@
 import uuid
 
-from pydantic import BaseModel, ValidationInfo, field_validator, Field
+from pydantic import BaseModel, ValidationInfo, field_validator
 
 
 class PersonnelSchema(BaseModel):
+    email: str
+    password: str
+
     first_name: str
     last_name: str
 
-    @field_validator("first_name", "last_name")
+    @field_validator("email", "password", "first_name", "last_name")
     @classmethod
     def validate_name(cls, value: str, info: ValidationInfo) -> str:
         if len(value) <= 0:
