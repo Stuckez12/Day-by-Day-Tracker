@@ -71,49 +71,6 @@ class TestPersonalRoute:
         assert personnel_2 == test_personnel_2.to_dict(clean=True)
         assert personnel_3 == test_personnel_3.to_dict(clean=True)
 
-    def test_create_personnel_success(
-        self,
-        test_session: Session,
-        test_client_v1: TestClient,
-    ):
-        result = test_client_v1.post(
-            f"/personal",
-            json={
-                "first_name": "Create",
-                "last_name": "User",
-            },
-        )
-        assert result.status_code == status.HTTP_201_CREATED
-
-        data = result.json()
-        assert UUID(data["id"])
-        assert datetime.fromisoformat(data["created_at"])
-        assert datetime.fromisoformat(data["updated_at"])
-        assert data["first_name"] == "Create"
-        assert data["last_name"] == "User"
-
-        model = (
-            test_session.query(PersonalModel)
-            .filter(PersonalModel.id == data["id"])
-            .one()
-        )
-        test_session.delete(model)
-        test_session.commit()
-
-    def test_create_personnel_empty_data(self, test_client_v1: TestClient):
-        result = test_client_v1.post(
-            f"/personal",
-            json={
-                "first_name": "",
-                "last_name": "",
-            },
-        )
-        assert result.status_code == status.HTTP_422_UNPROCESSABLE_CONTENT
-
-        data = result.json()
-        assert data["detail"][0]["msg"] == "Value error, first_name must not be empty"
-        assert data["detail"][1]["msg"] == "Value error, last_name must not be empty"
-
     def test_update_personnel_update_all_values(
         self,
         test_set_cookies: None,

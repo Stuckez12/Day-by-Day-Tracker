@@ -34,6 +34,14 @@ class UpdatePersonnelRequest(BaseModel):
     first_name: str | None = None
     last_name: str | None = None
 
+    @field_validator("first_name", "last_name")
+    @classmethod
+    def validate_name(cls, value: str, info: ValidationInfo) -> str:
+        if len(value) <= 0:
+            raise ValueError(f"{info.field_name} must not be empty")
+
+        return value
+
 
 class SelectPersonnelRequest(BaseModel):
     id: uuid.UUID

@@ -10,6 +10,7 @@ from typing import Generator
 
 from src.main import app
 from src.common import get_db
+from src.common.password_hash import pwd_hash
 from src.models import PersonalModel, RankerModel
 from src.services import PersonalService, RankingService
 
@@ -96,6 +97,8 @@ def test_ranking_service(test_session: Session):
 @pytest.fixture(scope="function")
 def test_personnel(test_session: Session):
     model = PersonalModel(
+        email="email@email.com",
+        password=pwd_hash.hash("Password1."),
         first_name="Test",
         last_name="Fixture",
     )
@@ -112,6 +115,8 @@ def test_personnel(test_session: Session):
 @pytest.fixture(scope="function")
 def test_personnel_2(test_session: Session):
     model = PersonalModel(
+        email="email2@email.com",
+        password=pwd_hash.hash("Password1."),
         first_name="Test 2",
         last_name="Fixture 2",
     )
@@ -128,6 +133,8 @@ def test_personnel_2(test_session: Session):
 @pytest.fixture(scope="function")
 def test_personnel_3(test_session: Session):
     model = PersonalModel(
+        email="email3@email.com",
+        password=pwd_hash.hash("Password1."),
         first_name="Test 3",
         last_name="Fixture 3",
     )

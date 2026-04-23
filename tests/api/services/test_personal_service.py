@@ -2,6 +2,7 @@ import pytest
 
 from sqlalchemy.orm import Session
 
+from src.common.password_hash import pwd_hash
 from src.models import PersonalModel, RankerModel
 from src.schemas import (
     CreatePersonnelRequest,
@@ -16,6 +17,8 @@ class TestPersonalService:
         self, test_session: Session, test_personal_service: PersonalService
     ):
         data = CreatePersonnelRequest(
+            email="email@email.com",
+            password="Password1.",
             first_name="Test",
             last_name="User",
         )
