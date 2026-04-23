@@ -40,15 +40,6 @@ def get_all_personnel(service: PersonalServiceDep):
     return service.get_all()
 
 
-@api.post("/", status_code=status.HTTP_201_CREATED, deprecated=True)
-def create_personnel(
-    request: CreatePersonnelRequest,
-    service: PersonalServiceDep,
-):
-    raise ValueError("Route broken")
-    # return service.create_personnel(request)
-
-
 @api.put("/", status_code=status.HTTP_202_ACCEPTED)
 def update_personnel(
     request: UpdatePersonnelRequest,

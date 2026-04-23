@@ -25,11 +25,15 @@ class TestPersonalService:
 
         personnel = test_personal_service.create_personnel(data)
 
-        assert personnel.first_name == "Test"
-        assert personnel.last_name == "User"
+        try:
+            assert personnel.email == data.email
+            assert personnel.password == data.password
+            assert personnel.first_name == data.first_name
+            assert personnel.last_name == data.last_name
 
-        test_session.delete(personnel)
-        test_session.commit()
+        finally:
+            test_session.delete(personnel)
+            test_session.commit()
 
     def test_create_personnel_invalid_pydantic_model(
         self, test_personal_service: PersonalService

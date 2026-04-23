@@ -23,8 +23,20 @@ dependencies = [
     "pytest-mock>=3.15.1",
     "sqlalchemy>=2.0.45",
     "sqlalchemy-utils>=0.42.1",
+    "types-passlib>=1.7.7.20260211",
     "uvicorn>=0.38.0",
 ]
+
+[tool.pytest.ini_options]
+addopts = "--cov=src"
+
+filterwarnings = [
+  "ignore:DELETE statement on table .* expected to delete .* row.*:sqlalchemy.exc.SAWarning",
+]
+
+[[tool.mypy.overrides]]
+module = ["passlib.context"]
+ignore_missing_imports = true
 
 [tool.pytest_env]
 APP_ENV = "test"

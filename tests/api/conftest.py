@@ -12,9 +12,9 @@ from src.main import app
 from src.common import get_db
 from src.common.password_hash import pwd_hash
 from src.models import PersonalModel, RankerModel
-from src.services import PersonalService, RankingService
+from src.services import AuthService, PersonalService, RankingService
 
-from tests.api.constants import INVALID_PERSONNEL_ID
+from tests.api.constants import INVALID_PERSONNEL_ID, VALID_PASSWORD
 
 
 ################################################################################
@@ -80,6 +80,11 @@ def test_client_v1():
 
 
 @pytest.fixture(scope="function")
+def test_auth_service(test_session: Session):
+    yield AuthService(db=test_session)
+
+
+@pytest.fixture(scope="function")
 def test_personal_service(test_session: Session):
     yield PersonalService(db=test_session)
 
@@ -98,7 +103,7 @@ def test_ranking_service(test_session: Session):
 def test_personnel(test_session: Session):
     model = PersonalModel(
         email="email@email.com",
-        password=pwd_hash.hash("Password1."),
+        password=pwd_hash.hash(VALID_PASSWORD),
         first_name="Test",
         last_name="Fixture",
     )
@@ -116,7 +121,7 @@ def test_personnel(test_session: Session):
 def test_personnel_2(test_session: Session):
     model = PersonalModel(
         email="email2@email.com",
-        password=pwd_hash.hash("Password1."),
+        password=pwd_hash.hash(VALID_PASSWORD),
         first_name="Test 2",
         last_name="Fixture 2",
     )
@@ -134,7 +139,7 @@ def test_personnel_2(test_session: Session):
 def test_personnel_3(test_session: Session):
     model = PersonalModel(
         email="email3@email.com",
-        password=pwd_hash.hash("Password1."),
+        password=pwd_hash.hash(VALID_PASSWORD),
         first_name="Test 3",
         last_name="Fixture 3",
     )

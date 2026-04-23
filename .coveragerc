@@ -9,6 +9,7 @@ omit =
     */__init__.py
     src/api.py
     src/app.py
+    src/common/upgrade_db.py
     src/main.py
     src/settings.py
     src/migrations/*
