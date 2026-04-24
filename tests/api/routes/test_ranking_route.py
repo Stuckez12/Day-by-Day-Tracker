@@ -108,21 +108,23 @@ class TestRankingRoute:
         assert result.status_code == status.HTTP_200_OK
 
         data = result.json()
-        assert uuid.UUID(data["id"])
-        assert datetime.fromisoformat(data["created_at"])
-        assert datetime.fromisoformat(data["updated_at"])
-        assert uuid.UUID(data["personal_id"])
-        assert data["day"] == test_date_today.strftime("%Y-%m-%d")
-        assert data["ranking"] is None
+        try:
+            assert uuid.UUID(data["id"])
+            assert datetime.fromisoformat(data["created_at"])
+            assert datetime.fromisoformat(data["updated_at"])
+            assert uuid.UUID(data["personal_id"])
+            assert data["day"] == test_date_today.strftime("%Y-%m-%d")
+            assert data["ranking"] is None
 
-        rank = (
-            test_session.query(RankerModel)
-            .filter(RankerModel.id == uuid.UUID(data["id"]))
-            .one()
-        )
+        finally:
+            ranking = (
+                test_session.query(RankerModel)
+                .filter(RankerModel.id == uuid.UUID(data["id"]))
+                .one()
+            )
 
-        test_session.delete(rank)
-        test_session.commit()
+            test_session.delete(ranking)
+            test_session.commit()
 
     @pytest.mark.skip("FIXME: Test uses cookie from previous test")
     def test_get_todays_personnel_rankings_no_personnel_cookie(
@@ -191,17 +193,21 @@ class TestRankingRoute:
         assert result.status_code == status.HTTP_202_ACCEPTED
 
         data = result.json()
-        assert RankingSchema(**data)
-        assert data["personal_id"] == str(test_personnel.id)
-        assert data["day"] == test_date_today.strftime("%Y-%m-%d")
-        assert data["ranking"] == 10
+        try:
+            assert RankingSchema(**data)
+            assert data["personal_id"] == str(test_personnel.id)
+            assert data["day"] == test_date_today.strftime("%Y-%m-%d")
+            assert data["ranking"] == 10
 
-        ranking = (
-            test_session.query(RankerModel).filter(RankerModel.id == data["id"]).one()
-        )
+        finally:
+            ranking = (
+                test_session.query(RankerModel)
+                .filter(RankerModel.id == data["id"])
+                .one()
+            )
 
-        test_session.delete(ranking)
-        test_session.commit()
+            test_session.delete(ranking)
+            test_session.commit()
 
     @pytest.mark.skip("FIXME: Test uses cookie from previous test")
     def test_rank_day_no_personnel_cookie(self, test_client_v1: TestClient):
