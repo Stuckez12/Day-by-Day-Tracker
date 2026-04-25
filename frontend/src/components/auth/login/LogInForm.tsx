@@ -1,8 +1,7 @@
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 
 import type { LogInProps } from "interfaces/login";
-import type { PersonnelRowProps } from "interfaces/personnel.ts";
 
 import APICall from "scripts/api.ts";
 
@@ -21,15 +20,6 @@ function LogInForm() {
       ...form,
       [name]: value,
     });
-  }
-
-  async function check_logged_in() {
-    const [success] = await APICall.get<PersonnelRowProps>("/personal/me");
-
-    if (success) {
-      console.log("Success. Now redirect");
-      // navigate("/", { replace: true });
-    }
   }
 
   function onSubmit(e: React.MouseEvent<HTMLButtonElement>) {
@@ -54,14 +44,10 @@ function LogInForm() {
     log_in(form);
   }
 
-  useEffect(() => {
-    check_logged_in();
-  }, []);
-
   return (
     <div className="login-form-container">
       <div className="login-form">
-        <label>Log In</label>
+        <h1>Log In</h1>
 
         <div className="text-input">
           <input
