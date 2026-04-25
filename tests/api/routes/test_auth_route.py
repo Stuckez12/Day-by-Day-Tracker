@@ -113,7 +113,7 @@ class TestAuthRoute:
                 "password": VALID_PASSWORD,
             },
         )
-        assert result.status_code == status.HTTP_202_ACCEPTED
+        assert result.status_code == status.HTTP_204_NO_CONTENT
         assert result.cookies["personnel_id"]
 
     def test_log_in_user_does_not_exist(self, test_client_v1: TestClient):

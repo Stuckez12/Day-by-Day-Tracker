@@ -1,23 +1,23 @@
 import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 
+import LogInForm from "components/auth/login/LogInForm";
 import PageWrapper from "components/common/PageWrapper";
-import ContextRatingList from "components/rating/ContextRatingList";
 
-import { is_logged_in } from "scripts/auth/is_login.ts";
+import { check_logged_in } from "scripts/auth/is_login.ts";
 
-function RankingPage() {
+function LogInPage() {
   const navigate = useNavigate();
 
   useEffect(() => {
-    is_logged_in(navigate);
+    check_logged_in(navigate);
   }, []);
 
   return (
     <PageWrapper>
-      <ContextRatingList />
+      <LogInForm />
     </PageWrapper>
   );
 }
 
-export default RankingPage;
+export default LogInPage;

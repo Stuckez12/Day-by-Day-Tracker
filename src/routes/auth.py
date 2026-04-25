@@ -20,6 +20,6 @@ def register_personnel(request: CreatePersonnelRequest, service: AuthServiceDep)
 def log_in(request: LogInRequest, response: Response, service: AuthServiceDep):
     personnel = service.log_in(request)
 
-    response.status_code = status.HTTP_202_ACCEPTED
+    response.status_code = status.HTTP_204_NO_CONTENT
 
     return service.set_login_cookies(response, personnel)

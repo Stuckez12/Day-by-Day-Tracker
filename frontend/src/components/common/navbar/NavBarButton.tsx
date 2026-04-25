@@ -6,10 +6,14 @@ interface NavBarButtonProps {
   right_hand_side?: boolean;
 }
 
-function NavBarButton({ frontend_url, display_text, right_hand_side }: NavBarButtonProps) {
+function NavBarButton({
+  frontend_url,
+  display_text,
+  right_hand_side,
+}: NavBarButtonProps) {
   var float_dir = "left";
 
-  if (right_hand_side !== undefined ) {
+  if (right_hand_side !== undefined) {
     float_dir = "right";
   }
 
