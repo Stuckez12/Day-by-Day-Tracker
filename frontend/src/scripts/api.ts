@@ -79,7 +79,12 @@ class APICalls {
       return [false, null, error_message];
     }
 
-    return [true, (await response.json()) as TYPE, null];
+    if (response.status != 204) {
+      return [true, (await response.json()) as TYPE, null];
+    }
+
+    // Return no response when specified
+    return [true, null, null];
   }
 
   public async put<TYPE>(

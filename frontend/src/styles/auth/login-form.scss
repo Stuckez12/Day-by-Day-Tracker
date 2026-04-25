@@ -1,0 +1,22 @@
+.login-form-container {
+  width: 100%;
+  min-height: calc(100vh - 64px);
+
+  margin: auto;
+}
+
+.login-form {
+  max-width: 448px;
+
+  padding: 32px;
+
+  margin-left: auto;
+  margin-right: auto;
+  margin-top: 128px;
+
+  @media (max-width: 576px) {
+    padding: 12px;
+
+    margin-top: 64px;
+  }
+}
