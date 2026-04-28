@@ -42,26 +42,10 @@ class UpdatePersonnelDetailsRequest(BaseModel):
 class UpdatePersonnelEmailRequest(BaseModel):
     email: str
 
-    @field_validator("email")
-    @classmethod
-    def validate_name(cls, value: str, info: ValidationInfo) -> str:
-        if len(value) <= 0:
-            raise ValueError(f"{info.field_name} must not be empty")
-
-        return value
-
 
 class UpdatePersonnelPasswordRequest(BaseModel):
     current_password: str
     new_password: str
-
-    @field_validator("current_password", "new_password")
-    @classmethod
-    def validate_name(cls, value: str, info: ValidationInfo) -> str:
-        if len(value) <= 0:
-            raise ValueError(f"{info.field_name} must not be empty")
-
-        return value
 
 
 class SelectPersonnelRequest(BaseModel):

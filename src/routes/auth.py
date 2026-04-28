@@ -1,5 +1,3 @@
-import uuid
-
 from fastapi import APIRouter, Response, status
 
 from src.common import AuthServiceDep

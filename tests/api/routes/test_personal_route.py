@@ -1,13 +1,13 @@
-import pytest
-
 from datetime import datetime
 from fastapi import status
 from fastapi.testclient import TestClient
+from pytest_mock import MockerFixture
 from sqlalchemy.orm import Session
 
-from src.models import PersonalModel, RankerModel
+from src.common.password_hash import pwd_hash
+from src.models import PersonalModel
 
-from tests.api.constants import INVALID_PERSONNEL_ID
+from tests.api.constants import INVALID_PASSWORD, INVALID_PERSONNEL_ID, VALID_PASSWORD
 
 
 class TestPersonalRoute:
@@ -40,7 +40,6 @@ class TestPersonalRoute:
         data = result.json()
         assert data == test_personnel.to_dict(clean=True)
 
-    # @pytest.mark.skip("FIXME: Test uses cookie from previous test")
     def test_get_personnel_self_no_cookies(
         self,
         test_client_v1: TestClient,
@@ -244,6 +243,76 @@ class TestPersonalRoute:
 
         data = result.json()
         assert data["detail"][0]["msg"] == "Value error, last_name must not be empty"
+
+    def test_update_personnel_email(
+        self,
+        test_set_cookies: None,
+        test_client_v1: TestClient,
+    ):
+        result = test_client_v1.put(
+            "/personal/me/email",
+            json={"email": "new@email.com"},
+        )
+        assert result.status_code == status.HTTP_202_ACCEPTED
+
+        data = result.json()
+        assert data["email"] == "new@email.com"
+
+    def test_update_personnel_password(
+        self,
+        test_set_cookies: None,
+        test_client_v1: TestClient,
+    ):
+        result = test_client_v1.put(
+            "/personal/me/password",
+            json={
+                "current_password": VALID_PASSWORD,
+                "new_password": "NewPassword123",
+            },
+        )
+        assert result.status_code == status.HTTP_202_ACCEPTED
+
+        data = result.json()
+        assert pwd_hash.verify("NewPassword123", data["password"])
+
+    def test_update_personnel_password_incorrect_current_password(
+        self,
+        test_set_cookies: None,
+        test_client_v1: TestClient,
+    ):
+        result = test_client_v1.put(
+            "/personal/me/password",
+            json={
+                "current_password": INVALID_PASSWORD,
+                "new_password": "NewPassword123",
+            },
+        )
+        assert result.status_code == status.HTTP_400_BAD_REQUEST
+
+        data = result.json()
+        assert "detail" in data
+        assert data["detail"] == "Current password incorrect"
+
+    def test_update_personnel_password__password_hashing_fails(
+        self,
+        mocker: MockerFixture,
+        test_set_cookies: None,
+        test_client_v1: TestClient,
+    ):
+        mocker.patch.object(pwd_hash, "hash", side_effect=ValueError("Forced Error"))
+
+        result = test_client_v1.put(
+            "/personal/me/password",
+            json={
+                "current_password": VALID_PASSWORD,
+                "new_password": "NewPassword123",
+            },
+        )
+        assert result.status_code == status.HTTP_400_BAD_REQUEST
+
+        data = result.json()
+        assert "detail" in data
+        assert data["detail"] == "Unable to hash password. Please try again"
 
     def test_delete_personnel_success(
         self,

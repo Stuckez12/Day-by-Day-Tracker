@@ -1,12 +1,12 @@
 import uuid
 
-from fastapi import APIRouter, HTTPException, Response, status, Cookie, Query
+from fastapi import APIRouter, HTTPException, status, Cookie, Query
 
 from src.common import PersonalServiceDep
 from src.schemas import (
-    CreatePersonnelRequest,
-    SelectPersonnelRequest,
     UpdatePersonnelDetailsRequest,
+    UpdatePersonnelEmailRequest,
+    UpdatePersonnelPasswordRequest,
 )
 
 
@@ -63,7 +63,7 @@ def update_personnel_details(
 
 @api.put("/me/email", status_code=status.HTTP_202_ACCEPTED)
 def update_personnel_email(
-    request: UpdatePersonnelDetailsRequest,
+    request: UpdatePersonnelEmailRequest,
     service: PersonalServiceDep,
     personnel_id: uuid.UUID = Cookie(..., include_in_schema=False),
 ):
@@ -74,7 +74,7 @@ def update_personnel_email(
 
 @api.put("/me/password", status_code=status.HTTP_202_ACCEPTED)
 def update_personnel_password(
-    request: UpdatePersonnelDetailsRequest,
+    request: UpdatePersonnelPasswordRequest,
     service: PersonalServiceDep,
     personnel_id: uuid.UUID = Cookie(..., include_in_schema=False),
 ):

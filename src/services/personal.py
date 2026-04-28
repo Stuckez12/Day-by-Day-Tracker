@@ -57,7 +57,11 @@ class PersonalService(BaseDBService[PersonalModel]):
         if not validated:
             raise ValueError("Current password incorrect")
 
-        personnel.password = pwd_hash.hash(data.new_password)
+        try:
+            personnel.password = pwd_hash.hash(data.new_password)
+
+        except (TypeError, ValueError):
+            raise ValueError("Unable to hash password. Please try again")
 
         self.db.commit()
         self.db.refresh(personnel)

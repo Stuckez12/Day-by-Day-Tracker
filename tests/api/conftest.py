@@ -9,9 +9,9 @@ from fastapi.testclient import TestClient
 from sqlalchemy.orm import Session
 from typing import Generator
 
-from src.main import app
 from src.common import get_db
 from src.common.password_hash import pwd_hash
+from src.main import app
 from src.models import PersonalModel, RankerModel
 from src.services import AuthService, PersonalService, RankingService
 
