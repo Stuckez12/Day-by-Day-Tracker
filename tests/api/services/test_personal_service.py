@@ -6,7 +6,7 @@ from src.common.password_hash import pwd_hash
 from src.models import PersonalModel, RankerModel
 from src.schemas import (
     CreatePersonnelRequest,
-    UpdatePersonnelRequest,
+    UpdatePersonnelDetailsRequest,
     InvalidSchema,
 )
 from src.services import PersonalService
@@ -46,12 +46,14 @@ class TestPersonalService:
     def test_update_personnel_all_details(
         self, test_personnel: PersonalModel, test_personal_service: PersonalService
     ):
-        data = UpdatePersonnelRequest(
+        data = UpdatePersonnelDetailsRequest(
             first_name="Updated",
             last_name="Updated",
         )
 
-        updated_personnel = test_personal_service.update_personnel(test_personnel, data)
+        updated_personnel = test_personal_service.update_personnel_details(
+            test_personnel, data
+        )
 
         assert updated_personnel.first_name == "Updated"
         assert updated_personnel.last_name == "Updated"
@@ -59,11 +61,13 @@ class TestPersonalService:
     def test_update_personnel_first_name(
         self, test_personnel: PersonalModel, test_personal_service: PersonalService
     ):
-        data = UpdatePersonnelRequest(
+        data = UpdatePersonnelDetailsRequest(
             first_name="Updated",
         )
 
-        updated_personnel = test_personal_service.update_personnel(test_personnel, data)
+        updated_personnel = test_personal_service.update_personnel_details(
+            test_personnel, data
+        )
 
         assert updated_personnel.first_name == "Updated"
         assert updated_personnel.last_name == test_personnel.last_name
@@ -71,11 +75,13 @@ class TestPersonalService:
     def test_update_personnel_last_name(
         self, test_personnel: PersonalModel, test_personal_service: PersonalService
     ):
-        data = UpdatePersonnelRequest(
+        data = UpdatePersonnelDetailsRequest(
             last_name="Updated",
         )
 
-        updated_personnel = test_personal_service.update_personnel(test_personnel, data)
+        updated_personnel = test_personal_service.update_personnel_details(
+            test_personnel, data
+        )
 
         assert updated_personnel.first_name == test_personnel.first_name
         assert updated_personnel.last_name == "Updated"

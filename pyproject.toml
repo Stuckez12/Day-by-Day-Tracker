@@ -31,6 +31,7 @@ dependencies = [
 addopts = "--cov=src"
 
 filterwarnings = [
+  "ignore:Accessing argon2\\.__version__ is deprecated.*:DeprecationWarning",
   "ignore:DELETE statement on table .* expected to delete .* row.*:sqlalchemy.exc.SAWarning",
 ]
 
