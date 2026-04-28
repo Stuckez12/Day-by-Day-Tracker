@@ -11,7 +11,7 @@ function RankingPage() {
 
   useEffect(() => {
     is_logged_in(navigate);
-  }, []);
+  }, [navigate]);
 
   return (
     <PageWrapper>

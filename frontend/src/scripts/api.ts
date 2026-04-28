@@ -54,7 +54,7 @@ class APICalls {
 
   public async post<TYPE>(
     url: string,
-    payload: { [key: string]: any },
+    payload: { [key: string]: string | number | boolean },
   ): Promise<[boolean, TYPE | null, string | null]> {
     let response;
 
@@ -89,7 +89,7 @@ class APICalls {
 
   public async put<TYPE>(
     url: string,
-    payload: { [key: string]: any },
+    payload: { [key: string]: string | number | boolean },
   ): Promise<[boolean, TYPE | null, string | null]> {
     let response;
 

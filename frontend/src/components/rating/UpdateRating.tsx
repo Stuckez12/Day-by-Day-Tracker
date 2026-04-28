@@ -31,7 +31,7 @@ function UpdateRating() {
     console.log("Form data:", form);
 
     async function update_ranking(form: RankingRowProps) {
-      const [success, _, message] = await APICall.put<RankingProps>(
+      const [success, _data, message] = await APICall.put<RankingProps>(
         "/ranking/rank",
         {
           day: form.day,

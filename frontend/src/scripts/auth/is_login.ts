@@ -1,8 +1,10 @@
+import type { NavigateFunction } from "react-router-dom";
+
 import type { PersonnelRowProps } from "interfaces/personnel.ts";
 
 import APICall from "scripts/api.ts";
 
-export async function check_logged_in(navigate_func: Function) {
+export async function check_logged_in(navigate_func: NavigateFunction) {
   const [success] = await APICall.get<PersonnelRowProps>("/personal/me");
 
   if (success) {
@@ -11,7 +13,7 @@ export async function check_logged_in(navigate_func: Function) {
   }
 }
 
-export async function is_logged_in(navigate_func: Function) {
+export async function is_logged_in(navigate_func: NavigateFunction) {
   const [success] = await APICall.get<PersonnelRowProps>("/personal/me");
 
   if (!success) {

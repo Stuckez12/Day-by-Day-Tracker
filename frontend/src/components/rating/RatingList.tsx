@@ -21,7 +21,7 @@ function RatingList() {
     }
 
     const fetchRankings = async () => {
-      const [success, data, _] =
+      const [success, data, _message] =
         await APICall.get<RankingProps[]>("/ranking/all");
 
       if (success) {
@@ -33,7 +33,7 @@ function RatingList() {
 
     fetchRankings();
     setRefreshList(false);
-  }, [refreshList]);
+  }, [refreshList, setRefreshList]);
 
   return (
     <div className="table-base">

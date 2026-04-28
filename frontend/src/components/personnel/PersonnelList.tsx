@@ -4,7 +4,7 @@ import PersonnelRow from "components/personnel/PersonnelRow";
 
 import { ContextRefreshList } from "contexts/ContextRefreshList.tsx";
 
-// import type { IDProps } from "interfaces/common";
+// import type { IDProps } from "interfaces/common/common";
 import type { PersonnelRowProps } from "interfaces/personnel.ts";
 
 import APICall from "scripts/api.ts";
@@ -23,7 +23,7 @@ function PersonnelList() {
     }
 
     const fetchPersonnel = async () => {
-      const [success, data, _] =
+      const [success, data, _message] =
         await APICall.get<PersonnelRowProps[]>("/personal/all");
 
       if (success) {
@@ -35,7 +35,7 @@ function PersonnelList() {
     };
 
     // const fetchSelectedPersonnel = async () => {
-    //   const [success, data, _] =
+    //   const [success, data, _message] =
     //     await APICall.get<PersonnelRowProps>("/personal/me");
 
     //   if (success) {
@@ -46,7 +46,7 @@ function PersonnelList() {
     fetchPersonnel();
     // fetchSelectedPersonnel();
     setRefreshList(false);
-  }, [refreshList]);
+  }, [refreshList, setRefreshList]);
 
   // const selected = selected_personnel ? selected_personnel.id : "";
 

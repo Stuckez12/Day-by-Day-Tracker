@@ -11,7 +11,7 @@ function LogInPage() {
 
   useEffect(() => {
     check_logged_in(navigate);
-  }, []);
+  }, [navigate]);
 
   return (
     <PageWrapper>
