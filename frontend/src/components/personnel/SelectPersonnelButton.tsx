@@ -2,7 +2,7 @@ import { useContext } from "react";
 
 import { ContextRefreshList } from "contexts/ContextRefreshList.tsx";
 
-import type { IDProps } from "interfaces/common";
+import type { IDProps } from "interfaces/common/common";
 
 import APICall from "scripts/api.ts";
 

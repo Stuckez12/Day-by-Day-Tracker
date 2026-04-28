@@ -4,7 +4,7 @@ import PersonnelRow from "components/personnel/PersonnelRow";
 
 import { ContextRefreshList } from "contexts/ContextRefreshList.tsx";
 
-// import type { IDProps } from "interfaces/common";
+// import type { IDProps } from "interfaces/common/common";
 import type { PersonnelRowProps } from "interfaces/personnel.ts";
 
 import APICall from "scripts/api.ts";
