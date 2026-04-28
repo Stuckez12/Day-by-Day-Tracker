@@ -26,7 +26,7 @@ class CreatePersonnelRequest(BaseModel):
         return value
 
 
-class UpdatePersonnelRequest(BaseModel):
+class UpdatePersonnelDetailsRequest(BaseModel):
     first_name: str | None = None
     last_name: str | None = None
 
@@ -37,6 +37,15 @@ class UpdatePersonnelRequest(BaseModel):
             raise ValueError(f"{info.field_name} must not be empty")
 
         return value
+
+
+class UpdatePersonnelEmailRequest(BaseModel):
+    email: str
+
+
+class UpdatePersonnelPasswordRequest(BaseModel):
+    current_password: str
+    new_password: str
 
 
 class SelectPersonnelRequest(BaseModel):

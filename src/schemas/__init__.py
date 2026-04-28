@@ -4,7 +4,9 @@ from src.schemas.personal import (
     CreatePersonnelRequest,
     PersonnelSchema,
     SelectPersonnelRequest,
-    UpdatePersonnelRequest,
+    UpdatePersonnelDetailsRequest,
+    UpdatePersonnelEmailRequest,
+    UpdatePersonnelPasswordRequest,
 )
 from src.schemas.ranking import (
     GetAllRankingsResponse,

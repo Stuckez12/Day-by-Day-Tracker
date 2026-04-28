@@ -3,8 +3,14 @@ import uuid
 from fastapi import HTTPException, status
 from sqlalchemy.orm import Session
 
+from src.common.password_hash import pwd_hash
 from src.models import PersonalModel
-from src.schemas import CreatePersonnelRequest, UpdatePersonnelRequest
+from src.schemas import (
+    CreatePersonnelRequest,
+    UpdatePersonnelDetailsRequest,
+    UpdatePersonnelEmailRequest,
+    UpdatePersonnelPasswordRequest,
+)
 from src.services.base import BaseDBService
 
 
@@ -25,10 +31,38 @@ class PersonalService(BaseDBService[PersonalModel]):
 
         return personnel
 
-    def update_personnel(
-        self, personnel: PersonalModel, data: UpdatePersonnelRequest
+    def update_personnel_details(
+        self, personnel: PersonalModel, data: UpdatePersonnelDetailsRequest
     ) -> PersonalModel:
         personnel = self.update_data_columns(personnel, data)
+        self.db.commit()
+        self.db.refresh(personnel)
+
+        return personnel
+
+    def update_personnel_email(
+        self, personnel: PersonalModel, data: UpdatePersonnelEmailRequest
+    ) -> PersonalModel:
+        personnel.email = data.email
+        self.db.commit()
+        self.db.refresh(personnel)
+
+        return personnel
+
+    def update_personnel_password(
+        self, personnel: PersonalModel, data: UpdatePersonnelPasswordRequest
+    ) -> PersonalModel:
+        validated = pwd_hash.verify(data.current_password, personnel.password)
+
+        if not validated:
+            raise ValueError("Current password incorrect")
+
+        try:
+            personnel.password = pwd_hash.hash(data.new_password)
+
+        except (TypeError, ValueError):
+            raise ValueError("Unable to hash password. Please try again")
+
         self.db.commit()
         self.db.refresh(personnel)
 

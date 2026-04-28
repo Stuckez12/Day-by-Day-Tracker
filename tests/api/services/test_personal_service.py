@@ -6,10 +6,14 @@ from src.common.password_hash import pwd_hash
 from src.models import PersonalModel, RankerModel
 from src.schemas import (
     CreatePersonnelRequest,
-    UpdatePersonnelRequest,
     InvalidSchema,
+    UpdatePersonnelDetailsRequest,
+    UpdatePersonnelEmailRequest,
+    UpdatePersonnelPasswordRequest,
 )
 from src.services import PersonalService
+
+from tests.api.constants import VALID_PASSWORD
 
 
 class TestPersonalService:
@@ -43,42 +47,74 @@ class TestPersonalService:
         ):
             test_personal_service.create_personnel(InvalidSchema())
 
-    def test_update_personnel_all_details(
+    def test_update_personnel_details_all_details(
         self, test_personnel: PersonalModel, test_personal_service: PersonalService
     ):
-        data = UpdatePersonnelRequest(
+        data = UpdatePersonnelDetailsRequest(
             first_name="Updated",
             last_name="Updated",
         )
 
-        updated_personnel = test_personal_service.update_personnel(test_personnel, data)
+        updated_personnel = test_personal_service.update_personnel_details(
+            test_personnel, data
+        )
 
         assert updated_personnel.first_name == "Updated"
         assert updated_personnel.last_name == "Updated"
 
-    def test_update_personnel_first_name(
+    def test_update_personnel_details_first_name(
         self, test_personnel: PersonalModel, test_personal_service: PersonalService
     ):
-        data = UpdatePersonnelRequest(
+        data = UpdatePersonnelDetailsRequest(
             first_name="Updated",
         )
 
-        updated_personnel = test_personal_service.update_personnel(test_personnel, data)
+        updated_personnel = test_personal_service.update_personnel_details(
+            test_personnel, data
+        )
 
         assert updated_personnel.first_name == "Updated"
         assert updated_personnel.last_name == test_personnel.last_name
 
-    def test_update_personnel_last_name(
+    def test_update_personnel_details_last_name(
         self, test_personnel: PersonalModel, test_personal_service: PersonalService
     ):
-        data = UpdatePersonnelRequest(
+        data = UpdatePersonnelDetailsRequest(
             last_name="Updated",
         )
 
-        updated_personnel = test_personal_service.update_personnel(test_personnel, data)
+        updated_personnel = test_personal_service.update_personnel_details(
+            test_personnel, data
+        )
 
         assert updated_personnel.first_name == test_personnel.first_name
         assert updated_personnel.last_name == "Updated"
+
+    def test_update_personnel_email(
+        self, test_personnel: PersonalModel, test_personal_service: PersonalService
+    ):
+        data = UpdatePersonnelEmailRequest(
+            email="updated@email.com",
+        )
+
+        updated_email = test_personal_service.update_personnel_email(
+            test_personnel, data
+        )
+        assert updated_email.email == data.email
+
+    def test_update_personnel_password(
+        self, test_personnel: PersonalModel, test_personal_service: PersonalService
+    ):
+        data = UpdatePersonnelPasswordRequest(
+            current_password=VALID_PASSWORD,
+            new_password="NewPassword123",
+        )
+
+        updated_password = test_personal_service.update_personnel_password(
+            test_personnel, data
+        )
+
+        assert pwd_hash.verify(data.new_password, updated_password.password)
 
     def test_delete_personnel_success(
         self, test_personnel: PersonalModel, test_personal_service: PersonalService

@@ -1,12 +1,12 @@
 import uuid
 
-from fastapi import APIRouter, HTTPException, Response, status, Cookie, Query
+from fastapi import APIRouter, HTTPException, status, Cookie, Query
 
 from src.common import PersonalServiceDep
 from src.schemas import (
-    CreatePersonnelRequest,
-    SelectPersonnelRequest,
-    UpdatePersonnelRequest,
+    UpdatePersonnelDetailsRequest,
+    UpdatePersonnelEmailRequest,
+    UpdatePersonnelPasswordRequest,
 )
 
 
@@ -30,7 +30,7 @@ def get_personnel(
 @api.get("/me", status_code=status.HTTP_200_OK)
 def get_personnel_self(
     service: PersonalServiceDep,
-    personnel_id: uuid.UUID = Cookie("personnel_id", include_in_schema=False),
+    personnel_id: uuid.UUID = Cookie(..., include_in_schema=False),
 ):
     return service.personnel_exists(personnel_id)
 
@@ -38,17 +38,6 @@ def get_personnel_self(
 @api.get("/all", status_code=status.HTTP_200_OK)
 def get_all_personnel(service: PersonalServiceDep):
     return service.get_all()
-
-
-@api.put("/", status_code=status.HTTP_202_ACCEPTED)
-def update_personnel(
-    request: UpdatePersonnelRequest,
-    service: PersonalServiceDep,
-    personnel_id: uuid.UUID = Cookie("personnel_id", include_in_schema=False),
-):
-    personnel = service.personnel_exists(personnel_id)
-
-    return service.update_personnel(personnel, request)
 
 
 @api.delete("/", status_code=status.HTTP_200_OK)
@@ -61,15 +50,34 @@ def delete_personnel(
     return service.delete_personnel(personnel)
 
 
-@api.put("/select", status_code=status.HTTP_204_NO_CONTENT, deprecated=True)
-def selected_personnel(
-    request: SelectPersonnelRequest,
-    response: Response,
+@api.put("/me/details", status_code=status.HTTP_202_ACCEPTED)
+def update_personnel_details(
+    request: UpdatePersonnelDetailsRequest,
     service: PersonalServiceDep,
+    personnel_id: uuid.UUID = Cookie(..., include_in_schema=False),
 ):
-    personnel = service.personnel_exists(request.id)
+    personnel = service.personnel_exists(personnel_id)
 
-    response.set_cookie("personnel_id", str(personnel.id))
-    response.status_code = status.HTTP_204_NO_CONTENT
+    return service.update_personnel_details(personnel, request)
 
-    return response
+
+@api.put("/me/email", status_code=status.HTTP_202_ACCEPTED)
+def update_personnel_email(
+    request: UpdatePersonnelEmailRequest,
+    service: PersonalServiceDep,
+    personnel_id: uuid.UUID = Cookie(..., include_in_schema=False),
+):
+    personnel = service.personnel_exists(personnel_id)
+
+    return service.update_personnel_email(personnel, request)
+
+
+@api.put("/me/password", status_code=status.HTTP_202_ACCEPTED)
+def update_personnel_password(
+    request: UpdatePersonnelPasswordRequest,
+    service: PersonalServiceDep,
+    personnel_id: uuid.UUID = Cookie(..., include_in_schema=False),
+):
+    personnel = service.personnel_exists(personnel_id)
+
+    return service.update_personnel_password(personnel, request)

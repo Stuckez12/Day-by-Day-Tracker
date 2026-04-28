@@ -14,7 +14,7 @@ api = APIRouter(prefix="/ranking", tags=["Ranking"])
 def get_ranking(
     service: RankingServiceDep,
     personnel_service: PersonalServiceDep,
-    personnel_id: uuid.UUID = Cookie("personnel_id", include_in_schema=False),
+    personnel_id: uuid.UUID = Cookie(..., include_in_schema=False),
     date: date = Query(default_factory=date.today, title="Date"),
 ):
     personnel_service.personnel_exists(personnel_id)
@@ -25,7 +25,7 @@ def get_ranking(
 @api.get("/all", status_code=status.HTTP_200_OK)
 def get_all_rankings(
     service: RankingServiceDep,
-    personnel_id: uuid.UUID = Cookie("personnel_id", include_in_schema=False),
+    personnel_id: uuid.UUID = Cookie(..., include_in_schema=False),
 ):
     return service.get_all_personnel_rankings(personnel_id)
 
@@ -33,7 +33,7 @@ def get_all_rankings(
 @api.get("/today", status_code=status.HTTP_200_OK)
 def get_todays_ranking(
     service: RankingServiceDep,
-    personnel_id: uuid.UUID = Cookie("personnel_id", include_in_schema=False),
+    personnel_id: uuid.UUID = Cookie(..., include_in_schema=False),
 ):
     return service.fetch_date(personnel_id, date.today())
 
@@ -46,7 +46,7 @@ def get_todays_ranking(
 def rank_day(
     request: RankingRequest,
     service: RankingServiceDep,
-    personnel_id: uuid.UUID = Cookie("personnel_id", include_in_schema=False),
+    personnel_id: uuid.UUID = Cookie(..., include_in_schema=False),
 ):
     rank_data = service.fetch_date(personnel_id, request.day)
 

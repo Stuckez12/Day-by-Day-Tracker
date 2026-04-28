@@ -1,5 +1,6 @@
 import os
 import pytest
+import uuid
 
 from alembic import command
 from alembic.config import Config
@@ -8,13 +9,13 @@ from fastapi.testclient import TestClient
 from sqlalchemy.orm import Session
 from typing import Generator
 
-from src.main import app
 from src.common import get_db
 from src.common.password_hash import pwd_hash
+from src.main import app
 from src.models import PersonalModel, RankerModel
 from src.services import AuthService, PersonalService, RankingService
 
-from tests.api.constants import INVALID_PERSONNEL_ID, VALID_PASSWORD
+from tests.api.constants import VALID_PASSWORD
 
 
 ################################################################################
@@ -49,14 +50,25 @@ def test_session() -> Generator[Session, None, None]:
 
 @pytest.fixture
 def test_set_cookies(test_client_v1: TestClient, test_personnel: PersonalModel):
-    test_client_v1.put(f"/personal/select", json={"id": str(test_personnel.id)})
+    response = test_client_v1.post(
+        "/auth/login",
+        json={"email": test_personnel.email, "password": VALID_PASSWORD},
+    )
+    assert response.status_code == 204
+
+    yield
+
+    test_client_v1.cookies.pop("personnel_id", None)
 
 
 @pytest.fixture
-def test_set_cookies_invalid_user(test_client_v1_mocked_personnel_service: TestClient):
-    test_client_v1_mocked_personnel_service.put(
-        f"/personal/select", json={"id": INVALID_PERSONNEL_ID}
-    )
+def test_set_invalid_cookies(test_client_v1: TestClient):
+    id = str(uuid.uuid4())
+    test_client_v1.cookies.set("personnel_id", id)
+
+    yield id
+
+    test_client_v1.cookies.pop("personnel_id", None)
 
 
 @pytest.fixture(scope="session")

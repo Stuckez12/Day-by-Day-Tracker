@@ -17,7 +17,6 @@ class TestRankingRoute:
         self,
         test_set_cookies: None,
         test_client_v1: TestClient,
-        test_personnel: PersonalModel,
         test_ranker: RankerModel,
     ):
         result = test_client_v1.get("/ranking")
@@ -32,7 +31,6 @@ class TestRankingRoute:
         self,
         test_set_cookies: None,
         test_client_v1: TestClient,
-        test_personnel: PersonalModel,
         test_ranker_set_date: RankerModel,
     ):
         result = test_client_v1.get(f"/ranking?date={test_ranker_set_date.day}")
@@ -41,21 +39,17 @@ class TestRankingRoute:
         data = result.json()
         assert data == test_ranker_set_date.to_dict(clean=True)
 
-    @pytest.mark.skip("FIXME: Test uses cookie from previous test")
     def test_get_ranking_invalid_personnel_cookie(
         self,
-        test_set_cookies: None,
+        test_set_invalid_cookies: str,
         test_client_v1: TestClient,
-        test_personnel: PersonalModel,
         test_ranker: RankerModel,
     ):
         result = test_client_v1.get(f"/ranking?date={test_ranker.day}")
-        # assert result.status_code == status.HTTP_200_OK
+        assert result.status_code == status.HTTP_404_NOT_FOUND
 
-        data = result.json()
-        print(data)
-
-        assert data["detail"] == f"Personnel {INVALID_PERSONNEL_ID} not found"
+        response = result.json()
+        assert response["detail"] == f"Personnel {test_set_invalid_cookies} not found"
 
     def test_get_all_personnel_rankings(
         self,
@@ -73,17 +67,21 @@ class TestRankingRoute:
         assert data[1] == test_ranker_none.to_dict(clean=True)
         assert data[2] == test_ranker_set_date.to_dict(clean=True)
 
-    @pytest.mark.skip("FIXME: Test uses cookie from previous test")
     def test_get_all_personnel_rankings_no_personnel_cookie(
         self, test_client_v1: TestClient
     ):
         result = test_client_v1.get("/ranking/all")
-        assert result.status_code == status.HTTP_200_OK
+        assert result.status_code == status.HTTP_422_UNPROCESSABLE_CONTENT
 
-        data = result.json()
-        print(data)
+        response = result.json()
+        assert "detail" in response
+        assert len(response["detail"]) == 1
 
-        assert False
+        error_message = response["detail"][0]
+        assert error_message["type"] == "missing"
+        assert error_message["loc"] == ["cookie", "personnel_id"]
+        assert error_message["msg"] == "Field required"
+        assert error_message["input"] is None
 
     def test_get_todays_personnel_rankings(
         self,
@@ -126,17 +124,21 @@ class TestRankingRoute:
             test_session.delete(ranking)
             test_session.commit()
 
-    @pytest.mark.skip("FIXME: Test uses cookie from previous test")
     def test_get_todays_personnel_rankings_no_personnel_cookie(
         self, test_client_v1: TestClient
     ):
         result = test_client_v1.get("/ranking/today")
-        assert result.status_code == status.HTTP_200_OK
+        assert result.status_code == status.HTTP_422_UNPROCESSABLE_CONTENT
 
-        data = result.json()
-        print(data)
+        response = result.json()
+        assert "detail" in response
+        assert len(response["detail"]) == 1
 
-        assert False
+        error_message = response["detail"][0]
+        assert error_message["type"] == "missing"
+        assert error_message["loc"] == ["cookie", "personnel_id"]
+        assert error_message["msg"] == "Field required"
+        assert error_message["input"] is None
 
     def test_rank_day(
         self,
@@ -209,15 +211,26 @@ class TestRankingRoute:
             test_session.delete(ranking)
             test_session.commit()
 
-    @pytest.mark.skip("FIXME: Test uses cookie from previous test")
-    def test_rank_day_no_personnel_cookie(self, test_client_v1: TestClient):
-        result = test_client_v1.put("/ranking/rank")
-        assert result.status_code == status.HTTP_200_OK
+    def test_rank_day_no_personnel_cookie(
+        self,
+        test_client_v1: TestClient,
+        test_date_today: date,
+    ):
+        result = test_client_v1.put(
+            "/ranking/rank",
+            json={"day": test_date_today.strftime("%Y-%m-%d"), "ranking": 10},
+        )
+        assert result.status_code == status.HTTP_422_UNPROCESSABLE_CONTENT
 
-        data = result.json()
-        print(data)
+        response = result.json()
+        assert "detail" in response
+        assert len(response["detail"]) == 1
 
-        assert False
+        error_message = response["detail"][0]
+        assert error_message["type"] == "missing"
+        assert error_message["loc"] == ["cookie", "personnel_id"]
+        assert error_message["msg"] == "Field required"
+        assert error_message["input"] is None
 
     def test_rank_day_no_day_provided(
         self, test_set_cookies: None, test_client_v1: TestClient
