@@ -11,7 +11,7 @@ function PersonnelPage() {
 
   useEffect(() => {
     is_logged_in(navigate);
-  }, []);
+  }, [navigate]);
 
   return (
     <PageWrapper>

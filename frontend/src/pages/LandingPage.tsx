@@ -12,7 +12,7 @@ function LandingPage() {
 
   useEffect(() => {
     is_logged_in(navigate);
-  }, []);
+  }, [navigate]);
 
   return (
     <PageWrapper>

@@ -11,7 +11,7 @@ function NavBarButton({
   display_text,
   right_hand_side,
 }: NavBarButtonProps) {
-  var float_dir = "left";
+  let float_dir = "left";
 
   if (right_hand_side !== undefined) {
     float_dir = "right";

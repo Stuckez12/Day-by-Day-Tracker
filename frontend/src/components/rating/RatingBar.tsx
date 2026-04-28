@@ -11,15 +11,13 @@ import APICall from "scripts/api.ts";
 
 import "styles/rating/rating_button.scss";
 
-
 function RatingBar() {
   const [rank_today, setRank] = useState<RankingProps>();
 
   useEffect(() => {
     async function fetchRank() {
-      const [success, response, message] = await APICall.get<RankingProps>(
-        "/ranking/today"
-      );
+      const [success, response, message] =
+        await APICall.get<RankingProps>("/ranking/today");
 
       if (success) {
         setRank(response!);
@@ -40,7 +38,7 @@ function RatingBar() {
 
     if (!clickedDiv || clickedDiv === e.currentTarget) {
       const parentDiv = (clickedDiv as HTMLElement).parentElement?.closest(
-        "div#rating-button-list"
+        "div#rating-button-list",
       );
 
       if (!parentDiv) return;
@@ -53,20 +51,20 @@ function RatingBar() {
       {
         day: Temporal.Now.plainDateISO().toString(),
         ranking: Number(clickedDiv.textContent),
-      }
+      },
     );
 
     console.log(success, response, message);
 
     if (success) {
-      setRank(response!)
+      setRank(response!);
     } else {
       console.log("Error when getting data");
       console.log(message);
     }
   };
 
-  let ranking = rank_today ? rank_today.ranking : null;
+  const ranking = rank_today ? rank_today.ranking : null;
 
   return (
     <>

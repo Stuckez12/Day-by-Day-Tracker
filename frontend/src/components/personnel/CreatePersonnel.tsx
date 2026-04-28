@@ -33,7 +33,7 @@ function CreatePersonnel() {
     console.log("Form data:", form);
 
     async function create_personnel(form: CreatePersonnelProps) {
-      const [success, _, message] = await APICall.post<PersonnelRowProps>(
+      const [success, _data, message] = await APICall.post<PersonnelRowProps>(
         "/personal",
         {
           first_name: form.first_name,

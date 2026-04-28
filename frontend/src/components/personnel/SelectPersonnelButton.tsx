@@ -13,7 +13,7 @@ function SelectPersonnelButton({ id }: IDProps) {
     const clicked = e.currentTarget.dataset.id;
     if (!clicked) return;
 
-    const [success, _, err_message] = await APICall.put<null>(
+    const [success, _data, err_message] = await APICall.put<null>(
       "/personal/select",
       {
         id: clicked,
