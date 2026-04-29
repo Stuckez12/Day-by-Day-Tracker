@@ -1,4 +1,6 @@
-from fastapi import APIRouter, Response, status
+import uuid
+
+from fastapi import APIRouter, Request, Response, status
 
 from src.common import AuthServiceDep
 from src.schemas import CreatePersonnelRequest, LogInRequest, PersonnelSchema
@@ -21,3 +23,11 @@ def log_in(request: LogInRequest, response: Response, service: AuthServiceDep):
     response.status_code = status.HTTP_204_NO_CONTENT
 
     return service.set_login_cookies(response, personnel)
+
+
+@api.post("/logout", status_code=status.HTTP_200_OK)
+def log_out(_: Request, response: Response):
+    response.status_code = status.HTTP_204_NO_CONTENT
+    response.delete_cookie("personnel_id")
+
+    return response

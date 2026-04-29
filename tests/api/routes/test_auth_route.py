@@ -143,3 +143,19 @@ class TestAuthRoute:
 
         data = result.json()
         assert data["detail"] == "Invalid email or password"
+
+    def test_log_out(
+        self,
+        test_set_cookies: None,
+        test_client_v1: TestClient,
+        test_personnel: PersonalModel,
+    ):
+        result = test_client_v1.post(
+            "/auth/logout",
+            json={
+                "email": test_personnel.email,
+                "password": INVALID_PASSWORD,
+            },
+        )
+        assert result.status_code == status.HTTP_204_NO_CONTENT
+        assert test_client_v1.cookies.get("personnel_id") is None
