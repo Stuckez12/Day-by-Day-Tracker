@@ -2,7 +2,9 @@ import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 
 import PageWrapper from "components/common/PageWrapper";
-import ContextPersonnelList from "components/personnel/ContextPersonnelList";
+import UpdatePersonnelDetails from "components/personnel/UpdatePersonnelDetails";
+import UpdatePersonnelEmail from "components/personnel/UpdatePersonnelEmail";
+import UpdatePersonnelPassword from "components/personnel/UpdatePersonnelPassword";
 
 import { is_logged_in } from "scripts/auth/is_login.ts";
 
@@ -15,7 +17,9 @@ function PersonnelPage() {
 
   return (
     <PageWrapper>
-      <ContextPersonnelList />
+      <UpdatePersonnelDetails />
+      <UpdatePersonnelEmail />
+      <UpdatePersonnelPassword />
     </PageWrapper>
   );
 }
