@@ -17,7 +17,6 @@ from src.services import AuthService, PersonalService, RankingService
 
 from tests.api.constants import VALID_PASSWORD
 
-
 ################################################################################
 # Misc
 ################################################################################

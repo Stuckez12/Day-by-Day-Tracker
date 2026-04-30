@@ -9,7 +9,7 @@ dependencies = [
     "alembic>=1.17.2",
     "argon2-cffi>=25.1.0",
     "bcrypt>=5.0.0",
-    "black>=25.12.0",
+    "black==26.1.0",
     "fastapi>=0.125.0",
     "flake8>=7.3.0",
     "httpx>=0.28.1",

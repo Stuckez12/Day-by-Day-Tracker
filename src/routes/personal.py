@@ -9,7 +9,6 @@ from src.schemas import (
     UpdatePersonnelPasswordRequest,
 )
 
-
 api = APIRouter(prefix="/personal", tags=["Personal"])
 
 

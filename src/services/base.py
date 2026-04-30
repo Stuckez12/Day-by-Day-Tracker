@@ -5,7 +5,6 @@ from uuid import UUID
 
 from src.models.base import BaseModel as DBBase
 
-
 Model = TypeVar("Model", bound=DBBase)
 
 
