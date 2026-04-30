@@ -12,6 +12,7 @@ from alembic import op
 import sqlalchemy as sa
 from sqlalchemy.sql import text
 
+from src.common.password_hash import pwd_hash
 
 # revision identifiers, used by Alembic.
 revision: str = "6350c32c93b3"
@@ -32,15 +33,17 @@ def upgrade() -> None:
         unique_email = f"user{i+1}@example.com"
 
         conn.execute(
-            text(
-                """
+            text("""
                 UPDATE personal
                 SET email = :email,
                     password = :password
                 WHERE id = :id
-            """
-            ),
-            {"id": row.id, "email": unique_email, "password": "temporary_password"},
+            """),
+            {
+                "id": row.id,
+                "email": unique_email,
+                "password": pwd_hash.hash("password"),
+            },
         )
 
     op.alter_column("personal", "email", nullable=False)
