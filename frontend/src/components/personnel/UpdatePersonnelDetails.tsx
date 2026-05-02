@@ -58,7 +58,8 @@ function UpdatePersonnelDetails() {
   }
 
   return (
-    <>
+    <div style={{ marginTop: "16px" }}>
+      <h1>Update Details</h1>
       <div className="details-block">
         <div className="details-50">
           <div className="text-input">
@@ -91,7 +92,7 @@ function UpdatePersonnelDetails() {
       <button className="submit-button" onClick={onSubmit}>
         Submit
       </button>
-    </>
+    </div>
   );
 }
 

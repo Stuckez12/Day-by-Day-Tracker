@@ -52,6 +52,7 @@ function UpdatePersonnelPassword() {
   return (
     <>
       <div>
+        <h1>Change Password</h1>
         <div className="details-block-single">
           <div className="text-input">
             <input

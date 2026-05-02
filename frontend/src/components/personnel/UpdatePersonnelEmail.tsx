@@ -51,18 +51,21 @@ function UpdatePersonnelEmail() {
   }
 
   return (
-    <div className="details-block-single">
-      <div className="text-input-button">
-        <input
-          type="text"
-          name="email"
-          value={form.email}
-          onChange={handleChange}
-          placeholder=""
-          autoComplete="new-field"
-        />
-        <label>Email</label>
-        <button onClick={onSubmit}>Submit</button>
+    <div>
+      <h1>Update Email</h1>
+      <div className="details-block-single">
+        <div className="text-input-button">
+          <input
+            type="text"
+            name="email"
+            value={form.email}
+            onChange={handleChange}
+            placeholder=""
+            autoComplete="new-field"
+          />
+          <label>Email</label>
+          <button onClick={onSubmit}>Submit</button>
+        </div>
       </div>
     </div>
   );
