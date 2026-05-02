@@ -3,13 +3,13 @@ import uuid
 from fastapi import APIRouter, Request, Response, status
 
 from src.common import AuthServiceDep
-from src.schemas import CreatePersonnelRequest, LogInRequest, PersonnelSchema
+from src.schemas import CreatePersonnelRequest, LogInRequest, SlimPersonnelSchema
 
 api = APIRouter(prefix="/auth", tags=["Auth"])
 
 
 @api.post(
-    "/register", response_model=PersonnelSchema, status_code=status.HTTP_201_CREATED
+    "/register", response_model=SlimPersonnelSchema, status_code=status.HTTP_201_CREATED
 )
 def register_personnel(request: CreatePersonnelRequest, service: AuthServiceDep):
     return service.register(request)

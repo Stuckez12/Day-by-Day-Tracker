@@ -1,6 +1,8 @@
 import { useState } from "react";
 
-import type { PersonnelEmailProps } from "interfaces/personnel";
+import type { PersonnelEmailProps, PersonnelProps } from "interfaces/personnel";
+
+import APICall from "scripts/api.ts";
 
 import "styles/auth/login-form.scss";
 
@@ -17,9 +19,34 @@ function UpdatePersonnelEmail() {
     });
   }
 
+  function onSubmit(e: React.MouseEvent<HTMLButtonElement>) {
+    e.preventDefault();
+
+    console.log("Form data:", form);
+
+    async function update_email(form: PersonnelEmailProps) {
+      const [success, data, message] = await APICall.put<PersonnelProps>(
+        "/personal/me/email",
+        {
+          email: form.email,
+        },
+      );
+
+      if (success) {
+        console.log("Success. Now refresh");
+        setForm(data!);
+      } else {
+        console.log("Error when getting data");
+        console.log(message);
+      }
+    }
+
+    update_email(form);
+  }
+
   return (
     <div className="details-block-single">
-      <div className="text-input">
+      <div className="text-input-button">
         <input
           type="text"
           name="email"
@@ -29,6 +56,7 @@ function UpdatePersonnelEmail() {
           autoComplete="new-field"
         />
         <label>Email</label>
+        <button onClick={onSubmit}>Submit</button>
       </div>
     </div>
   );

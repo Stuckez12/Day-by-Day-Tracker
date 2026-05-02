@@ -12,6 +12,13 @@ export interface PersonnelRowProps {
   last_name: string;
 }
 
+export interface PersonnelProps {
+  id: string;
+  first_name: string;
+  last_name: string;
+  email: string;
+}
+
 export interface PersonnelDetailsProps {
   first_name: string;
   last_name: string;
