@@ -11,7 +11,7 @@ services:
         POSTGRES_USER: ${DATABASE_USERNAME}
         POSTGRES_PASSWORD: ${DATABASE_PASSWORD}
         POSTGRES_PORT: ${DATABASE_PORT}
-    env_file: .env
+    env_file: .env.prod
     attach: false
     restart: unless-stopped
 
