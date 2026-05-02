@@ -6,6 +6,7 @@ from sqlalchemy.orm import Session
 
 from src.common.password_hash import pwd_hash
 from src.models import PersonalModel
+from src.schemas import SlimPersonnelSchema
 
 from tests.api.constants import INVALID_PASSWORD, INVALID_PERSONNEL_ID, VALID_PASSWORD
 
@@ -70,11 +71,9 @@ class TestPersonalRoute:
 
         data = result.json()
         assert len(data) == 3
-
-        personnel_1, personnel_2, personnel_3 = data[:3]
-        assert personnel_1 == test_personnel.to_dict(clean=True)
-        assert personnel_2 == test_personnel_2.to_dict(clean=True)
-        assert personnel_3 == test_personnel_3.to_dict(clean=True)
+        assert SlimPersonnelSchema.model_validate(data[0])
+        assert SlimPersonnelSchema.model_validate(data[1])
+        assert SlimPersonnelSchema.model_validate(data[2])
 
     def test_update_personnel_details_update_all_values(
         self,

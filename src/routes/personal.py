@@ -5,6 +5,7 @@ from fastapi import APIRouter, HTTPException, status, Cookie, Query
 from src.common import PersonalServiceDep
 from src.schemas import (
     PersonnelSchema,
+    SlimPersonnelSchema,
     UpdatePersonnelDetailsRequest,
     UpdatePersonnelEmailRequest,
     UpdatePersonnelPasswordRequest,
@@ -35,7 +36,9 @@ def get_personnel_self(
     return service.personnel_exists(personnel_id)
 
 
-@api.get("/all", status_code=status.HTTP_200_OK)
+@api.get(
+    "/all", status_code=status.HTTP_200_OK, response_model=list[SlimPersonnelSchema]
+)
 def get_all_personnel(service: PersonalServiceDep):
     return service.get_all()
 
@@ -51,7 +54,9 @@ def delete_personnel(
 
 
 @api.put(
-    "/me/details", status_code=status.HTTP_202_ACCEPTED, response_model=PersonnelSchema
+    "/me/details",
+    status_code=status.HTTP_202_ACCEPTED,
+    response_model=SlimPersonnelSchema,
 )
 def update_personnel_details(
     request: UpdatePersonnelDetailsRequest,
