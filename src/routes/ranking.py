@@ -6,7 +6,6 @@ from fastapi import APIRouter, status, Cookie, Query
 from src.common import PersonalServiceDep, RankingServiceDep
 from src.schemas import RankingRequest, RankingSchema
 
-
 api = APIRouter(prefix="/ranking", tags=["Ranking"])
 
 

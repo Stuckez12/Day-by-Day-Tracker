@@ -33,13 +33,13 @@ rebuild:
 	$(MAKE) build
 	$(MAKE) start
 
-hard-restart:
+reset:
 	$(MAKE) stop
 	$(MAKE) build-no-cache
 	$(MAKE) start
 
 
-linters:
+lint:
 	@uv run black --check src
 	@uv run mypy src
 	@uv run flake8 src --select=E225,E231,E302,E305,F403,F404,F405,F821,F822,F823,F824 --exclude "*/__init__.py"

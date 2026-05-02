@@ -3,6 +3,7 @@ from src.schemas.common import DateRequest, DateRangeRequest, InvalidSchema
 from src.schemas.personal import (
     CreatePersonnelRequest,
     PersonnelSchema,
+    SlimPersonnelSchema,
     SelectPersonnelRequest,
     UpdatePersonnelDetailsRequest,
     UpdatePersonnelEmailRequest,

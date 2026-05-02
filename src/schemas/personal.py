@@ -3,11 +3,15 @@ from uuid import UUID
 from pydantic import BaseModel, ValidationInfo, field_validator
 
 
-class PersonnelSchema(BaseModel):
+class SlimPersonnelSchema(BaseModel):
     id: UUID
 
     first_name: str
     last_name: str
+
+
+class PersonnelSchema(SlimPersonnelSchema):
+    email: str
 
 
 class CreatePersonnelRequest(BaseModel):

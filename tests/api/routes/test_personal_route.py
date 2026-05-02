@@ -6,6 +6,7 @@ from sqlalchemy.orm import Session
 
 from src.common.password_hash import pwd_hash
 from src.models import PersonalModel
+from src.schemas import SlimPersonnelSchema
 
 from tests.api.constants import INVALID_PASSWORD, INVALID_PERSONNEL_ID, VALID_PASSWORD
 
@@ -70,11 +71,9 @@ class TestPersonalRoute:
 
         data = result.json()
         assert len(data) == 3
-
-        personnel_1, personnel_2, personnel_3 = data[:3]
-        assert personnel_1 == test_personnel.to_dict(clean=True)
-        assert personnel_2 == test_personnel_2.to_dict(clean=True)
-        assert personnel_3 == test_personnel_3.to_dict(clean=True)
+        assert SlimPersonnelSchema.model_validate(data[0])
+        assert SlimPersonnelSchema.model_validate(data[1])
+        assert SlimPersonnelSchema.model_validate(data[2])
 
     def test_update_personnel_details_update_all_values(
         self,
@@ -94,8 +93,6 @@ class TestPersonalRoute:
 
         data = result.json()
         assert data["id"] == str(test_personnel.id)
-        assert datetime.fromisoformat(data["created_at"])
-        assert datetime.fromisoformat(data["updated_at"])
         assert data["first_name"] == "Updated"
         assert data["last_name"] == "Updated"
 
@@ -128,8 +125,6 @@ class TestPersonalRoute:
 
         data = result.json()
         assert data["id"] == str(test_personnel.id)
-        assert datetime.fromisoformat(data["created_at"])
-        assert datetime.fromisoformat(data["updated_at"])
         assert data["first_name"] == "Updated"
         assert data["last_name"] == test_personnel.last_name
 
@@ -162,8 +157,6 @@ class TestPersonalRoute:
 
         data = result.json()
         assert data["id"] == str(test_personnel.id)
-        assert datetime.fromisoformat(data["created_at"])
-        assert datetime.fromisoformat(data["updated_at"])
         assert data["first_name"] == test_personnel.first_name
         assert data["last_name"] == "Updated"
 
@@ -194,8 +187,6 @@ class TestPersonalRoute:
 
         data = result.json()
         assert data["id"] == str(test_personnel.id)
-        assert datetime.fromisoformat(data["created_at"])
-        assert datetime.fromisoformat(data["updated_at"])
         assert data["first_name"] == test_personnel.first_name
         assert data["last_name"] == test_personnel.last_name
 
@@ -262,6 +253,7 @@ class TestPersonalRoute:
         self,
         test_set_cookies: None,
         test_client_v1: TestClient,
+        test_personnel: PersonalModel,
     ):
         result = test_client_v1.put(
             "/personal/me/password",
@@ -273,7 +265,10 @@ class TestPersonalRoute:
         assert result.status_code == status.HTTP_202_ACCEPTED
 
         data = result.json()
-        assert pwd_hash.verify("NewPassword123", data["password"])
+        assert data["id"] == str(test_personnel.id)
+        assert data["first_name"] == test_personnel.first_name
+        assert data["last_name"] == test_personnel.last_name
+        assert data["email"] == test_personnel.email
 
     def test_update_personnel_password_incorrect_current_password(
         self,

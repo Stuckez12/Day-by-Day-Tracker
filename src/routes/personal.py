@@ -4,11 +4,12 @@ from fastapi import APIRouter, HTTPException, status, Cookie, Query
 
 from src.common import PersonalServiceDep
 from src.schemas import (
+    PersonnelSchema,
+    SlimPersonnelSchema,
     UpdatePersonnelDetailsRequest,
     UpdatePersonnelEmailRequest,
     UpdatePersonnelPasswordRequest,
 )
-
 
 api = APIRouter(prefix="/personal", tags=["Personal"])
 
@@ -35,7 +36,9 @@ def get_personnel_self(
     return service.personnel_exists(personnel_id)
 
 
-@api.get("/all", status_code=status.HTTP_200_OK)
+@api.get(
+    "/all", status_code=status.HTTP_200_OK, response_model=list[SlimPersonnelSchema]
+)
 def get_all_personnel(service: PersonalServiceDep):
     return service.get_all()
 
@@ -50,7 +53,11 @@ def delete_personnel(
     return service.delete_personnel(personnel)
 
 
-@api.put("/me/details", status_code=status.HTTP_202_ACCEPTED)
+@api.put(
+    "/me/details",
+    status_code=status.HTTP_202_ACCEPTED,
+    response_model=SlimPersonnelSchema,
+)
 def update_personnel_details(
     request: UpdatePersonnelDetailsRequest,
     service: PersonalServiceDep,
@@ -61,7 +68,9 @@ def update_personnel_details(
     return service.update_personnel_details(personnel, request)
 
 
-@api.put("/me/email", status_code=status.HTTP_202_ACCEPTED)
+@api.put(
+    "/me/email", status_code=status.HTTP_202_ACCEPTED, response_model=PersonnelSchema
+)
 def update_personnel_email(
     request: UpdatePersonnelEmailRequest,
     service: PersonalServiceDep,
@@ -72,7 +81,9 @@ def update_personnel_email(
     return service.update_personnel_email(personnel, request)
 
 
-@api.put("/me/password", status_code=status.HTTP_202_ACCEPTED)
+@api.put(
+    "/me/password", status_code=status.HTTP_202_ACCEPTED, response_model=PersonnelSchema
+)
 def update_personnel_password(
     request: UpdatePersonnelPasswordRequest,
     service: PersonalServiceDep,

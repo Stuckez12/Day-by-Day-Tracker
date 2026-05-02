@@ -4,7 +4,6 @@ from sqlalchemy.pool import QueuePool
 
 from src.settings import app_config
 
-
 engine = create_engine(
     app_config.db_url,
     poolclass=QueuePool,

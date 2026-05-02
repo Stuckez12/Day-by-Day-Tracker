@@ -5,7 +5,6 @@ from sqlalchemy import pool
 from src.models.base import Base
 from src.settings import app_config
 
-
 target_metadata = Base.metadata
 
 

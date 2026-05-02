@@ -20,4 +20,6 @@ export async function is_logged_in(navigate_func: NavigateFunction) {
     navigate_func("/login", { replace: true });
     return false;
   }
+
+  return true;
 }

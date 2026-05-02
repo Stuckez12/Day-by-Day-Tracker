@@ -37,8 +37,16 @@
 
     outline: 0px;
 
+    pointer-events: none;
+
     transition: 0.15s;
     transition-timing-function: ease-in-out;
+
+    @media (max-width: 576px) {
+      font-size: 0.8rem;
+      top: 0.6rem;
+      left: 0.5rem;
+    }
   }
 }
 
@@ -92,4 +100,81 @@
 
 .action-button:active {
   background-color: var(--submit-button-clicked);
+}
+
+.text-input-button {
+  width: 100%;
+
+  position: relative;
+
+  margin: 16px 0px;
+
+  input {
+    border-top-left-radius: 5px;
+    border-bottom-left-radius: 5px;
+    border-width: 2px;
+
+    box-shadow: none;
+
+    padding: 6px 12px;
+
+    width: min(80%, 100% - 96px);
+  }
+
+  label {
+    position: absolute;
+    top: 0.5rem;
+    left: 0.5rem;
+    padding: 0 0.5rem;
+
+    font-size: 1rem;
+
+    user-select: none;
+
+    background-color: white;
+    border-radius: 8px;
+
+    outline: 0px;
+
+    pointer-events: none;
+
+    transition: 0.15s;
+    transition-timing-function: ease-in-out;
+
+    @media (max-width: 576px) {
+      font-size: 0.8rem;
+    }
+  }
+
+  button {
+    all: unset;
+    border-top-right-radius: 8px;
+    border-bottom-right-radius: 8px;
+
+    min-width: 96px;
+    width: 20%;
+
+    padding: 8px 0px;
+
+    color: var(--inverted-text-color);
+    background-color: var(--submit-button);
+
+    text-align: center;
+  }
+
+  button:hover {
+    background-color: var(--submit-button-hover);
+  }
+
+  button:active {
+    background-color: var(--submit-button-clicked);
+  }
+}
+
+.text-input-button input:not(:placeholder-shown) + label,
+.text-input-button input:focus + label {
+  top: -0.7rem;
+  left: 1.5rem;
+
+  font-size: 0.8rem;
 }
