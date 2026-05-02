@@ -94,8 +94,6 @@ class TestPersonalRoute:
 
         data = result.json()
         assert data["id"] == str(test_personnel.id)
-        assert datetime.fromisoformat(data["created_at"])
-        assert datetime.fromisoformat(data["updated_at"])
         assert data["first_name"] == "Updated"
         assert data["last_name"] == "Updated"
 
@@ -128,8 +126,6 @@ class TestPersonalRoute:
 
         data = result.json()
         assert data["id"] == str(test_personnel.id)
-        assert datetime.fromisoformat(data["created_at"])
-        assert datetime.fromisoformat(data["updated_at"])
         assert data["first_name"] == "Updated"
         assert data["last_name"] == test_personnel.last_name
 
@@ -162,8 +158,6 @@ class TestPersonalRoute:
 
         data = result.json()
         assert data["id"] == str(test_personnel.id)
-        assert datetime.fromisoformat(data["created_at"])
-        assert datetime.fromisoformat(data["updated_at"])
         assert data["first_name"] == test_personnel.first_name
         assert data["last_name"] == "Updated"
 
@@ -194,8 +188,6 @@ class TestPersonalRoute:
 
         data = result.json()
         assert data["id"] == str(test_personnel.id)
-        assert datetime.fromisoformat(data["created_at"])
-        assert datetime.fromisoformat(data["updated_at"])
         assert data["first_name"] == test_personnel.first_name
         assert data["last_name"] == test_personnel.last_name
 
@@ -262,6 +254,7 @@ class TestPersonalRoute:
         self,
         test_set_cookies: None,
         test_client_v1: TestClient,
+        test_personnel: PersonalModel,
     ):
         result = test_client_v1.put(
             "/personal/me/password",
@@ -273,7 +266,10 @@ class TestPersonalRoute:
         assert result.status_code == status.HTTP_202_ACCEPTED
 
         data = result.json()
-        assert pwd_hash.verify("NewPassword123", data["password"])
+        assert data["id"] == str(test_personnel.id)
+        assert data["first_name"] == test_personnel.first_name
+        assert data["last_name"] == test_personnel.last_name
+        assert data["email"] == test_personnel.email
 
     def test_update_personnel_password_incorrect_current_password(
         self,

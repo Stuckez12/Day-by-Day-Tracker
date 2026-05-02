@@ -28,7 +28,7 @@ function PersonnelPage() {
     });
 
   useEffect(() => {
-    let result = is_logged_in(navigate);
+    const result = is_logged_in(navigate);
 
     if (!result) {
       return;
@@ -50,6 +50,7 @@ function PersonnelPage() {
     }
 
     fetch_personnel();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [navigate]);
 
   return (
