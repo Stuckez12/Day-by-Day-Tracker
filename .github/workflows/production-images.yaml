@@ -1,0 +1,26 @@
+name: Production Ready Test
+
+on:
+  push:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Start Application
+        run: docker compose -f docker-compose.prod-test.yaml up -d
+
+      - name: Wait time
+        run: sleep 12
+
+      - name: Frontend check
+        run: |
+          curl --fail http://localhost/login
+
+      - name: API check
+        run: |
+          curl --fail http://localhost/api/docs
