@@ -19,6 +19,13 @@ export interface PersonnelProps {
   email: string;
 }
 
+export interface PersonnelPropsContext {
+  id: string;
+  first_name: string;
+  last_name: string;
+  email: string;
+}
+
 export interface PersonnelDetailsProps {
   first_name: string;
   last_name: string;

@@ -1,4 +1,6 @@
-import { useState } from "react";
+import { useContext, useEffect, useState } from "react";
+
+import { ContextPersonnelForms } from "contexts/ContextPersonnelForms";
 
 import type {
   PersonnelDetailsProps,
@@ -11,10 +13,15 @@ import "styles/auth/login-form.scss";
 import "styles/pages/personnel.scss";
 
 function UpdatePersonnelDetails() {
-  const [form, setForm] = useState<PersonnelDetailsProps>({
-    first_name: "",
-    last_name: "",
-  });
+  const { refreshPersonnelForms } = useContext(ContextPersonnelForms);
+
+  const [form, setForm] = useState<PersonnelDetailsProps>(
+    refreshPersonnelForms,
+  );
+
+  useEffect(() => {
+    setForm(refreshPersonnelForms);
+  }, [refreshPersonnelForms]);
 
   function handleChange(e: React.ChangeEvent<HTMLInputElement>) {
     const { name, value } = e.target;
