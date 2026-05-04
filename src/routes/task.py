@@ -3,8 +3,8 @@ import uuid
 from celery.result import AsyncResult
 from fastapi import APIRouter, HTTPException, status
 
-from src.common import TaskServiceDep
 import src.tasks.task_management
+from src.common import TaskServiceDep
 from src.tasks import simulate_celery_task
 
 api = APIRouter(prefix="/tasks", tags=["Task"])
@@ -44,8 +44,6 @@ def get_tasks(service: TaskServiceDep, task_id: uuid.UUID):
 
 @api.post("/test-run", status_code=status.HTTP_200_OK)
 def get_tasks(service: TaskServiceDep):
-    import src.tasks.task_management
-
     task: AsyncResult = simulate_celery_task.delay()
 
     return {"task_id": task.id}

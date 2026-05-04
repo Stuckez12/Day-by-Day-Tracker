@@ -25,8 +25,8 @@ class TaskService(BaseDBService[TaskModel]):
         return self.db.query(TaskModel).filter(TaskModel.task_id == task_id).first()
 
     def task_progress(self, task_ref: TaskModel):
-        if task_ref.status != TaskStatus.RUNNING:
-            if task_ref.status == TaskStatus.PENDING:
+        if task_ref.status != TaskStatus.RUNNING.value:
+            if task_ref.status == TaskStatus.PENDING.value:
                 raise ValueError("Task is waiting to be processed")
 
             raise ValueError("Task has finished processing")
