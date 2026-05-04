@@ -5,6 +5,9 @@ ENV PYTHONDONTWRITEBYTECODE=1 \
 
 WORKDIR /worker
 
+# Install needed OS packages
+RUN apt-get update && apt-get install -y postgresql-client
+
 RUN pip install uv
 
 COPY ./src ./src

@@ -14,8 +14,8 @@ def simulate_celery_task(self: Task) -> dict:
     db = next(db_gen)
 
     try:
-        for i in range(100):
-            time.sleep(1)
+        for i in range(20):
+            time.sleep(0.1)
             logging.info(f"SIMULATE TASK STEP: {i}")
             update_task_state(self, db, TaskStatus.RUNNING, {"progress": i})
 

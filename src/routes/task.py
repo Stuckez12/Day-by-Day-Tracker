@@ -5,7 +5,7 @@ from fastapi import APIRouter, HTTPException, status
 
 import src.tasks.task_management
 from src.common import TaskServiceDep
-from src.tasks import simulate_celery_task
+from src.tasks import database_backup
 
 api = APIRouter(prefix="/tasks", tags=["Task"])
 
@@ -44,6 +44,6 @@ def get_tasks(service: TaskServiceDep, task_id: uuid.UUID):
 
 @api.post("/test-run", status_code=status.HTTP_200_OK)
 def get_tasks(service: TaskServiceDep):
-    task: AsyncResult = simulate_celery_task.delay()
+    task: AsyncResult = database_backup.delay()
 
     return {"task_id": task.id}

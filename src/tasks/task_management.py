@@ -47,8 +47,10 @@ def before_task_execution(task_id: str, **kwargs):
 
 
 @task_success.connect
-def finalise_task(task_id: str, **kwargs):
+def finalise_success_task(sender: Task, **kwargs):
     logging.info("After execution")
+    task_id = sender.request.id
+
     try:
         db_gen = get_db()
         db = next(db_gen)
@@ -65,8 +67,10 @@ def finalise_task(task_id: str, **kwargs):
 
 
 @task_failure.connect
-def finalise_task(task_id: str, **kwargs):
+def finalise_failure_task(sender: Task, **kwargs):
     logging.info("After execution")
+    task_id = sender.request.id
+
     try:
         db_gen = get_db()
         db = next(db_gen)
