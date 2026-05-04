@@ -1,7 +1,7 @@
 import uuid
 
-from datetime import datetime, time
-from sqlalchemy import DateTime, Integer, String, Time
+from datetime import datetime
+from sqlalchemy import DateTime, Integer, String
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import Mapped, mapped_column
 
@@ -19,7 +19,6 @@ class TaskModel(BaseModel):
 
     started_at: Mapped[datetime] = mapped_column(DateTime, nullable=True)
     ended_at: Mapped[datetime] = mapped_column(DateTime, nullable=True)
-    task_duration: Mapped[time] = mapped_column(Time, nullable=True)
 
     error: Mapped[str] = mapped_column(String, nullable=True)
 

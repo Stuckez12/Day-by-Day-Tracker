@@ -25,6 +25,16 @@ class AppConfig(BaseSettings):
 
     @property
     def CELERY_URL(self):
+        print(f"{self.REDIS_URL}/0")
+        print(f"{self.REDIS_URL}/0")
+        print(f"{self.REDIS_URL}/0")
+        print(f"{self.REDIS_URL}/0")
+        print(f"{self.REDIS_URL}/0")
+        print(f"{self.REDIS_URL}/0")
+        print(f"{self.REDIS_URL}/0")
+        print(f"{self.REDIS_URL}/0")
+        print(f"{self.REDIS_URL}/0")
+        print(f"{self.REDIS_URL}/0")
         return f"{self.REDIS_URL}/0"
 
 

@@ -3,4 +3,5 @@ from src.common.dependencies import (
     AuthServiceDep,
     PersonalServiceDep,
     RankingServiceDep,
+    TaskServiceDep,
 )

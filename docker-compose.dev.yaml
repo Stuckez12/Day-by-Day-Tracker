@@ -52,7 +52,7 @@ services:
     volumes:
       - ./src:/api/src
     env_file: .env
-    command: uvicorn src.main:app --host 0.0.0.0 --port 8000 --reload --reload-dir src
+    command: uvicorn src.main:fastapi_app --host 0.0.0.0 --port 8000 --reload --reload-dir src
 
   frontend:
     build:
@@ -74,8 +74,8 @@ services:
     image: redis:8.2.5-bookworm
     container_name: redis
     command: redis-server --save 7200 1 --loglevel warning
-    expose:
-      - 6379
+    ports:
+      - "6379:6379"
     networks:
       - app-network
     volumes:
