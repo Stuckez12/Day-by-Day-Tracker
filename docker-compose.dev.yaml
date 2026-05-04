@@ -70,6 +70,31 @@ services:
       - CHOKIDAR_USEPOLLING=true
     env_file: .env
 
+  redis:
+    image: redis:8.2.5-bookworm
+    container_name: redis
+    command: redis-server --save 7200 1 --loglevel warning
+    expose:
+      - 6379
+    networks:
+      - app-network
+    volumes:
+      - redis-data:/data/
+    restart: unless-stopped
+
+  worker:
+    build:
+      context: .
+      dockerfile: src/Dockerfile.worker
+    expose:
+      - "8001"
+    networks:
+      - app-network
+    volumes:
+      - ./src:/worker/src
+    env_file: .env
+    entrypoint: celery -A src.main worker -Ofair --concurrency=1 --loglevel=INFO -E
+
 
 networks:
   app-network:
@@ -79,3 +104,4 @@ networks:
 volumes:
   pgadmin-data:
   postgres_data:
+  redis-data:

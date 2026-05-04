@@ -1,0 +1,18 @@
+FROM python:3.13
+ENV PYTHONDONTWRITEBYTECODE=1 \
+    PYTHONUNBUFFERED=1 \
+    PYTHONFAULTHANDLER=1
+
+WORKDIR /worker
+
+RUN pip install uv
+
+COPY ./src ./src
+COPY uv.lock .
+COPY pyproject.toml .
+COPY alembic.ini .
+
+RUN uv sync
+
+ENV PATH="/worker/.venv/bin:$PATH"
+ENV PYTHONPATH="/worker:$PYTHONPATH"

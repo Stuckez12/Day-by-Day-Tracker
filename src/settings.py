@@ -21,6 +21,12 @@ class AppConfig(BaseSettings):
     def db_url(self):
         return f"postgresql+psycopg2://{self.DATABASE_USERNAME}:{self.DATABASE_PASSWORD}@{self.DATABASE_HOST}:{self.DATABASE_PORT}/{self.DATABASE_DB_NAME}"
 
+    REDIS_URL: str = "redis://redis:6379"
+
+    @property
+    def CELERY_URL(self):
+        return f"{self.REDIS_URL}/0"
+
 
 class ProdAppConfig(AppConfig):
     model_config = SettingsConfigDict(
