@@ -30,7 +30,7 @@ def record_task_to_database(sender: str, headers: dict, **kwargs):
 
 @task_prerun.connect
 def before_task_execution(task_id: str, **kwargs):
-    logging.info("Before execution")
+    logging.info("Before task execution")
     try:
         db_gen = get_db()
         db = next(db_gen)
@@ -45,10 +45,12 @@ def before_task_execution(task_id: str, **kwargs):
     finally:
         db_gen.close()
 
+        logging.info("Execute task")
+
 
 @task_success.connect
 def finalise_success_task(sender: Task, **kwargs):
-    logging.info("After execution")
+    logging.info("After task execution")
     task_id = sender.request.id
 
     try:
@@ -68,7 +70,7 @@ def finalise_success_task(sender: Task, **kwargs):
 
 @task_failure.connect
 def finalise_failure_task(sender: Task, **kwargs):
-    logging.info("After execution")
+    logging.info("After task execution")
     task_id = sender.request.id
 
     try:
