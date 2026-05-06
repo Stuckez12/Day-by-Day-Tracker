@@ -1,0 +1,19 @@
+from celery import Celery
+
+from src.settings import app_config
+
+
+def create_worker():
+    worker = Celery(
+        "tasks", broker=app_config.CELERY_URL, result_backend=app_config.CELERY_URL
+    )
+    # worker = Celery("tasks", broker=app_config.REDIS_URL + "/0")
+    worker.config_from_object(app_config, namespace="CELERY")
+    worker.set_default()
+    worker.autodiscover_tasks(
+        packages=["src"],
+    )
+
+    import src.tasks.task_management
+
+    return worker

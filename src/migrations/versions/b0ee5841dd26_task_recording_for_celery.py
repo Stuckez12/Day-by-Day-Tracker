@@ -1,0 +1,41 @@
+"""task recording for celery
+
+Revision ID: b0ee5841dd26
+Revises: 6350c32c93b3
+Create Date: 2026-05-04 16:09:38.136453
+
+"""
+
+from typing import Sequence, Union
+
+from alembic import op
+import sqlalchemy as sa
+
+# revision identifiers, used by Alembic.
+revision: str = "b0ee5841dd26"
+down_revision: Union[str, Sequence[str], None] = "6350c32c93b3"
+branch_labels: Union[str, Sequence[str], None] = None
+depends_on: Union[str, Sequence[str], None] = None
+
+
+def upgrade() -> None:
+    """Upgrade schema."""
+    op.create_table(
+        "tasks",
+        sa.Column("task_id", sa.UUID(), nullable=False),
+        sa.Column("name", sa.String(), nullable=False),
+        sa.Column("status", sa.String(), nullable=False),
+        sa.Column("retries", sa.Integer(), nullable=False),
+        sa.Column("started_at", sa.DateTime(), nullable=True),
+        sa.Column("ended_at", sa.DateTime(), nullable=True),
+        sa.Column("error", sa.String(), nullable=True),
+        sa.Column("id", sa.UUID(), nullable=False),
+        sa.Column("created_at", sa.DateTime(), nullable=False),
+        sa.Column("updated_at", sa.DateTime(), nullable=False),
+        sa.PrimaryKeyConstraint("id"),
+    )
+
+
+def downgrade() -> None:
+    """Downgrade schema."""
+    op.drop_table("tasks")

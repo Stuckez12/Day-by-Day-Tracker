@@ -1,0 +1,21 @@
+FROM python:3.13
+ENV PYTHONDONTWRITEBYTECODE=1 \
+    PYTHONUNBUFFERED=1 \
+    PYTHONFAULTHANDLER=1
+
+WORKDIR /worker
+
+# Install needed OS packages
+RUN apt-get update && apt-get install -y postgresql-client
+
+RUN pip install uv
+
+COPY ./src ./src
+COPY uv.lock .
+COPY pyproject.toml .
+COPY alembic.ini .
+
+RUN uv sync
+
+ENV PATH="/worker/.venv/bin:$PATH"
+ENV PYTHONPATH="/worker:$PYTHONPATH"

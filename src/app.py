@@ -6,6 +6,7 @@ from src import __version__ as APP_VERSION
 from src.api import api
 from src.common.upgrade_db import upgrade_db
 from src.settings import is_prod_env
+import src.tasks.task_management
 
 
 def create_app():
@@ -46,5 +47,7 @@ def create_app():
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             content={"detail": "Internal Server Error"},
         )
+
+    import src.tasks.task_management
 
     return app
