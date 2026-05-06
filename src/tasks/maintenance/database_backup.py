@@ -19,6 +19,8 @@ def database_backup(self: Task) -> dict:
     try:
         backup_file = f"{app_config.DATABASE_DB_NAME}-backup-{datetime.now().strftime('%Y-%b-%d')}.dump"
 
+        file_path = f"{app_config.BACKUP_PATH}/{backup_file}"
+
         command = [
             "pg_dump",
             "-h",
@@ -30,7 +32,7 @@ def database_backup(self: Task) -> dict:
             "-F",
             "p",
             "-f",
-            backup_file,
+            file_path,
             app_config.DATABASE_DB_NAME,
         ]
         env = {"PGPASSWORD": app_config.DATABASE_PASSWORD}
@@ -39,10 +41,17 @@ def database_backup(self: Task) -> dict:
             self,
             db,
             TaskStatus.RUNNING,
-            {"stage": f"Creating Database Backup: {backup_file}"},
+            {"stage": f"Creating Database Backup: {file_path}"},
         )
 
-        subprocess.run(command, env=env, check=True)
+        try:
+            subprocess.run(command, env=env, check=True, capture_output=True, text=True)
+
+        except subprocess.CalledProcessError as e:
+            print("RETURN CODE:", e.returncode)
+            print("STDOUT:", e.stdout)
+            print("STDERR:", e.stderr)
+            raise e
 
         update_task_state(
             self, db, TaskStatus.RUNNING, {"stage": "Backup Successfully Created"}

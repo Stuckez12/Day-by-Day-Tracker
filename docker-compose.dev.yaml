@@ -92,6 +92,7 @@ services:
       - app-network
     volumes:
       - ./src:/worker/src
+      - ${EXTERNAL_BACKUP_PATH}:${BACKUP_PATH}
     env_file: .env
     entrypoint: celery -A src.main worker -Ofair --concurrency=1 --loglevel=INFO -E
 
