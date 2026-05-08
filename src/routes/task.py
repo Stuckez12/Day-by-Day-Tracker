@@ -5,7 +5,7 @@ from fastapi import APIRouter, HTTPException, status
 
 import src.tasks.task_management
 from src.common import TaskServiceDep
-from src.tasks import database_backup
+from src.tasks import database_backup, database_restore
 
 api = APIRouter(prefix="/tasks", tags=["Task"])
 
@@ -42,8 +42,15 @@ def get_tasks(service: TaskServiceDep, task_id: uuid.UUID):
     return service.task_progress(task)
 
 
-@api.post("/test-run", status_code=status.HTTP_200_OK)
+@api.post("/test-backup", status_code=status.HTTP_200_OK)
 def get_tasks(service: TaskServiceDep):
     task: AsyncResult = database_backup.delay()
+
+    return {"task_id": task.id}
+
+
+@api.post("/test-restore", status_code=status.HTTP_200_OK)
+def get_tasks(service: TaskServiceDep, backup_id: uuid.UUID):
+    task: AsyncResult = database_restore.delay(backup_id)
 
     return {"task_id": task.id}

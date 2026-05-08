@@ -6,8 +6,8 @@ from datetime import datetime
 import src.tasks.task_management
 from src.common import get_db
 from src.common.celery import update_task_state
-from src.enums import TaskStatus
 from src.models import BackupModel
+from src.schemas import BackupSchema
 from src.settings import app_config
 
 
@@ -19,11 +19,12 @@ def database_backup(self: Task) -> dict:
     try:
         date = datetime.now().strftime("%Y-%b-%d")
         backup_file = f"{app_config.DATABASE_DB_NAME}-backup-{date}"
-
         file_path = f"{app_config.BACKUP_PATH}/{backup_file}.dump"
 
         command = [
             "pg_dump",
+            "--clean",
+            "--if-exists",
             "-h",
             app_config.DATABASE_HOST,
             "-p",
@@ -56,13 +57,15 @@ def database_backup(self: Task) -> dict:
         update_task_state(self, db, metadata={"stage": "Recording Backup"})
 
         date_obj = datetime.strptime(date, "%Y-%b-%d")
-        backup = BackupModel(backup_file, date_obj, file_path)
+        backup = BackupModel(
+            name=backup_file, backup_date=date_obj, file_path=file_path
+        )
 
         db.add(backup)
         db.commit()
         db.refresh(backup)
 
-        return backup
+        return BackupSchema.model_validate(backup).model_dump()
 
     finally:
         db_gen.close()

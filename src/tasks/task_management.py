@@ -24,6 +24,8 @@ def record_task_to_database(sender: str, headers: dict, **kwargs):
         service = TaskService(db)
         service.register_task(headers["id"], sender)
 
+        logging.info("Recorded Task")
+
     finally:
         db_gen.close()
 
@@ -103,4 +105,6 @@ def log_retry(sender: Task, **kwargs):
         db.commit()
 
     finally:
+        logging.info(f"Task ({task_id}) retrying")
+
         db_gen.close()
