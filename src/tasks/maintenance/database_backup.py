@@ -32,7 +32,7 @@ def database_backup(self: Task) -> dict:
             "-U",
             app_config.DATABASE_USERNAME,
             "-F",
-            "p",
+            "c",
             "-f",
             file_path,
             app_config.DATABASE_DB_NAME,
