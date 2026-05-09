@@ -93,6 +93,8 @@ services:
       - "8002"
     networks:
       - app-network
+    volumes:
+      - ${EXTERNAL_BACKUP_PATH}:${BACKUP_PATH}
     env_file: .env
     entrypoint: celery -A src.main worker -Ofair --concurrency=4 --loglevel=INFO -E
 
