@@ -82,12 +82,25 @@ services:
       - redis-data:/data/
     restart: unless-stopped
 
-  worker:
+  beat-scheduler:
     build:
       context: .
       dockerfile: src/Dockerfile.worker
     expose:
       - "8001"
+    networks:
+      - app-network
+    volumes:
+      - ./src:/worker/src
+    env_file: .env
+    entrypoint: celery -A src.main beat --loglevel=INFO
+
+  worker:
+    build:
+      context: .
+      dockerfile: src/Dockerfile.worker
+    expose:
+      - "8002"
     networks:
       - app-network
     volumes:
