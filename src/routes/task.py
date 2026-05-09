@@ -47,9 +47,7 @@ def get_tasks_paginated(
 def run_task_simulation(_: Request):
     task: AsyncResult = simulate_celery_task.delay()
 
-    result = task.get()
-
-    return {"result": result}
+    return task.get()
 
 
 @api.get("/{task_id}", status_code=status.HTTP_200_OK, response_model=TaskSchema)
