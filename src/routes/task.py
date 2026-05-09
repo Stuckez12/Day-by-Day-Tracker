@@ -1,6 +1,5 @@
 import uuid
 
-from celery.result import AsyncResult
 from fastapi import APIRouter, HTTPException, status, Depends, Query
 from fastapi_pagination import Page, Params
 from fastapi_pagination.ext.sqlalchemy import paginate
@@ -9,7 +8,6 @@ import src.tasks.task_management
 from src.common import TaskServiceDep
 from src.enums import TaskStatus
 from src.schemas import TaskPaginated, TaskSchema
-from src.tasks import database_backup
 
 api = APIRouter(prefix="/tasks", tags=["Task"])
 
@@ -43,8 +41,8 @@ def get_tasks_paginated(
     return paginate(query, params)
 
 
-@api.get("/{task_id}", status_code=status.HTTP_200_OK)
-def get_tasks(service: TaskServiceDep, task_id: uuid.UUID):
+@api.get("/{task_id}", status_code=status.HTTP_200_OK, response_model=TaskSchema)
+def get_task(service: TaskServiceDep, task_id: uuid.UUID):
     task = service.get_by_id(task_id)
 
     if task is None:
@@ -55,8 +53,8 @@ def get_tasks(service: TaskServiceDep, task_id: uuid.UUID):
     return task
 
 
-@api.get("/{task_id}/status", status_code=status.HTTP_200_OK)
-def get_tasks(service: TaskServiceDep, task_id: uuid.UUID):
+@api.get("/{task_id}/status", status_code=status.HTTP_200_OK, response_model=TaskSchema)
+def get_task_status(service: TaskServiceDep, task_id: uuid.UUID):
     task = service.get_by_id(task_id)
 
     if task is None:
@@ -65,10 +63,3 @@ def get_tasks(service: TaskServiceDep, task_id: uuid.UUID):
         )
 
     return service.task_progress(task)
-
-
-@api.post("/test-backup", status_code=status.HTTP_200_OK)
-def get_tasks(service: TaskServiceDep):
-    task: AsyncResult = database_backup.delay()
-
-    return {"task_id": task.id}
