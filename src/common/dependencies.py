@@ -5,20 +5,22 @@ from typing import Annotated
 from src.common import get_db
 from src.services import AuthService, PersonalService, RankingService, TaskService
 
+DBSession = Annotated[AuthService, Depends(get_db)]
 
-def get_auth_service(db: Session = Depends(get_db)) -> PersonalService:
+
+def get_auth_service(db: DBSession) -> PersonalService:
     return AuthService(db)
 
 
-def get_personal_service(db: Session = Depends(get_db)) -> PersonalService:
+def get_personal_service(db: DBSession) -> PersonalService:
     return PersonalService(db)
 
 
-def get_ranking_service(db: Session = Depends(get_db)) -> RankingService:
+def get_ranking_service(db: DBSession) -> RankingService:
     return RankingService(db)
 
 
-def get_task_service(db: Session = Depends(get_db)) -> TaskService:
+def get_task_service(db: DBSession) -> TaskService:
     return TaskService(db)
 
 

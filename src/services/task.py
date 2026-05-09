@@ -2,10 +2,12 @@ import uuid
 
 from celery import Task
 from celery.result import AsyncResult
+from datetime import timedelta
 from sqlalchemy.orm import Session
 
 from src.enums import TaskStatus
 from src.models import TaskModel
+from src.schemas import TaskPaginated
 from src.services.base import BaseDBService
 
 
@@ -35,5 +37,32 @@ class TaskService(BaseDBService[TaskModel]):
 
         return {"status": task.state, "info": task.info}
 
-    def filter_search(self):
-        pass
+    def get_paginated_query(self, filters: TaskPaginated):
+        query = self.db.query(TaskModel)
+
+        if filters.task_id is not None:
+            query = query.filter(TaskModel.task_id == filters.task_id)
+
+        if filters.name is not None:
+            query = query.filter(TaskModel.name.ilike(f"%{filters.name}%"))
+
+        if filters.task_status is not None:
+            query = query.filter(TaskModel.status.in_(filters.task_status))
+
+        if filters.min_retries is not None:
+            query = query.filter(TaskModel.retries >= filters.min_retries)
+
+        if filters.max_retries is not None:
+            query = query.filter(TaskModel.retries <= filters.max_retries)
+
+        if filters.started_at is not None:
+            query = query.filter(TaskModel.started_at >= filters.started_at)
+
+        if filters.ended_at is not None:
+            query = query.filter(TaskModel.ended_at <= filters.ended_at)
+
+        if filters.duration is not None:
+            time_dur = timedelta(seconds=filters.duration)
+            query = query.filter(TaskModel.ended_at - TaskModel.started_at >= time_dur)
+
+        return query

@@ -21,13 +21,17 @@ def record_task_to_database(sender: str, headers: dict, **kwargs):
         db_gen = get_db()
         db = next(db_gen)
 
+        name = sender.split(".")[-1]
+
         service = TaskService(db)
-        service.register_task(headers["id"], sender)
+        service.register_task(headers["id"], name)
 
         logging.info("Recorded Task")
 
     finally:
         db_gen.close()
+
+        logging.info("Task Published")
 
 
 @task_prerun.connect

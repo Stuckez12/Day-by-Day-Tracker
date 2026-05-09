@@ -1,21 +1,46 @@
 import uuid
 
 from celery.result import AsyncResult
-from fastapi import APIRouter, HTTPException, status
+from fastapi import APIRouter, HTTPException, status, Depends, Query
+from fastapi_pagination import Page, Params
+from fastapi_pagination.ext.sqlalchemy import paginate
 
 import src.tasks.task_management
 from src.common import TaskServiceDep
+from src.enums import TaskStatus
+from src.schemas import TaskPaginated, TaskSchema
 from src.tasks import database_backup
 
 api = APIRouter(prefix="/tasks", tags=["Task"])
 
 
-@api.get("/", status_code=status.HTTP_200_OK)
-def get_tasks(service: TaskServiceDep):
-
-    raise HTTPException(
-        status_code=status.HTTP_404_NOT_FOUND, detail="Personnel does not exist"
+@api.get("/", status_code=status.HTTP_200_OK, response_model=Page[TaskSchema])
+def get_tasks_paginated(
+    service: TaskServiceDep,
+    params: Params = Depends(),
+    task_id: str = Query(None),
+    name: str = Query(None),
+    task_status: list[TaskStatus] = Query(None),
+    min_retries: int = Query(None),
+    max_retries: int = Query(None),
+    started_at: str = Query(None),
+    ended_at: str = Query(None),
+    duration: str = Query(None),
+):
+    filters = TaskPaginated(
+        task_id=task_id,
+        name=name,
+        task_status=task_status,
+        min_retries=min_retries,
+        max_retries=max_retries,
+        started_at=started_at,
+        ended_at=ended_at,
+        duration=duration,
     )
+
+    query = service.get_paginated_query(filters)
+
+    return paginate(query, params)
 
 
 @api.get("/{task_id}", status_code=status.HTTP_200_OK)

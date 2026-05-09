@@ -17,3 +17,4 @@ from src.schemas.ranking import (
     RankingRequest,
     RankingSchema,
 )
+from src.schemas.task import TaskPaginated, TaskSchema
