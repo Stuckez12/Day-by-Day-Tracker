@@ -84,8 +84,6 @@ services:
       - "8001"
     networks:
       - app-network
-    volumes:
-      - ./src:/worker/src
     env_file: .env
     entrypoint: celery -A src.main beat --loglevel=INFO
 
@@ -96,7 +94,6 @@ services:
     networks:
       - app-network
     volumes:
-      - ./src:/worker/src
       - ${EXTERNAL_BACKUP_PATH}:${BACKUP_PATH}
     env_file: .env
     entrypoint: celery -A src.main worker -Ofair --concurrency=4 --loglevel=INFO -E

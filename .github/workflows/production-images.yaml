@@ -24,3 +24,7 @@ jobs:
       - name: API check
         run: |
           curl --fail http://localhost/api/docs
+
+      - name: Celery Task check
+        run: |
+          curl --fail http://localhost/api/v1/tasks/simulate-task
