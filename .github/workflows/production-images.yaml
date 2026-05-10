@@ -17,6 +17,9 @@ jobs:
       - name: Wait time
         run: sleep 12
 
+      - name: Docker ps
+        run: docker ps
+
       - name: Frontend check
         run: |
           curl --fail http://localhost/login
