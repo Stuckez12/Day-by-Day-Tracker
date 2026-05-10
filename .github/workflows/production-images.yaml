@@ -17,11 +17,8 @@ jobs:
       - name: Wait time
         run: sleep 12
 
-      - name: Docker ps
-        run: docker ps
-
-      - name: Docker logs
-        run: docker logs day-by-day-tracker-db-1
+      - name: Upgrade Database
+        run: docker compose -f docker-compose.prod-test.yaml exec api alembic -c /api/alembic.ini upgrade head
 
       - name: Frontend check
         run: |
@@ -34,3 +31,4 @@ jobs:
       - name: Celery Task check
         run: |
           curl http://localhost/api/v1/tasks/simulate-task
+          curl --fail http://localhost/api/v1/tasks/simulate-task
