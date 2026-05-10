@@ -20,6 +20,9 @@ jobs:
       - name: Docker ps
         run: docker ps
 
+      - name: Docker logs
+        run: docker logs day-by-day-tracker-db-1
+
       - name: Frontend check
         run: |
           curl --fail http://localhost/login
