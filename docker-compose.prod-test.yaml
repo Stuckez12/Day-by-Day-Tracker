@@ -12,6 +12,7 @@ services:
         POSTGRES_PASSWORD: ${DATABASE_PASSWORD}
         POSTGRES_PORT: ${DATABASE_PORT}
     attach: false
+    env_file: .env.example
     restart: unless-stopped
 
   nginx:
