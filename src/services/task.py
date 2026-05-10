@@ -1,6 +1,5 @@
 import uuid
 
-from celery import Task
 from celery.result import AsyncResult
 from datetime import timedelta
 from sqlalchemy.orm import Session
@@ -47,7 +46,8 @@ class TaskService(BaseDBService[TaskModel]):
             query = query.filter(TaskModel.name.ilike(f"%{filters.name}%"))
 
         if filters.task_status is not None:
-            query = query.filter(TaskModel.status.in_(filters.task_status))
+            statuses = [status.value for status in filters.task_status]
+            query = query.filter(TaskModel.status.in_(statuses))
 
         if filters.min_retries is not None:
             query = query.filter(TaskModel.retries >= filters.min_retries)

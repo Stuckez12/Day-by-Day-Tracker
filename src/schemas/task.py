@@ -2,12 +2,14 @@ import uuid
 
 from datetime import datetime
 from fastapi import HTTPException, status
-from pydantic import BaseModel, model_validator
+from pydantic import BaseModel, ConfigDict, model_validator
 
 from src.enums import TaskStatus
 
 
 class TaskSchema(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
     task_id: uuid.UUID
     name: str
     status: TaskStatus
@@ -20,6 +22,8 @@ class TaskSchema(BaseModel):
 
 
 class TaskPaginated(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
     task_id: str | None = None
     name: str | None = None
     task_status: list[TaskStatus] | None = None

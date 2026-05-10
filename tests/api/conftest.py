@@ -4,15 +4,16 @@ import uuid
 
 from alembic import command
 from alembic.config import Config
-from datetime import date
+from datetime import date, datetime, timedelta
 from fastapi.testclient import TestClient
 from sqlalchemy.orm import Session
 from typing import Generator
 
 from src.common import get_db
 from src.common.password_hash import pwd_hash
+from src.enums import TaskStatus
 from src.main import fastapi_app
-from src.models import PersonalModel, RankerModel
+from src.models import PersonalModel, RankerModel, TaskModel
 from src.services import AuthService, PersonalService, RankingService
 
 from tests.api.constants import VALID_PASSWORD
@@ -209,6 +210,72 @@ def test_ranker_none(
         day=test_date_today,
         ranking=None,
     )
+
+    test_session.add(model)
+    test_session.commit()
+
+    yield model
+
+    test_session.delete(model)
+    test_session.commit()
+
+
+@pytest.fixture(scope="function")
+def test_task_1(test_session: Session):
+    model = TaskModel(
+        task_id=uuid.uuid4(),
+        name="task1",
+        status=TaskStatus.PENDING,
+    )
+
+    model.retries = 0
+    model.started_at = datetime.now()
+    model.ended_at = datetime.now() + timedelta(seconds=60)
+    model.error = "error message"
+
+    test_session.add(model)
+    test_session.commit()
+
+    yield model
+
+    test_session.delete(model)
+    test_session.commit()
+
+
+@pytest.fixture(scope="function")
+def test_task_2(test_session: Session):
+    model = TaskModel(
+        task_id=uuid.uuid4(),
+        name="task2",
+        status=TaskStatus.RUNNING,
+    )
+
+    model.retries = 2
+    model.started_at = datetime.now() + timedelta(seconds=10)
+    model.ended_at = datetime.now() + timedelta(seconds=30)
+    model.error = "error message"
+
+    test_session.add(model)
+    test_session.commit()
+
+    yield model
+
+    test_session.delete(model)
+    test_session.commit()
+
+
+@pytest.fixture(scope="function")
+def test_task_3(test_session: Session):
+    model = TaskModel(
+        task_id=uuid.uuid4(),
+        name="task2",
+        status=TaskStatus.SUCCESS,
+    )
+
+    model.retries = 1
+    model.started_at = datetime.now()
+    model.ended_at = datetime.now() + timedelta(seconds=40)
+    model.error = "error message"
 
     test_session.add(model)
     test_session.commit()

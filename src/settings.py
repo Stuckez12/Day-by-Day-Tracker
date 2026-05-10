@@ -57,6 +57,9 @@ class TestAppConfig(AppConfig):
     def db_url(self):
         return f"postgresql+psycopg2://{self.TEST_DATABASE_USERNAME}:{self.TEST_DATABASE_PASSWORD}@{self.TEST_DATABASE_HOST}:{self.TEST_DATABASE_PORT}/{self.TEST_DATABASE_DB_NAME}"
 
+    # Maintenance
+    BACKUP_PATH: str = "/"
+
 
 APP_SETTINGS = AppConfig | TestAppConfig
 ENVS = Literal["dev", "prod", "test"]

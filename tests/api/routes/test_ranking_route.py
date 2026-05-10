@@ -1,4 +1,3 @@
-import pytest
 import uuid
 
 from datetime import date, datetime
@@ -9,8 +8,6 @@ from sqlalchemy.orm import Session
 from src.models import PersonalModel, RankerModel
 from src.schemas import RankingSchema
 
-from tests.api.constants import INVALID_PERSONNEL_ID
-
 
 class TestRankingRoute:
     def test_get_ranking_default(
@@ -20,8 +17,6 @@ class TestRankingRoute:
         test_ranker: RankerModel,
     ):
         result = test_client_v1.get("/ranking")
-        data = result.json()
-        print(data)
         assert result.status_code == status.HTTP_200_OK
 
         data = result.json()
@@ -106,6 +101,7 @@ class TestRankingRoute:
         assert result.status_code == status.HTTP_200_OK
 
         data = result.json()
+
         try:
             assert uuid.UUID(data["id"])
             assert datetime.fromisoformat(data["created_at"])

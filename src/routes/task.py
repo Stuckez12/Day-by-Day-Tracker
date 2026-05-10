@@ -15,7 +15,7 @@ from src.tasks import simulate_celery_task
 api = APIRouter(prefix="/tasks", tags=["Task"])
 
 
-@api.get("/", status_code=status.HTTP_200_OK, response_model=Page[TaskSchema])
+@api.get("/paginated", status_code=status.HTTP_200_OK, response_model=Page[TaskSchema])
 def get_tasks_paginated(
     service: TaskServiceDep,
     params: Params = Depends(),
