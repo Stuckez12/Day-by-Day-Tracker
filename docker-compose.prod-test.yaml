@@ -2,15 +2,15 @@ services:
   db:
     image: postgres:17 
     ports:
-      - ${DATABASE_PORT}:5432
+      - 5432:5432
     networks:
       - app-network
     volumes:
       - postgres_data:/var/lib/postgresql/data
     environment:
-        POSTGRES_USER: ${DATABASE_USERNAME}
-        POSTGRES_PASSWORD: ${DATABASE_PASSWORD}
-        POSTGRES_PORT: ${DATABASE_PORT}
+        POSTGRES_USER: a
+        POSTGRES_PASSWORD: a
+        POSTGRES_PORT: 5432
     attach: false
     env_file: .env.example
     restart: unless-stopped
