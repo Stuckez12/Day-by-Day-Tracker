@@ -11,6 +11,7 @@ services:
         POSTGRES_USER: postgres
         POSTGRES_PASSWORD: postgres
         POSTGRES_PORT: 5432
+        POSTGRES_DB: tracker
     attach: false
     env_file: .env.example
     restart: unless-stopped
