@@ -8,8 +8,8 @@ services:
     volumes:
       - postgres_data:/var/lib/postgresql/data
     environment:
-        POSTGRES_USER: a
-        POSTGRES_PASSWORD: a
+        POSTGRES_USER: postgres
+        POSTGRES_PASSWORD: postgres
         POSTGRES_PORT: 5432
     attach: false
     env_file: .env.example
