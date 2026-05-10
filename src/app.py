@@ -47,7 +47,7 @@ def create_app():
     def catch_all_exception(_: Request, exc: Exception) -> JSONResponse:
         return JSONResponse(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            content={"detail": "Internal Server Error", "exc": exc},
+            content={"detail": "Internal Server Error", "exc": str(exc)},
         )
 
     return app
