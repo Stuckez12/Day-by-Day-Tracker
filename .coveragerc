@@ -11,5 +11,6 @@ omit =
     src/app.py
     src/common/upgrade_db.py
     src/main.py
-    src/settings.py
     src/migrations/*
+    src/tasks/task_management.py
+    src/settings.py

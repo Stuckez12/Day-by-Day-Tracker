@@ -33,7 +33,7 @@ class TaskService(BaseDBService[TaskModel]):
 
             raise ValueError("Task has finished processing")
 
-        task = AsyncResult(str(task_ref.task_id))
+        task: AsyncResult = AsyncResult(str(task_ref.task_id))
 
         return {"status": task.state, "info": task.info}
 

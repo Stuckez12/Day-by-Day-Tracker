@@ -1,4 +1,5 @@
 import logging
+import uuid
 
 from celery import Task
 from celery.signals import (
@@ -42,7 +43,10 @@ def before_task_execution(task_id: str, **kwargs):
         db = next(db_gen)
 
         service = TaskService(db)
-        task_record = service.get_by_id(task_id)
+        task_record = service.get_by_id(uuid.UUID(task_id))
+
+        if task_record is None:
+            raise ValueError("Task not found. Continue")
 
         task_record.started_at = datetime.now(timezone.utc)
         task_record.status = TaskStatus.RUNNING.value
@@ -57,7 +61,7 @@ def before_task_execution(task_id: str, **kwargs):
 @task_success.connect
 def finalise_success_task(sender: Task, **kwargs):
     logging.info("After task execution")
-    task_id = sender.request.id
+    task_id = uuid.UUID(sender.request.id)
 
     try:
         db_gen = get_db()
@@ -65,6 +69,9 @@ def finalise_success_task(sender: Task, **kwargs):
 
         service = TaskService(db)
         task_record = service.get_by_id(task_id)
+
+        if task_record is None:
+            raise ValueError("Task not found. Continue")
 
         task_record.ended_at = datetime.now(timezone.utc)
         task_record.status = TaskStatus.SUCCESS.value
@@ -77,7 +84,7 @@ def finalise_success_task(sender: Task, **kwargs):
 @task_failure.connect
 def finalise_failure_task(sender: Task, **kwargs):
     logging.info("After task execution")
-    task_id = sender.request.id
+    task_id = uuid.UUID(sender.request.id)
 
     try:
         db_gen = get_db()
@@ -85,6 +92,9 @@ def finalise_failure_task(sender: Task, **kwargs):
 
         service = TaskService(db)
         task_record = service.get_by_id(task_id)
+
+        if task_record is None:
+            raise ValueError("Task not found. Continue")
 
         task_record.ended_at = datetime.now(timezone.utc)
         task_record.status = TaskStatus.FAILED.value
@@ -96,7 +106,7 @@ def finalise_failure_task(sender: Task, **kwargs):
 
 @task_retry.connect
 def log_retry(sender: Task, **kwargs):
-    task_id = sender.request.id
+    task_id = uuid.UUID(sender.request.id)
 
     try:
         db_gen = get_db()
@@ -104,6 +114,9 @@ def log_retry(sender: Task, **kwargs):
 
         service = TaskService(db)
         task_record = service.get_by_id(task_id)
+
+        if task_record is None:
+            raise ValueError("Task not found. Continue")
 
         task_record.retries += 1
         db.commit()

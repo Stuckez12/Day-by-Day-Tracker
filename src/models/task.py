@@ -14,7 +14,7 @@ class TaskModel(BaseModel):
 
     task_id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), nullable=False)
     name: Mapped[str] = mapped_column(String, nullable=False)
-    status: Mapped[TaskStatus] = mapped_column(String, nullable=False)
+    status: Mapped[str] = mapped_column(String, nullable=False)
     retries: Mapped[int] = mapped_column(Integer, default=0, nullable=False)
 
     started_at: Mapped[datetime] = mapped_column(DateTime, nullable=True)

@@ -73,7 +73,7 @@ def get_app_config() -> APP_SETTINGS:
             return ProdAppConfig()  # type: ignore[call-arg]
 
         case "test":
-            return TestAppConfig()
+            return TestAppConfig()  # type: ignore[call-arg]
 
 
 app_config: APP_SETTINGS = get_app_config()

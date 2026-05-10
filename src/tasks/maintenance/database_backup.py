@@ -46,7 +46,7 @@ def database_backup(self: Task) -> dict:
         )
 
         try:
-            subprocess.run(command, env=env, check=True, capture_output=True, text=True)
+            subprocess.run(command, env=env, check=True, capture_output=True, text=True)  # type: ignore[arg-type]
 
         except subprocess.CalledProcessError as e:
             print("RETURN CODE:", e.returncode)

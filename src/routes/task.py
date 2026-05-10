@@ -1,6 +1,7 @@
 import uuid
 
 from celery.result import AsyncResult
+from datetime import datetime
 from fastapi import APIRouter, HTTPException, Request, status, Depends, Query
 from fastapi_pagination import Page, Params
 from fastapi_pagination.ext.sqlalchemy import paginate
@@ -23,9 +24,9 @@ def get_tasks_paginated(
     task_status: list[TaskStatus] = Query(None),
     min_retries: int = Query(None),
     max_retries: int = Query(None),
-    started_at: str = Query(None),
-    ended_at: str = Query(None),
-    duration: str = Query(None),
+    started_at: datetime = Query(None),
+    ended_at: datetime = Query(None),
+    duration: int = Query(None),
 ):
     filters = TaskPaginated(
         task_id=task_id,

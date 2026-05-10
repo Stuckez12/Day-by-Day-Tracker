@@ -11,7 +11,7 @@ from typing import Generator
 
 from src.common import get_db
 from src.common.password_hash import pwd_hash
-from src.main import app
+from src.main import fastapi_app
 from src.models import PersonalModel, RankerModel
 from src.services import AuthService, PersonalService, RankingService
 
@@ -82,7 +82,7 @@ def test_date_today() -> Generator[date, None, None]:
 
 @pytest.fixture(scope="function")
 def test_client_v1():
-    yield TestClient(app, base_url="http://testserver/api/v1")
+    yield TestClient(fastapi_app, base_url="http://testserver/api/v1")
 
 
 ################################################################################
