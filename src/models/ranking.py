@@ -35,6 +35,6 @@ class RankerModel(BaseModel):
     def contains_notes(self) -> bool:
         return self.text_events is not None or self.text_notes is not None
 
-    @contains_notes.expression
+    @contains_notes.expression  # type: ignore[no-redef]
     def contains_notes(cls):
         return or_(cls.text_events.is_not(None), cls.text_notes.is_not(None))
