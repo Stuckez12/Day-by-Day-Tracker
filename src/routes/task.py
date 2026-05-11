@@ -63,7 +63,7 @@ def get_task(service: TaskServiceDep, task_id: uuid.UUID):
     return task
 
 
-@api.get("/{task_id}/status", status_code=status.HTTP_200_OK, response_model=TaskSchema)
+@api.get("/{task_id}/status", status_code=status.HTTP_200_OK)
 def get_task_status(service: TaskServiceDep, task_id: uuid.UUID):
     task = service.get_by_id(task_id)
 

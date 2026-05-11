@@ -46,7 +46,7 @@ class TaskPaginated(BaseModel):
             if self.min_retries > self.max_retries:
                 raise HTTPException(
                     status_code=status.HTTP_400_BAD_REQUEST,
-                    detail="Minimum retries is largewr than maximum retries",
+                    detail="Minimum retries is larger than maximum retries",
                 )
 
         if self.duration is not None:
@@ -60,7 +60,7 @@ class TaskPaginated(BaseModel):
             if self.started_at > self.ended_at:
                 raise HTTPException(
                     status_code=status.HTTP_400_BAD_REQUEST,
-                    detail="Minimum retries is largewr than maximum retries",
+                    detail="Started at time is larger than ended at time",
                 )
 
         return self
