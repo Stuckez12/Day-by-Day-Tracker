@@ -6,7 +6,6 @@
   - Email as well?
 - BE: Ranking get range/paginate
 - FE: Pagination tables
-- BE: Daily/Weekly/Monthly backups
 - BE: Input to record what happened that day
 
 # v0.2.0

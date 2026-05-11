@@ -1,6 +1,7 @@
 from fastapi import FastAPI, Request, status
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
+from fastapi_pagination import add_pagination
 
 from src import __version__ as APP_VERSION
 from src.api import api
@@ -27,6 +28,8 @@ def create_app():
         expose_headers=["*"],
     )
 
+    add_pagination(app)
+
     app.include_router(api, prefix="/v1")
 
     if is_prod_env:
@@ -44,7 +47,7 @@ def create_app():
     def catch_all_exception(_: Request, exc: Exception) -> JSONResponse:
         return JSONResponse(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            content={"detail": "Internal Server Error"},
+            content={"detail": "Internal Server Error", "exc": str(exc)},
         )
 
     return app

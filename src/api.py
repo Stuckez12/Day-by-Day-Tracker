@@ -1,8 +1,9 @@
 from fastapi import APIRouter
 
-from src.routes import auth, personal, ranking
+from src.routes import auth, personal, ranking, task
 
 api = APIRouter()
 api.include_router(auth.api)
+api.include_router(task.api)
 api.include_router(personal.api)
 api.include_router(ranking.api)

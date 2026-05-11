@@ -14,13 +14,20 @@ jobs:
       - name: Start Application
         run: docker compose -f docker-compose.prod-test.yaml up -d
 
-      - name: Wait time
+      - name: Wait Time
         run: sleep 12
 
-      - name: Frontend check
+      - name: Upgrade Database
+        run: docker compose -f docker-compose.prod-test.yaml exec api alembic -c /api/alembic.ini upgrade head
+
+      - name: Frontend Check
         run: |
           curl --fail http://localhost/login
 
-      - name: API check
+      - name: API Check
         run: |
           curl --fail http://localhost/api/docs
+
+      - name: Celery Task Check
+        run: |
+          curl --fail http://localhost/api/v1/tasks/simulate-task

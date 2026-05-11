@@ -21,6 +21,16 @@ class AppConfig(BaseSettings):
     def db_url(self):
         return f"postgresql+psycopg2://{self.DATABASE_USERNAME}:{self.DATABASE_PASSWORD}@{self.DATABASE_HOST}:{self.DATABASE_PORT}/{self.DATABASE_DB_NAME}"
 
+    # Celery
+    REDIS_URL: str = "redis://redis:6379"
+
+    @property
+    def CELERY_URL(self):
+        return f"{self.REDIS_URL}/0"
+
+    # Maintenance
+    BACKUP_PATH: str
+
 
 class ProdAppConfig(AppConfig):
     model_config = SettingsConfigDict(
@@ -47,6 +57,9 @@ class TestAppConfig(AppConfig):
     def db_url(self):
         return f"postgresql+psycopg2://{self.TEST_DATABASE_USERNAME}:{self.TEST_DATABASE_PASSWORD}@{self.TEST_DATABASE_HOST}:{self.TEST_DATABASE_PORT}/{self.TEST_DATABASE_DB_NAME}"
 
+    # Maintenance
+    BACKUP_PATH: str = "/"
+
 
 APP_SETTINGS = AppConfig | TestAppConfig
 ENVS = Literal["dev", "prod", "test"]
@@ -63,7 +76,7 @@ def get_app_config() -> APP_SETTINGS:
             return ProdAppConfig()  # type: ignore[call-arg]
 
         case "test":
-            return TestAppConfig()
+            return TestAppConfig()  # type: ignore[call-arg]
 
 
 app_config: APP_SETTINGS = get_app_config()

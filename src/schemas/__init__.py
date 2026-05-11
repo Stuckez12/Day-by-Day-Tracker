@@ -1,4 +1,5 @@
 from src.schemas.auth import LogInRequest
+from src.schemas.backup import BackupSchema
 from src.schemas.common import DateRequest, DateRangeRequest, InvalidSchema
 from src.schemas.personal import (
     CreatePersonnelRequest,
@@ -16,3 +17,4 @@ from src.schemas.ranking import (
     RankingRequest,
     RankingSchema,
 )
+from src.schemas.task import TaskPaginated, TaskSchema

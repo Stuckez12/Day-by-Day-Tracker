@@ -2,16 +2,18 @@ services:
   db:
     image: postgres:17 
     ports:
-      - ${DATABASE_PORT}:5432
+      - 5432:5432
     networks:
       - app-network
     volumes:
       - postgres_data:/var/lib/postgresql/data
     environment:
-        POSTGRES_USER: ${DATABASE_USERNAME}
-        POSTGRES_PASSWORD: ${DATABASE_PASSWORD}
-        POSTGRES_PORT: ${DATABASE_PORT}
+        POSTGRES_USER: postgres
+        POSTGRES_PASSWORD: postgres
+        POSTGRES_PORT: 5432
+        POSTGRES_DB: tracker
     attach: false
+    env_file: .env.example
     restart: unless-stopped
 
   nginx:
@@ -38,7 +40,7 @@ services:
       - app-network
     env_file: .env.example
     restart: unless-stopped
-    command: uvicorn src.main:app --host 0.0.0.0 --port 8000
+    command: uvicorn src.main:fastapi_app --host 0.0.0.0 --port 8000
 
   frontend:
     build:
@@ -53,6 +55,40 @@ services:
       - /app/node_modules
     restart: unless-stopped
 
+  redis:
+    image: redis:8.2.5-bookworm
+    container_name: redis
+    command: redis-server --save 7200 1 --loglevel warning
+    expose:
+      - "6379"
+    networks:
+      - app-network
+    volumes:
+      - redis-data:/data/
+    restart: unless-stopped
+
+  beat-scheduler:
+    build:
+      context: .
+      dockerfile: src/Dockerfile.worker
+    expose:
+      - "8001"
+    networks:
+      - app-network
+    env_file: .env.example
+    entrypoint: celery -A src.main beat --loglevel=INFO
+
+  worker:
+    build:
+      context: .
+      dockerfile: src/Dockerfile.worker
+    expose:
+      - "8002"
+    networks:
+      - app-network
+    env_file: .env.example
+    entrypoint: celery -A src.main worker -Ofair --concurrency=4 --loglevel=INFO -E
+
 
 networks:
   app-network:
@@ -61,3 +97,4 @@ networks:
 volumes:
   pgadmin-data:
   postgres_data:
+  redis-data:
