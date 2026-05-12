@@ -7,11 +7,16 @@ from pydantic import BaseModel, model_validator
 
 class RankingSchema(BaseModel):
     id: uuid.UUID
-    created_at: datetime
-    updated_at: datetime
     personal_id: uuid.UUID
+
     day: date
     ranking: int | None
+
+    text_events: str | None = None
+    text_notes: str | None = None
+
+    created_at: datetime
+    updated_at: datetime
 
 
 class RankingRequest(BaseModel):
@@ -37,9 +42,17 @@ class RankingRequest(BaseModel):
         return values
 
 
+class RankingNotesRequest(BaseModel):
+    day: date
+
+    text_events: str
+    text_notes: str
+
+
 class RankingListSchema(BaseModel):
     min: date
     max: date
+
     rankings: list[RankingRequest]
 
 

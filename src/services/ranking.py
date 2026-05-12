@@ -1,12 +1,11 @@
 import uuid
 
 from datetime import date
-from sqlalchemy.exc import NoResultFound
 from sqlalchemy.orm import Session
 
 from src.models import RankerModel
 from src.services.base import BaseDBService
-from src.schemas import RankingSchema
+from src.schemas import RankingNotesRequest, RankingSchema
 
 
 class RankingService(BaseDBService[RankerModel]):
@@ -54,6 +53,15 @@ class RankingService(BaseDBService[RankerModel]):
 
     def rank_day(self, rank_row: RankerModel, set_rank: int):
         rank_row.ranking = set_rank
+
+        self.db.commit()
+        self.db.refresh(rank_row)
+
+        return RankingSchema(**rank_row.to_dict())
+
+    def record_day_notes(self, rank_row: RankerModel, notes: RankingNotesRequest):
+        rank_row.text_events = notes.text_events
+        rank_row.text_notes = notes.text_notes
 
         self.db.commit()
         self.db.refresh(rank_row)
