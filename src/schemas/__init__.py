@@ -14,6 +14,7 @@ from src.schemas.ranking import (
     GetAllRankingsResponse,
     GetRangedRankingsResponse,
     RankingListSchema,
+    RankingNotesRequest,
     RankingRequest,
     RankingSchema,
 )

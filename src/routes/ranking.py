@@ -1,10 +1,10 @@
 import uuid
 
 from datetime import date
-from fastapi import APIRouter, status, Cookie, Query
+from fastapi import APIRouter, HTTPException, status, Cookie, Query
 
 from src.common import PersonalServiceDep, RankingServiceDep
-from src.schemas import RankingRequest, RankingSchema
+from src.schemas import RankingNotesRequest, RankingRequest, RankingSchema
 
 api = APIRouter(prefix="/ranking", tags=["Ranking"])
 
@@ -50,3 +50,24 @@ def rank_day(
     rank_data = service.fetch_date(personnel_id, request.day)
 
     return service.rank_day(rank_data, request.ranking)
+
+
+@api.put(
+    "/rank/notes",
+    response_model=RankingSchema,
+    status_code=status.HTTP_202_ACCEPTED,
+)
+def rank_date_notes(
+    request: RankingNotesRequest,
+    service: RankingServiceDep,
+    personnel_id: uuid.UUID = Cookie(..., include_in_schema=False),
+):
+    rank = service.get_by_date(personnel_id, request.day)
+
+    if rank is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Specified date's rank not found",
+        )
+
+    return service.record_day_notes(rank, request)
