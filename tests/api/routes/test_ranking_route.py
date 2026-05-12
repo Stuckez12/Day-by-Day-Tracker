@@ -269,3 +269,59 @@ class TestRankingRoute:
 
         data = result.json()
         assert data["detail"] == "Ranking must be between 0 and 10"
+
+    def test_rank_date_notes(
+        self,
+        test_set_cookies: None,
+        test_client_v1: TestClient,
+        test_date_today: date,
+        test_ranker: RankerModel,
+    ):
+        result = test_client_v1.put(
+            "/ranking/rank/notes",
+            json={
+                "day": test_date_today.strftime("%Y-%m-%d"),
+                "text_events": "Event test",
+                "text_notes": "Note test",
+            },
+        )
+        assert result.status_code == status.HTTP_202_ACCEPTED
+
+        data = result.json()
+        assert RankingSchema(**data)
+        assert data["day"] == test_date_today.strftime("%Y-%m-%d")
+        assert data["text_events"] == "Event test"
+        assert data["text_notes"] == "Note test"
+
+    def test_rank_date_notes_no_personnel_cookie(
+        self,
+        test_client_v1: TestClient,
+        test_date_today: date,
+    ):
+        result = test_client_v1.put(
+            "/ranking/rank/notes",
+            json={"day": test_date_today.strftime("%Y-%m-%d")},
+        )
+        assert result.status_code == status.HTTP_422_UNPROCESSABLE_CONTENT
+
+        response = result.json()
+        assert "detail" in response
+        assert len(response["detail"]) == 1
+
+        error_message = response["detail"][0]
+        assert error_message["type"] == "missing"
+        assert error_message["loc"] == ["cookie", "personnel_id"]
+        assert error_message["msg"] == "Field required"
+        assert error_message["input"] is None
+
+    def test_rank_date_notes_not_found_rank(
+        self,
+        test_set_cookies: None,
+        test_client_v1: TestClient,
+    ):
+        result = test_client_v1.put("/ranking/rank/notes", json={"day": "2004-04-04"})
+        assert result.status_code == status.HTTP_404_NOT_FOUND
+
+        response = result.json()
+        assert "detail" in response
+        assert response["detail"] == "Specified date's rank not found"

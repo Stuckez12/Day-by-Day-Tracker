@@ -45,8 +45,8 @@ class RankingRequest(BaseModel):
 class RankingNotesRequest(BaseModel):
     day: date
 
-    text_events: str
-    text_notes: str
+    text_events: str | None = None
+    text_notes: str | None = None
 
 
 class RankingListSchema(BaseModel):
