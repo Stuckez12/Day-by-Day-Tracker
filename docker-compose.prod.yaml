@@ -106,3 +106,4 @@ networks:
 volumes:
   pgadmin-data:
   postgres_data:
+  redis-data:
