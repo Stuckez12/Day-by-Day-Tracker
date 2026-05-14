@@ -2,6 +2,7 @@ import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 
 import PageWrapper from "components/common/PageWrapper";
+import TextInputs from "components/common/TextInputs";
 import WelcomeText from "components/common/WelcomeText";
 import RatingBar from "components/rating/RatingBar";
 
@@ -19,6 +20,7 @@ function LandingPage() {
       <h1>Landing Page</h1>
       <WelcomeText />
       <RatingBar />
+      <TextInputs />
     </PageWrapper>
   );
 }

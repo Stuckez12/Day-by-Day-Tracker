@@ -178,3 +178,24 @@
 
   font-size: 0.8rem;
 }
+
+.textarea-input {
+  width: 100%;
+
+  position: relative;
+
+  margin: 16px 0px;
+
+  textarea {
+    border-radius: 5px;
+    border-width: 2px;
+
+    box-shadow: none;
+
+    padding: 6px 12px;
+
+    width: 100%;
+
+    min-height: 4em;
+  }
+}
