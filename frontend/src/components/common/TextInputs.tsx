@@ -59,20 +59,25 @@ function TextInputs() {
 
   return (
     <div>
-      <textarea
-        name="text_events"
-        value={form.text_events}
-        onChange={handleChange}
-        placeholder="Insert any event that happened today..."
-        autoComplete="new-field"
-      />
-      <textarea
-        name="text_notes"
-        value={form.text_notes}
-        onChange={handleChange}
-        placeholder="Insert anything notable that happened today..."
-        autoComplete="new-field"
-      />
+      <div className="textarea-input">
+        <textarea
+          name="text_events"
+          value={form.text_events}
+          onChange={handleChange}
+          placeholder="Insert any event that happened today..."
+          autoComplete="new-field"
+        />
+      </div>
+
+      <div className="textarea-input">
+        <textarea
+          name="text_notes"
+          value={form.text_notes}
+          onChange={handleChange}
+          placeholder="Insert anything notable that happened today..."
+          autoComplete="new-field"
+        />
+      </div>
       <button className="submit-button" onClick={onSubmit}>
         Submit
       </button>
