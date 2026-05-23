@@ -76,7 +76,7 @@ services:
     restart: unless-stopped
 
   beat-scheduler:
-    image: stukez12/day-by-day-tracker-api:${APP_VERSION}
+    image: stukez12/day-by-day-tracker-worker:${APP_VERSION}
     expose:
       - "8001"
     networks:
@@ -86,7 +86,7 @@ services:
     restart: unless-stopped
 
   worker:
-    image: stukez12/day-by-day-tracker-api:${APP_VERSION}
+    image: stukez12/day-by-day-tracker-worker:${APP_VERSION}
     expose:
       - "8002"
     networks:
