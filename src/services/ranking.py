@@ -1,6 +1,7 @@
 import uuid
 
 from datetime import date
+from sqlalchemy.exc import NoResultFound
 from sqlalchemy.orm import Session
 
 from src.models import RankerModel
@@ -12,14 +13,14 @@ class RankingService(BaseDBService[RankerModel]):
     def __init__(self, db: Session):
         super().__init__(db=db, model=RankerModel)
 
-    def get_by_date(self, personnel_id: uuid.UUID, date: date) -> RankerModel | None:
+    def get_by_date(self, personnel_id: uuid.UUID, date: date) -> RankerModel:
         return (
             self.db.query(RankerModel)
             .filter(
                 RankerModel.personal_id == personnel_id,
                 RankerModel.day == date,
             )
-            .first()
+            .one()
         )
 
     def get_all_personnel_rankings(self, personnel_id: uuid.UUID):
@@ -44,12 +45,11 @@ class RankingService(BaseDBService[RankerModel]):
         return row
 
     def fetch_date(self, personnel_id: uuid.UUID, date: date) -> RankerModel:
-        row = self.get_by_date(personnel_id, date)
+        try:
+            return self.get_by_date(personnel_id, date)
 
-        if row is None:
+        except NoResultFound:
             return self.insert_new_date(personnel_id, date)
-
-        return row
 
     def rank_day(self, rank_row: RankerModel, set_rank: int):
         rank_row.ranking = set_rank
