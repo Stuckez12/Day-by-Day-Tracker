@@ -69,6 +69,16 @@ jobs:
           --health-timeout=5s
           --health-retries=10
 
+      redis:
+        image: redis:7.2-alpine
+        ports:
+          - 6379:6379
+        options: >-
+          --health-cmd "redis-cli ping || exit 1"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
     steps:
       - name: Check out repository
         uses: actions/checkout@v3
@@ -91,8 +101,14 @@ jobs:
         run: uv run pytest -vv
         env:
           APP_ENV: test
+
+          # Database
           DATABASE_USERNAME: testing
           DATABASE_PASSWORD: testing
           DATABASE_HOST: localhost
           DATABASE_PORT: 5435
           DATABASE_DB_NAME: test_dbdt
+
+          # Celery
+          CELERY_BROKER_URL: redis://localhost:6379/0
+          result_backend: redis://localhost:6379/0
