@@ -1,14 +1,12 @@
-from datetime import datetime
 from fastapi import status
 from fastapi.testclient import TestClient
 from pytest_mock import MockerFixture
 from sqlalchemy.orm import Session
+from tests.api.constants import INVALID_PASSWORD, INVALID_PERSONNEL_ID, VALID_PASSWORD
 
 from src.common.password_hash import pwd_hash
 from src.models import PersonalModel
 from src.schemas import SlimPersonnelSchema
-
-from tests.api.constants import INVALID_PASSWORD, INVALID_PERSONNEL_ID, VALID_PASSWORD
 
 
 class TestPersonalRoute:
@@ -34,8 +32,7 @@ class TestPersonalRoute:
         test_client_v1: TestClient,
         test_personnel: PersonalModel,
     ):
-        result = test_client_v1.get(f"/personal/me")
-        print(result.json())
+        result = test_client_v1.get("/personal/me")
         assert result.status_code == status.HTTP_200_OK
 
         data = result.json()
@@ -66,7 +63,7 @@ class TestPersonalRoute:
         test_personnel_2: PersonalModel,
         test_personnel_3: PersonalModel,
     ):
-        result = test_client_v1.get(f"/personal/all")
+        result = test_client_v1.get("/personal/all")
         assert result.status_code == status.HTTP_200_OK
 
         data = result.json()

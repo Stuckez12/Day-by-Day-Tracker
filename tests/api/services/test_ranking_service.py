@@ -1,9 +1,9 @@
-import pytest
-
 from datetime import date
+from uuid import UUID
+
+import pytest
 from sqlalchemy.exc import IntegrityError, NoResultFound
 from sqlalchemy.orm import Session
-from uuid import UUID
 
 from src.models import PersonalModel, RankerModel
 from src.services import RankingService

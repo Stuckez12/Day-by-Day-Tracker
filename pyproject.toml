@@ -26,9 +26,6 @@ dependencies = [
 
 [dependency-groups]
 dev = [
-    "black==26.1.0",
-    "flake8>=7.3.0",
-    "mypy>=1.19.1",
     "pytest>=9.0.2",
     "pytest-cov>=7.0.0",
     "pytest-env>=1.6.0",
@@ -56,10 +53,6 @@ omit = [
     "src/settings.py",
 ]
 
-[[tool.mypy.overrides]]
-module = ["passlib.context"]
-ignore_missing_imports = true
-
 [tool.pytest.ini_options]
 addopts = "--cov=src"
 
@@ -78,7 +71,7 @@ fix = true
 lint.select = ["I", "F"]
 lint.fixable = ["I", "F"]
 
-src = ["src"]
+src = ["src", "tests"]
 
 [tool.ruff.format]
 quote-style = "double"
@@ -103,4 +96,4 @@ known-first-party = ["src"]
 unresolved-import = "ignore"
 
 [tool.ty.src]
-exclude = ["**/migrations/**","**/tests/**"]
+exclude = ["src/migrations/**","tests/**"]

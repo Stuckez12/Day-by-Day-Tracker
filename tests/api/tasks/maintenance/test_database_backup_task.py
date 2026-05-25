@@ -1,7 +1,6 @@
-import pytest
-import re
 import subprocess
 
+import pytest
 from celery.result import AsyncResult
 from pytest_mock import MockerFixture
 

@@ -1,15 +1,14 @@
-import pytest
+from uuid import UUID
 
+import pytest
 from fastapi import status
 from fastapi.testclient import TestClient
 from pytest_mock import MockerFixture
 from sqlalchemy.orm import Session
-from uuid import UUID
+from tests.api.constants import INVALID_PASSWORD, VALID_PASSWORD
 
 from src.common.password_hash import pwd_hash
 from src.models import PersonalModel
-
-from tests.api.constants import INVALID_PASSWORD, VALID_PASSWORD
 
 
 class TestAuthRoute:
