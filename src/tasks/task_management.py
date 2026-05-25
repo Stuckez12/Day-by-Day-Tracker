@@ -82,7 +82,7 @@ def finalise_success_task(sender: Task, **kwargs):
 
 
 @task_failure.connect
-def finalise_failure_task(sender: Task, exception: Exception = None, **kwargs):
+def finalise_failure_task(sender: Task, exception: Exception | None = None, **kwargs):
     logging.info("After failed task execution")
     task_id = uuid.UUID(sender.request.id)
 
