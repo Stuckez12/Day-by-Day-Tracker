@@ -110,5 +110,4 @@ jobs:
           DATABASE_DB_NAME: test_dbdt
 
           # Celery
-          CELERY_BROKER_URL: redis://redis:6379/0
-          result_backend: redis://redis:6379/0
+          REDIS_URL: redis://localhost:6379
