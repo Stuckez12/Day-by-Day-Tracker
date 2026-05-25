@@ -5,7 +5,6 @@ description = "Add your description here"
 readme = "README.md"
 requires-python = ">=3.13"
 
-[project]
 dependencies = [
     "alembic>=1.17.2",
     "argon2-cffi>=25.1.0",
@@ -25,7 +24,7 @@ dependencies = [
     "uvicorn>=0.38.0",
 ]
 
-[project.optional-dependencies]
+[dependency-groups]
 dev = [
     "black==26.1.0",
     "flake8>=7.3.0",

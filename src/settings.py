@@ -40,22 +40,9 @@ class ProdAppConfig(AppConfig):
 
 
 class TestAppConfig(AppConfig):
-    # DATABASE
-    DATABASE_USERNAME: str | None = None  # type: ignore[assignment]
-    DATABASE_PASSWORD: str | None = None  # type: ignore[assignment]
-    DATABASE_HOST: str | None = None  # type: ignore[assignment]
-    DATABASE_PORT: int | None = None  # type: ignore[assignment]
-    DATABASE_DB_NAME: str | None = None  # type: ignore[assignment]
-
-    TEST_DATABASE_USERNAME: str = "testing"
-    TEST_DATABASE_PASSWORD: str = "testing"
-    TEST_DATABASE_HOST: str = "localhost"
-    TEST_DATABASE_PORT: int = 5435
-    TEST_DATABASE_DB_NAME: str = "testing"
-
     @property
     def db_url(self):
-        return f"postgresql+psycopg2://{self.TEST_DATABASE_USERNAME}:{self.TEST_DATABASE_PASSWORD}@{self.TEST_DATABASE_HOST}:{self.TEST_DATABASE_PORT}/{self.TEST_DATABASE_DB_NAME}"
+        return f"postgresql+psycopg2://{self.DATABASE_USERNAME}:{self.DATABASE_PASSWORD}@{self.DATABASE_HOST}:{self.DATABASE_PORT}/test_dbdt"
 
     # Maintenance
     BACKUP_PATH: str = "/"

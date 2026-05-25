@@ -51,6 +51,7 @@ services:
       - app-network
     volumes:
       - ./src:/api/src
+      - ./tests:/api/tests
     env_file: .env
     command: uvicorn src.main:fastapi_app --host 0.0.0.0 --port 8000 --reload --reload-dir src
 
