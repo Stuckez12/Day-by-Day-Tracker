@@ -1,12 +1,12 @@
 import uuid
-
 from datetime import date
+
 from sqlalchemy.exc import NoResultFound
 from sqlalchemy.orm import Session
 
 from src.models import RankerModel
-from src.services.base import BaseDBService
 from src.schemas import RankingNotesRequest, RankingSchema
+from src.services.base import BaseDBService
 
 
 class RankingService(BaseDBService[RankerModel]):

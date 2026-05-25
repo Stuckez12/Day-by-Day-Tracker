@@ -8,11 +8,12 @@ Create Date: 2026-04-21 21:28:03.200018
 
 from typing import Sequence, Union
 
-from alembic import op
 import sqlalchemy as sa
+from alembic import op
 from sqlalchemy.sql import text
 
 from src.common.password_hash import pwd_hash
+
 
 # revision identifiers, used by Alembic.
 revision: str = "6350c32c93b3"

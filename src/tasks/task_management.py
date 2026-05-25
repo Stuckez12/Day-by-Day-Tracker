@@ -1,7 +1,7 @@
 import logging
 import uuid
+from datetime import datetime, timezone
 
-from celery import Task
 from celery.signals import (
     before_task_publish,
     task_failure,
@@ -9,8 +9,8 @@ from celery.signals import (
     task_retry,
     task_success,
 )
-from datetime import datetime, timezone
 
+from celery import Task
 from src.common import get_db
 from src.enums import TaskStatus
 from src.services import TaskService

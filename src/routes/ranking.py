@@ -1,11 +1,12 @@
 import uuid
-
 from datetime import date
-from fastapi import APIRouter, HTTPException, status, Cookie, Query
+
+from fastapi import APIRouter, Cookie, HTTPException, Query, status
 from sqlalchemy.exc import NoResultFound
 
 from src.common import PersonalServiceDep, RankingServiceDep
 from src.schemas import RankingNotesRequest, RankingRequest, RankingSchema
+
 
 api = APIRouter(prefix="/ranking", tags=["Ranking"])
 

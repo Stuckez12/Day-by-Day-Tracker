@@ -1,8 +1,10 @@
-from sqlalchemy import String
-from sqlalchemy.orm import Mapped, mapped_column, relationship
 from typing import TYPE_CHECKING
 
+from sqlalchemy import String
+from sqlalchemy.orm import Mapped, mapped_column, relationship
+
 from src.models.base import BaseModel
+
 
 if TYPE_CHECKING:
     from src.models import HabitsModel, RankerModel

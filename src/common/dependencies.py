@@ -1,9 +1,11 @@
+from typing import Annotated
+
 from fastapi import Depends
 from sqlalchemy.orm import Session
-from typing import Annotated
 
 from src.common import get_db
 from src.services import AuthService, PersonalService, RankingService, TaskService
+
 
 DBSession = Annotated[Session, Depends(get_db)]
 

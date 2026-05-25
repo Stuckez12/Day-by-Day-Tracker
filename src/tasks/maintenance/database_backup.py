@@ -1,10 +1,8 @@
 import logging
 import subprocess
-
-from celery import shared_task, Task
 from datetime import datetime
 
-import src.tasks.task_management
+from celery import Task, shared_task
 from src.common import get_db
 from src.common.celery import update_task_state
 from src.models import BackupModel
@@ -13,7 +11,7 @@ from src.settings import app_config
 
 
 @shared_task(bind=True)
-def database_backup(self: Task) -> dict:
+def database_backup(self: Task, *args, **kwargs) -> dict:
     db_gen = get_db()
     db = next(db_gen)
 

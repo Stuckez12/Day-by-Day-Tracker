@@ -1,7 +1,7 @@
 import uuid
+from datetime import timedelta
 
 from celery.result import AsyncResult
-from datetime import timedelta
 from sqlalchemy.orm import Session
 
 from src.enums import TaskStatus
@@ -22,7 +22,7 @@ class TaskService(BaseDBService[TaskModel]):
 
         return record
 
-    def get_by_id(self, task_id: uuid.UUID) -> TaskModel | None:
+    def get_by_id(self, task_id: uuid.UUID) -> TaskModel | None:  # type: ignore
         return self.db.query(TaskModel).filter(TaskModel.task_id == task_id).first()
 
     def task_progress(self, task_ref: TaskModel):

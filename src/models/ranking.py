@@ -1,12 +1,13 @@
 import uuid
-
 from datetime import date
+from typing import TYPE_CHECKING, Optional
+
 from sqlalchemy import Date, ForeignKey, Integer, String, or_
 from sqlalchemy.ext.hybrid import hybrid_property
 from sqlalchemy.orm import Mapped, mapped_column, relationship
-from typing import Optional, TYPE_CHECKING
 
 from src.models.base import BaseModel
+
 
 if TYPE_CHECKING:
     from src.models import PersonalModel
@@ -35,6 +36,6 @@ class RankerModel(BaseModel):
     def contains_notes(self) -> bool:
         return self.text_events is not None or self.text_notes is not None
 
-    @contains_notes.expression  # type: ignore[no-redef]
+    @contains_notes.expression
     def contains_notes(cls):
-        return or_(cls.text_events.is_not(None), cls.text_notes.is_not(None))
+        return or_(cls.text_events.isnot(None), cls.text_notes.isnot(None))  # type: ignore

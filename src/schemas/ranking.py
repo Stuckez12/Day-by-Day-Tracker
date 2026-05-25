@@ -1,6 +1,6 @@
 import uuid
-
 from datetime import date, datetime
+
 from fastapi import HTTPException, status
 from pydantic import BaseModel, model_validator
 
