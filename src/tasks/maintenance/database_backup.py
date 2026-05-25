@@ -50,9 +50,9 @@ def database_backup(self: Task) -> dict:
             subprocess.run(command, env=env, check=True, capture_output=True, text=True)  # type: ignore[arg-type]
 
         except subprocess.CalledProcessError as e:
-            logging.error("RETURN CODE:", e.returncode)
-            logging.error("STDOUT:", e.stdout)
-            logging.error("STDERR:", e.stderr)
+            logging.error(f"RETURN CODE: {e.returncode}")
+            logging.error(f"STDOUT: {e.stdout}")
+            logging.error(f"STDERR: {e.stderr}")
             raise SystemError("Unable to create database backup")
 
         update_task_state(self, db, metadata={"stage": "Recording Backup"})
