@@ -60,7 +60,7 @@ def before_task_execution(task_id: str, **kwargs):
 
 @task_success.connect
 def finalise_success_task(sender: Task, **kwargs):
-    logging.info("After task execution")
+    logging.info("After successful task execution")
     task_id = uuid.UUID(sender.request.id)
 
     try:
@@ -82,8 +82,8 @@ def finalise_success_task(sender: Task, **kwargs):
 
 
 @task_failure.connect
-def finalise_failure_task(sender: Task, **kwargs):
-    logging.info("After task execution")
+def finalise_failure_task(sender: Task, exception: Exception = None, **kwargs):
+    logging.info("After failed task execution")
     task_id = uuid.UUID(sender.request.id)
 
     try:
@@ -98,6 +98,7 @@ def finalise_failure_task(sender: Task, **kwargs):
 
         task_record.ended_at = datetime.now(timezone.utc)
         task_record.status = TaskStatus.FAILED.value
+        task_record.error = str(exception)
         db.commit()
 
     finally:
