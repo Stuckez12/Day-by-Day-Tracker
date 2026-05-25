@@ -30,10 +30,6 @@ jobs:
             file: src/Dockerfile
             image: "day-by-day-tracker-api"
             platforms: linux/amd64,linux/arm64
-          - context: "."
-            file: src/Dockerfile.worker
-            image: "day-by-day-tracker-worker"
-            platforms: linux/amd64,linux/arm64
           - context: "frontend"
             file: frontend/Dockerfile
             image: "day-by-day-tracker-frontend"
