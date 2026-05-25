@@ -81,6 +81,12 @@ test-db:
 	docker run -d --name postgres-testing -e POSTGRES_PASSWORD=testing -e POSTGRES_USER=testing -e POSTGRES_DB=testing -p 5435:5432 postgres:latest
 
 
+checks:
+	@$(MAKE) lint
+	@$(MAKE) flint
+	@$(MAKE) tests
+
+
 ################################################################################
 # Frontend
 ################################################################################
