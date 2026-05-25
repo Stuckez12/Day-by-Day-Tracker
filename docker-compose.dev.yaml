@@ -52,6 +52,7 @@ services:
     volumes:
       - ./src:/api/src
       - ./tests:/api/tests
+      - ${EXTERNAL_BACKUP_PATH}:${BACKUP_PATH}
     env_file: .env
     command: uvicorn src.main:fastapi_app --host 0.0.0.0 --port 8000 --reload --reload-dir src
 
@@ -86,26 +87,26 @@ services:
   beat-scheduler:
     build:
       context: .
-      dockerfile: src/Dockerfile.worker
+      dockerfile: src/Dockerfile
     expose:
       - "8001"
     networks:
       - app-network
     volumes:
-      - ./src:/worker/src
+      - ./src:/api/src
     env_file: .env
     entrypoint: celery -A src.main beat --loglevel=INFO
 
   worker:
     build:
       context: .
-      dockerfile: src/Dockerfile.worker
+      dockerfile: src/Dockerfile
     expose:
       - "8002"
     networks:
       - app-network
     volumes:
-      - ./src:/worker/src
+      - ./src:/api/src
       - ${EXTERNAL_BACKUP_PATH}:${BACKUP_PATH}
     env_file: .env
     entrypoint: celery -A src.main worker -Ofair --concurrency=4 --loglevel=INFO -E

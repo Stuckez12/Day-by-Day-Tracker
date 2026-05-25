@@ -70,7 +70,7 @@ services:
   beat-scheduler:
     build:
       context: .
-      dockerfile: src/Dockerfile.worker
+      dockerfile: src/Dockerfile
     expose:
       - "8001"
     networks:
@@ -81,7 +81,7 @@ services:
   worker:
     build:
       context: .
-      dockerfile: src/Dockerfile.worker
+      dockerfile: src/Dockerfile
     expose:
       - "8002"
     networks:
