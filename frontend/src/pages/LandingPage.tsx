@@ -2,9 +2,9 @@ import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 
 import PageWrapper from "components/common/PageWrapper";
-import TextInputs from "components/common/TextInputs";
 import WelcomeText from "components/common/WelcomeText";
-import RatingBar from "components/rating/RatingBar";
+
+import ContextLandingPage from "components/rating/ContextLandingPage";
 
 import { is_logged_in } from "scripts/auth/is_login.ts";
 
@@ -19,8 +19,7 @@ function LandingPage() {
     <PageWrapper>
       <h1>Landing Page</h1>
       <WelcomeText />
-      <RatingBar />
-      <TextInputs />
+      <ContextLandingPage />
     </PageWrapper>
   );
 }

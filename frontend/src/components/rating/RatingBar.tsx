@@ -1,5 +1,4 @@
-import React from "react";
-import { useEffect, useState } from "react";
+import React, { useContext } from "react";
 import { Temporal } from "@js-temporal/polyfill";
 
 import RateValueButton from "components/rating/RatingValueButton";
@@ -10,24 +9,26 @@ import type { RankingProps } from "interfaces/ranking";
 import APICall from "scripts/api.ts";
 
 import "styles/rating/rating_button.scss";
+import { ContextLanding } from "contexts/ContextLanding";
 
 function RatingBar() {
-  const [rank_today, setRank] = useState<RankingProps>();
+  const { refreshRankingLanding, setRefreshRankingLanding } =
+    useContext(ContextLanding);
 
-  useEffect(() => {
-    async function fetchRank() {
-      const [success, response, message] =
-        await APICall.get<RankingProps>("/ranking/today");
+  // useEffect(() => {
+  //   async function fetchRank() {
+  //     const [success, response, message] =
+  //       await APICall.get<RankingProps>("/ranking/today");
 
-      if (success) {
-        setRank(response!);
-      } else {
-        console.log("Error when getting data");
-        console.log(message);
-      }
-    }
-    fetchRank();
-  }, []);
+  //     if (success) {
+  //       setRefreshRankingLanding(response!);
+  //     } else {
+  //       console.log("Error when getting data");
+  //       console.log(message);
+  //     }
+  //   }
+  //   fetchRank();
+  // }, []);
 
   const detect_click = async (e: React.MouseEvent<HTMLDivElement>) => {
     const target = e.target;
@@ -57,14 +58,14 @@ function RatingBar() {
     console.log(success, response, message);
 
     if (success) {
-      setRank(response!);
+      setRefreshRankingLanding(response!);
     } else {
       console.log("Error when getting data");
       console.log(message);
     }
   };
 
-  const ranking = rank_today ? rank_today.ranking : null;
+  const ranking = refreshRankingLanding ? refreshRankingLanding.ranking : null;
 
   return (
     <>
