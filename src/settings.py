@@ -1,7 +1,7 @@
 import os
+from typing import Literal, cast
 
 from pydantic_settings import BaseSettings, SettingsConfigDict
-from typing import Literal, cast
 
 
 class AppConfig(BaseSettings):
@@ -57,13 +57,13 @@ def get_app_config() -> APP_SETTINGS:
 
     match environment:
         case "dev":
-            return AppConfig()  # type: ignore[call-arg]
+            return AppConfig()  # type: ignore < auto gets from env
 
         case "prod":
-            return ProdAppConfig()  # type: ignore[call-arg]
+            return ProdAppConfig()  # type: ignore < auto gets from env
 
         case "test":
-            return TestAppConfig()  # type: ignore[call-arg]
+            return TestAppConfig()  # type: ignore < auto gets from env
 
 
 app_config: APP_SETTINGS = get_app_config()

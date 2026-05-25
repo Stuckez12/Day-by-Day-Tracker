@@ -1,6 +1,6 @@
-from celery import Celery
 from celery.schedules import crontab
 
+from celery import Celery
 from src.settings import app_config
 
 
@@ -15,7 +15,10 @@ def create_worker():
     )
 
     # Schedules
-    worker.conf.timezone = "UTC"
+    worker.conf.update(
+        timezone="UTC",
+        enable_utc=True,
+    )
     worker.conf.beat_schedule = {
         "weekly-database-backup": {
             "task": "src.tasks.maintenance.database_backup.database_backup",

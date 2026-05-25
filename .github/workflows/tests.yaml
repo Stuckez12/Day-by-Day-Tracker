@@ -7,24 +7,18 @@ on:
     types: [published]
 
 jobs:
-  format:
+  formatter:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
 
-      - name: Set up Python
-        uses: actions/setup-python@v5
+      - name: Ruff
+        uses: astral-sh/ruff-action@v3
         with:
-          python-version: "3.13"
+          args: check src --config pyproject.toml
 
-      - name: Install Black
-        run: pip install black==26.1.0
-
-      - name: Run Black
-        run: black --check src
-
-  linting:
-    needs: format
+  type-checker:
+    needs: formatter
     runs-on: ubuntu-latest
 
     steps:
@@ -41,17 +35,12 @@ jobs:
           pip install uv
           uv sync
 
-      - name: Run mypy
+      - name: Run ty
         run: |
-          uv run mypy src
-
-      - name: Run flake8
-        run: |
-          uv run flake8 src --select=E225,E231,E302,E305,F403,F404,F405,F821,F822,F823,F824 --exclude ".venv,*/__init__.py"
-          uv run flake8 src --select=F403,F405 --filename="*/__init__.py" --exclude ".venv"
+          uv run ty check ./src
 
   tests:
-    needs: linting
+    needs: type-checker
     runs-on: ubuntu-latest
 
     services:

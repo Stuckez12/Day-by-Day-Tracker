@@ -1,5 +1,4 @@
 import pytest
-
 from sqlalchemy.orm import Session
 
 from src.common.password_hash import pwd_hash
@@ -12,7 +11,6 @@ from src.schemas import (
     UpdatePersonnelPasswordRequest,
 )
 from src.services import PersonalService
-
 from tests.api.constants import VALID_PASSWORD
 
 

@@ -1,9 +1,9 @@
-import uuid
 
 from fastapi import APIRouter, Request, Response, status
 
 from src.common import AuthServiceDep
 from src.schemas import CreatePersonnelRequest, LogInRequest, SlimPersonnelSchema
+
 
 api = APIRouter(prefix="/auth", tags=["Auth"])
 

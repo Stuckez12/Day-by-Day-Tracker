@@ -1,11 +1,11 @@
 from src.schemas.auth import LogInRequest
 from src.schemas.backup import BackupSchema
-from src.schemas.common import DateRequest, DateRangeRequest, InvalidSchema
+from src.schemas.common import DateRangeRequest, DateRequest, InvalidSchema
 from src.schemas.personal import (
     CreatePersonnelRequest,
     PersonnelSchema,
-    SlimPersonnelSchema,
     SelectPersonnelRequest,
+    SlimPersonnelSchema,
     UpdatePersonnelDetailsRequest,
     UpdatePersonnelEmailRequest,
     UpdatePersonnelPasswordRequest,

@@ -1,7 +1,8 @@
 from datetime import datetime, timedelta
+from unittest.mock import MagicMock, patch
+
 from fastapi import status
 from fastapi.testclient import TestClient
-from unittest.mock import MagicMock, patch
 
 from src.models import TaskModel
 from src.schemas import TaskSchema
@@ -31,7 +32,7 @@ class TestTaskRoute:
         test_task_2: TaskModel,
         test_task_3: TaskModel,
     ):
-        result = test_client_v1.get(f"/tasks/paginated?name=task2")
+        result = test_client_v1.get("/tasks/paginated?name=task2")
         assert result.status_code == status.HTTP_200_OK
 
         data = result.json()
@@ -68,7 +69,7 @@ class TestTaskRoute:
         test_task_2: TaskModel,
         test_task_3: TaskModel,
     ):
-        result = test_client_v1.get(f"/tasks/paginated?min_retries=1")
+        result = test_client_v1.get("/tasks/paginated?min_retries=1")
         assert result.status_code == status.HTTP_200_OK
 
         data = result.json()
@@ -87,7 +88,7 @@ class TestTaskRoute:
         test_task_2: TaskModel,
         test_task_3: TaskModel,
     ):
-        result = test_client_v1.get(f"/tasks/paginated?max_retries=1")
+        result = test_client_v1.get("/tasks/paginated?max_retries=1")
         assert result.status_code == status.HTTP_200_OK
 
         data = result.json()
@@ -143,7 +144,7 @@ class TestTaskRoute:
         test_task_2: TaskModel,
         test_task_3: TaskModel,
     ):
-        result = test_client_v1.get(f"/tasks/paginated?duration=30")
+        result = test_client_v1.get("/tasks/paginated?duration=30")
         assert result.status_code == status.HTTP_200_OK
 
         data = result.json()

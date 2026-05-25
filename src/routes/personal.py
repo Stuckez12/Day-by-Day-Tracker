@@ -1,6 +1,6 @@
 import uuid
 
-from fastapi import APIRouter, HTTPException, status, Cookie, Query
+from fastapi import APIRouter, Cookie, HTTPException, Query, status
 
 from src.common import PersonalServiceDep
 from src.schemas import (
@@ -10,6 +10,7 @@ from src.schemas import (
     UpdatePersonnelEmailRequest,
     UpdatePersonnelPasswordRequest,
 )
+
 
 api = APIRouter(prefix="/personal", tags=["Personal"])
 

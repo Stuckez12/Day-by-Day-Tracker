@@ -1,16 +1,16 @@
 import uuid
+from datetime import datetime
 
 from celery.result import AsyncResult
-from datetime import datetime
-from fastapi import APIRouter, HTTPException, Request, status, Depends, Query
+from fastapi import APIRouter, Depends, HTTPException, Query, Request, status
 from fastapi_pagination import Page, Params
 from fastapi_pagination.ext.sqlalchemy import paginate
 
-import src.tasks.task_management
 from src.common import TaskServiceDep
 from src.enums import TaskStatus
 from src.schemas import TaskPaginated, TaskSchema
 from src.tasks import simulate_celery_task
+
 
 api = APIRouter(prefix="/tasks", tags=["Task"])
 

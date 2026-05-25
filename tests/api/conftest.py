@@ -1,16 +1,16 @@
 import os
-import pytest
 import uuid
-
-from alembic import command
-from alembic.config import Config
-from celery import current_app as current_celery_app
-from celery.contrib.testing.worker import start_worker
 from datetime import date, datetime, timedelta
-from fastapi.testclient import TestClient
-from sqlalchemy.orm import Session
 from typing import Generator
 
+import pytest
+from alembic import command
+from alembic.config import Config
+from celery.contrib.testing.worker import start_worker
+from fastapi.testclient import TestClient
+from sqlalchemy.orm import Session
+
+from celery import current_app as current_celery_app
 from src.common import get_db
 from src.common.password_hash import pwd_hash
 from src.enums import TaskStatus
@@ -18,8 +18,8 @@ from src.main import fastapi_app
 from src.models import PersonalModel, RankerModel, TaskModel
 from src.services import AuthService, PersonalService, RankingService, TaskService
 from src.settings import app_config
-
 from tests.api.constants import VALID_PASSWORD
+
 
 ################################################################################
 # Misc

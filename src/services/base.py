@@ -1,9 +1,11 @@
-from pydantic import BaseModel
-from sqlalchemy.orm import Session
-from typing import Generic, Self, Type, TypeVar
+from typing import Generic, Self, TypeVar
 from uuid import UUID
 
+from pydantic import BaseModel
+from sqlalchemy.orm import Session
+
 from src.models.base import BaseModel as DBBase
+
 
 Model = TypeVar("Model", bound=DBBase)
 
