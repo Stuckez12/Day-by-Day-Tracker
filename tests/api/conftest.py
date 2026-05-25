@@ -4,6 +4,8 @@ import uuid
 
 from alembic import command
 from alembic.config import Config
+from celery import current_app as current_celery_app
+from celery.contrib.testing.worker import start_worker
 from datetime import date, datetime, timedelta
 from fastapi.testclient import TestClient
 from sqlalchemy.orm import Session
@@ -14,7 +16,8 @@ from src.common.password_hash import pwd_hash
 from src.enums import TaskStatus
 from src.main import fastapi_app
 from src.models import PersonalModel, RankerModel, TaskModel
-from src.services import AuthService, PersonalService, RankingService
+from src.services import AuthService, PersonalService, RankingService, TaskService
+from src.settings import app_config
 
 from tests.api.constants import VALID_PASSWORD
 
@@ -76,6 +79,25 @@ def test_date_today() -> Generator[date, None, None]:
     yield date.today()
 
 
+@pytest.fixture(scope="session")
+def celery_app():
+    celery_app = current_celery_app
+    celery_app.config_from_object(app_config, namespace="CELERY")
+
+    celery_app.conf.update(
+        task_always_eager=True,
+        task_eager_propagates=True,
+    )
+
+    yield celery_app
+
+
+@pytest.fixture(scope="session")
+def celery_worker(celery_app):
+    with start_worker(celery_app, perform_ping_check=False):
+        yield None
+
+
 ################################################################################
 # Clients
 ################################################################################
@@ -104,6 +126,11 @@ def test_personal_service(test_session: Session):
 @pytest.fixture(scope="function")
 def test_ranking_service(test_session: Session):
     yield RankingService(db=test_session)
+
+
+@pytest.fixture(scope="function")
+def test_task_service(test_session: Session):
+    yield TaskService(db=test_session)
 
 
 ################################################################################

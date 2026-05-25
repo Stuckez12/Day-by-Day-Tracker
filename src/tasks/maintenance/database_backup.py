@@ -1,3 +1,4 @@
+import logging
 import subprocess
 
 from celery import shared_task, Task
@@ -49,9 +50,9 @@ def database_backup(self: Task) -> dict:
             subprocess.run(command, env=env, check=True, capture_output=True, text=True)  # type: ignore[arg-type]
 
         except subprocess.CalledProcessError as e:
-            print("RETURN CODE:", e.returncode)
-            print("STDOUT:", e.stdout)
-            print("STDERR:", e.stderr)
+            logging.error(f"RETURN CODE: {e.returncode}")
+            logging.error(f"STDOUT: {e.stdout}")
+            logging.error(f"STDERR: {e.stderr}")
             raise SystemError("Unable to create database backup")
 
         update_task_state(self, db, metadata={"stage": "Recording Backup"})
