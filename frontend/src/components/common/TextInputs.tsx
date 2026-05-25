@@ -1,14 +1,18 @@
-import { useEffect, useState } from "react";
+import { useContext, useState } from "react";
 import { Temporal } from "@js-temporal/polyfill";
 
 import type { RankingProps, RankingTextBoxProps } from "interfaces/ranking";
 
 import APICall from "scripts/api.ts";
+import { ContextLanding } from "contexts/ContextLanding";
 
 function TextInputs() {
+  const { refreshRankingLanding, setRefreshRankingLanding } =
+    useContext(ContextLanding);
+
   const [form, setForm] = useState<RankingTextBoxProps>({
-    text_events: "",
-    text_notes: "",
+    text_events: refreshRankingLanding.text_events,
+    text_notes: refreshRankingLanding.text_notes,
   });
 
   function handleChange(e: React.ChangeEvent<HTMLTextAreaElement>) {
@@ -20,20 +24,20 @@ function TextInputs() {
     console.log(form);
   }
 
-  useEffect(() => {
-    async function fetchRank() {
-      const [success, response, message] =
-        await APICall.get<RankingProps>("/ranking/today");
+  // useEffect(() => {
+  //   async function fetchRank() {
+  //     const [success, response, message] =
+  //       await APICall.get<RankingProps>("/ranking/today");
 
-      if (success) {
-        setForm(response!);
-      } else {
-        console.log("Error when getting data");
-        console.log(message);
-      }
-    }
-    fetchRank();
-  }, []);
+  //     if (success) {
+  //       setForm(response!);
+  //     } else {
+  //       console.log("Error when getting data");
+  //       console.log(message);
+  //     }
+  //   }
+  //   fetchRank();
+  // }, []);
 
   function onSubmit(e: React.MouseEvent<HTMLButtonElement>) {
     e.preventDefault();
@@ -41,14 +45,18 @@ function TextInputs() {
     console.log("Form data:", form);
 
     async function save_text_data(form: RankingTextBoxProps) {
-      const [success] = await APICall.put<RankingProps>("/ranking/rank/notes", {
-        day: Temporal.Now.plainDateISO().toString(),
-        text_events: form.text_events,
-        text_notes: form.text_notes,
-      });
+      const [success, data] = await APICall.put<RankingProps>(
+        "/ranking/rank/notes",
+        {
+          day: Temporal.Now.plainDateISO().toString(),
+          text_events: form.text_events,
+          text_notes: form.text_notes,
+        },
+      );
 
       if (success) {
         console.log("Success. Now redirect");
+        setRefreshRankingLanding(data!);
       } else {
         console.log("Error when submitting text");
       }
