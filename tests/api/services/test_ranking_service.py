@@ -1,14 +1,11 @@
 import pytest
 
 from datetime import date
-from sqlalchemy.exc import IntegrityError
+from sqlalchemy.exc import IntegrityError, NoResultFound
 from sqlalchemy.orm import Session
 from uuid import UUID
 
 from src.models import PersonalModel, RankerModel
-from src.schemas import (
-    InvalidSchema,
-)
 from src.services import RankingService
 
 
@@ -27,17 +24,16 @@ class TestRankerService:
     ):
         invalid_personnel_id = UUID("12345678-1234-5678-1234-567812345678")
 
-        rank = test_ranking_service.get_by_date(invalid_personnel_id, test_ranker.day)
-
-        assert rank is None
+        with pytest.raises(NoResultFound):
+            test_ranking_service.get_by_date(invalid_personnel_id, test_ranker.day)
 
     def test_get_rank_by_date_invalid_date(
         self, test_ranking_service: RankingService, test_ranker: RankerModel
     ):
         invalid_date = date(1, 1, 1)
-        rank = test_ranking_service.get_by_date(test_ranker.personal_id, invalid_date)
 
-        assert rank is None
+        with pytest.raises(NoResultFound):
+            test_ranking_service.get_by_date(test_ranker.personal_id, invalid_date)
 
     def test_insert_new_ranked_date_success(
         self,

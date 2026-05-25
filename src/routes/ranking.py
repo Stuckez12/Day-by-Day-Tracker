@@ -2,6 +2,7 @@ import uuid
 
 from datetime import date
 from fastapi import APIRouter, HTTPException, status, Cookie, Query
+from sqlalchemy.exc import NoResultFound
 
 from src.common import PersonalServiceDep, RankingServiceDep
 from src.schemas import RankingNotesRequest, RankingRequest, RankingSchema
@@ -62,9 +63,10 @@ def rank_date_notes(
     service: RankingServiceDep,
     personnel_id: uuid.UUID = Cookie(..., include_in_schema=False),
 ):
-    rank = service.get_by_date(personnel_id, request.day)
+    try:
+        rank = service.get_by_date(personnel_id, request.day)
 
-    if rank is None:
+    except NoResultFound:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="Specified date's rank not found",
