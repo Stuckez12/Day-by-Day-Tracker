@@ -7,7 +7,7 @@ on:
     types: [published]
 
 jobs:
-  ruff:
+  formatter:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -17,8 +17,8 @@ jobs:
         with:
           args: check src --config pyproject.toml
 
-  linting:
-    needs: ruff
+  type-checker:
+    needs: formatter
     runs-on: ubuntu-latest
 
     steps:
@@ -40,7 +40,7 @@ jobs:
           uv run ty check ./src
 
   tests:
-    needs: linting
+    needs: type-checker
     runs-on: ubuntu-latest
 
     services:
