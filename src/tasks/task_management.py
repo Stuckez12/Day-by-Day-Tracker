@@ -46,7 +46,8 @@ def before_task_execution(task_id: str, **kwargs):
         task_record = service.get_by_id(uuid.UUID(task_id))
 
         if task_record is None:
-            raise ValueError("Task not found. Continue")
+            logging.info("DB task record not found. Continuing")
+            return
 
         task_record.started_at = datetime.now(timezone.utc)
         task_record.status = TaskStatus.RUNNING.value
@@ -71,7 +72,8 @@ def finalise_success_task(sender: Task, **kwargs):
         task_record = service.get_by_id(task_id)
 
         if task_record is None:
-            raise ValueError("Task not found. Continue")
+            logging.info("DB task record not found. Continuing")
+            return
 
         task_record.ended_at = datetime.now(timezone.utc)
         task_record.status = TaskStatus.SUCCESS.value
@@ -94,7 +96,8 @@ def finalise_failure_task(sender: Task, exception: Exception | None = None, **kw
         task_record = service.get_by_id(task_id)
 
         if task_record is None:
-            raise ValueError("Task not found. Continue")
+            logging.info("DB task record not found. Continuing")
+            return
 
         task_record.ended_at = datetime.now(timezone.utc)
         task_record.status = TaskStatus.FAILED.value
@@ -117,7 +120,8 @@ def log_retry(sender: Task, **kwargs):
         task_record = service.get_by_id(task_id)
 
         if task_record is None:
-            raise ValueError("Task not found. Continue")
+            logging.info("DB task record not found. Continuing")
+            return
 
         task_record.retries += 1
         db.commit()

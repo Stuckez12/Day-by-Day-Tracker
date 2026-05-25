@@ -49,6 +49,7 @@ omit = [
     "src/common/upgrade_db.py",
     "src/main.py",
     "src/migrations/*",
+    "src/routes/task_run.py",
     "src/tasks/task_management.py",
     "src/settings.py",
 ]

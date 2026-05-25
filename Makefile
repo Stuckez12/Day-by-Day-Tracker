@@ -79,8 +79,8 @@ tests:
 
 # Test execution
 	@docker compose -f docker-compose.dev.yaml exec db psql -U postgres -c "CREATE DATABASE test_dbdt;"
-	@docker compose -f docker-compose.dev.yaml exec api sh -c "APP_ENV=test pytest -vv -s $(TEST_PATH)"
-	@docker compose -f docker-compose.dev.yaml exec db psql -U postgres -c "DROP DATABASE IF EXISTS test_dbdt;"
+	@docker compose -f docker-compose.dev.yaml exec api sh -c "pytest -vv -q -s $(TEST_PATH)"
+	@docker compose -f docker-compose.dev.yaml exec db psql -U postgres -c "DROP DATABASE test_dbdt;"
 
 
 test-db:
