@@ -40,10 +40,8 @@ reset:
 
 
 lint:
-	@uv run black --check src
-	@uv run mypy src
-	@uv run flake8 src --select=E225,E231,E302,E305,F403,F404,F405,F821,F822,F823,F824 --exclude "*/__init__.py"
-	@uv run flake8 src --select=F403,F405 --filename="*/__init__.py" --exclude ".venv"
+	@uv run ruff check ./src
+	@uv run ty check ./src
 
 
 ################################################################################
