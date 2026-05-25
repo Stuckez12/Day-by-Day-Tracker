@@ -95,7 +95,7 @@ def celery_app():
 @pytest.fixture(scope="session")
 def celery_worker(celery_app):
     with start_worker(celery_app, perform_ping_check=False):
-        yield
+        yield None
 
 
 ################################################################################
