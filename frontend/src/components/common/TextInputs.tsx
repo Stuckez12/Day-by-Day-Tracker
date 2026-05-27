@@ -1,4 +1,4 @@
-import { useContext, useState } from "react";
+import { useContext, useEffect, useState } from "react";
 import { Temporal } from "@js-temporal/polyfill";
 
 import type { RankingProps, RankingTextBoxProps } from "interfaces/ranking";
@@ -24,25 +24,16 @@ function TextInputs() {
     console.log(form);
   }
 
-  // useEffect(() => {
-  //   async function fetchRank() {
-  //     const [success, response, message] =
-  //       await APICall.get<RankingProps>("/ranking/today");
-
-  //     if (success) {
-  //       setForm(response!);
-  //     } else {
-  //       console.log("Error when getting data");
-  //       console.log(message);
-  //     }
-  //   }
-  //   fetchRank();
-  // }, []);
+  useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    setForm({
+      text_events: refreshRankingLanding.text_events || "",
+      text_notes: refreshRankingLanding.text_notes || "",
+    });
+  }, [refreshRankingLanding, setRefreshRankingLanding]);
 
   function onSubmit(e: React.MouseEvent<HTMLButtonElement>) {
     e.preventDefault();
-
-    console.log("Form data:", form);
 
     async function save_text_data(form: RankingTextBoxProps) {
       const [success, data] = await APICall.put<RankingProps>(
@@ -55,7 +46,6 @@ function TextInputs() {
       );
 
       if (success) {
-        console.log("Success. Now redirect");
         setRefreshRankingLanding(data!);
       } else {
         console.log("Error when submitting text");
