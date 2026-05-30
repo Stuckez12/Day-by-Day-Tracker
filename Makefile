@@ -6,6 +6,9 @@
 start:
 	@docker compose -f docker-compose.dev.yaml up -d
 
+fstart:
+	@docker compose -f docker-compose.dev.yaml watch
+
 stop:
 	@docker compose -f docker-compose.dev.yaml stop
 

@@ -60,17 +60,20 @@ services:
     build:
       context: ./frontend
       dockerfile: Dockerfile
-    entrypoint: ["npm", "run", "dev", "--", "--host", "0.0.0.0", "--port", "3000"]
     expose:
       - "3000"
     networks:
       - app-network
-    volumes:
-      - ./frontend:/app
-      - /app/node_modules
-    environment:
-      - CHOKIDAR_USEPOLLING=true
-    env_file: .env
+    restart: unless-stopped
+    develop:
+      watch:
+        - action: sync
+          path: ./frontend/app
+          target: /app/app
+          ignore:
+            - node_modules/
+        - action: rebuild
+          path: package.json
 
   redis:
     image: redis:8.2.5-bookworm
