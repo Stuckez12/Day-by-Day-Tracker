@@ -99,10 +99,6 @@ checks:
 ################################################################################
 
 
-npm-install:
-	@cd frontend && npm i $@
-
-
 flint:
 	@cd frontend && npm run lint
 
