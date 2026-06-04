@@ -64,16 +64,17 @@ services:
       - "3000"
     networks:
       - app-network
+    volumes:
+      - ./frontend/app:/app/app
+      - ./frontend/components:/app/components
+      - ./frontend/lib:/app/lib
+      - ./frontend/styles:/app/styles
+      # - ./frontend/:/app/
+    environment:
+      WATCHPACK_POLLING: "true"
+      CHOKIDAR_USEPOLLING: "true"
+      CHOKIDAR_INTERVAL: "100"
     restart: unless-stopped
-    develop:
-      watch:
-        - action: sync
-          path: ./frontend/app
-          target: /app/app
-          ignore:
-            - node_modules/
-        - action: rebuild
-          path: package.json
 
   redis:
     image: redis:8.2.5-bookworm
