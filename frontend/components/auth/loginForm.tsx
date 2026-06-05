@@ -1,5 +1,6 @@
 import { useState } from "react";
 
+import ListErrors from "@/components/common/errors/ListErrors";
 import PasswordInput from "@/components/common/form-inputs/PasswordInput";
 import SubmitButton from "@/components/common/form-inputs/SubmitButton";
 import TextInput from "@/components/common/form-inputs/TextInput";
@@ -8,6 +9,7 @@ import { PersonnelLogin } from "@/lib/interfaces/personnel";
 import { personnelLoginQuery } from "@/lib/queries/auth";
 
 export default function LoginForm() {
+  const [errors, setErrors] = useState<Record<string, string[]>>({});
   const [form, setForm] = useState<PersonnelLogin>({
     email: "",
     password: "",
@@ -22,9 +24,11 @@ export default function LoginForm() {
 
     console.log("Form data:", form);
 
-    const [error, _] = await personnelLoginQuery(form);
+    const [queryError, _] = await personnelLoginQuery(form);
 
-    console.log("Errors:", error);
+    setErrors(queryError.error.errors);
+
+    console.log("Errors:", queryError);
   }
 
   return (
@@ -43,6 +47,8 @@ export default function LoginForm() {
           value={form.password}
           onChange={onChange}
         />
+        <ListErrors errors={errors.email}></ListErrors>
+        <ListErrors errors={errors.password}></ListErrors>
         <SubmitButton label="Submit" onSubmit={submitForm} />
       </form>
     </div>
