@@ -1,4 +1,3 @@
-
 from fastapi import APIRouter, Request, Response, status
 
 from src.common import AuthServiceDep
@@ -21,7 +20,11 @@ def log_in(request: LogInRequest, response: Response, service: AuthServiceDep):
 
     response.status_code = status.HTTP_204_NO_CONTENT
 
-    return service.set_login_cookies(response, personnel)
+    res = service.set_login_cookies(response, personnel)
+
+    print(res.headers)
+
+    return res
 
 
 @api.post("/logout", status_code=status.HTTP_200_OK)

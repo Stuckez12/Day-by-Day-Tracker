@@ -73,7 +73,7 @@ services:
     environment:
       WATCHPACK_POLLING: "true"
       CHOKIDAR_USEPOLLING: "true"
-      CHOKIDAR_INTERVAL: "100"
+      CHOKIDAR_INTERVAL: "20"
     env_file:
       - .env
     restart: unless-stopped

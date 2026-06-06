@@ -1,3 +1,5 @@
+"use server";
+
 import { err, ok, Result } from "neverthrow";
 import { validateEmail } from "@/lib/common/validation/validateEmail";
 import { validatePassword } from "@/lib/common/validation/validatePassword";
@@ -24,6 +26,7 @@ export async function personnelLoginQuery(
 
   const response = await fetch(`${base_url}/api/v1/auth/login`, {
     method: "POST",
+    credentials: "include",
     headers: {
       "Content-Type": "application/json",
     },
@@ -34,5 +37,9 @@ export async function personnelLoginQuery(
   }
 
   const detail_err = await response.json();
-  return err({ api_response: true, error_count: 1, errors: detail_err });
+  return err({
+    api_response: true,
+    error_count: 1,
+    errors: { api: detail_err.detail },
+  });
 }
