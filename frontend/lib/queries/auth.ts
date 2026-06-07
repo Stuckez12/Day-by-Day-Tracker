@@ -1,4 +1,4 @@
-"use server";
+"use client";
 
 import { err, ok, Result } from "neverthrow";
 import { validateEmail } from "@/lib/common/validation/validateEmail";

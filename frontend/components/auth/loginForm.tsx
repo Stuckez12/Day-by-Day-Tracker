@@ -1,3 +1,5 @@
+"use client";
+
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 
@@ -33,7 +35,7 @@ export default function LoginForm() {
 
     if (queryError == null) {
       console.log("Login Success. Routing to homepage");
-      // router.push("/tracker");
+      router.push("/tracker");
       return;
     }
 

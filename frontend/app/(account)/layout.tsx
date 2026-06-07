@@ -1,20 +1,40 @@
-import { redirect } from "next/navigation";
+"use client";
+
+import { useRouter } from "next/navigation";
+import { useEffect, useState } from "react";
 
 import { getPersonnelQuery } from "@/lib/queries/personnel";
+
 import "bootstrap/dist/css/bootstrap.css";
 import "@/styles/colour_pallets.scss";
 import "@/styles/global.scss";
 
-export default async function AccountGroupLayout({
+export default function AccountGroupLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  const userResult = await getPersonnelQuery();
+  const router = useRouter();
+  const [checkedUser, setCheckedUser] = useState(false);
 
-  if (userResult.isErr()) {
-    console.log(userResult.error);
-    // redirect("/login");
+  useEffect(() => {
+    async function isUserLoggedIn() {
+      const userResult = await getPersonnelQuery();
+
+      setCheckedUser(true);
+
+      if (userResult.isErr()) {
+        console.log("Redirect to login");
+        console.log(userResult.error);
+        router.push("/login");
+      }
+    }
+
+    isUserLoggedIn();
+  }, []);
+
+  if (!checkedUser) {
+    return <></>;
   }
 
   return <>{children}</>;
