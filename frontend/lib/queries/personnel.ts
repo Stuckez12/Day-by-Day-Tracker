@@ -12,9 +12,6 @@ export async function getPersonnelQuery(): Promise<
   Result<PersonnelProp, ValidationErrorProp>
 > {
   const token = Cookies.get("personnel_id");
-
-  console.log(token);
-
   const response = await fetch(`${base_url}/api/v1/personal/me`, {
     method: "GET",
     headers: {

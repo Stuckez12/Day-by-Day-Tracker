@@ -3,6 +3,7 @@
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 
+import SideNavBar from "@/components/navigation/SideNavBar";
 import { getPersonnelQuery } from "@/lib/queries/personnel";
 
 import "bootstrap/dist/css/bootstrap.css";
@@ -37,5 +38,10 @@ export default function AccountGroupLayout({
     return <></>;
   }
 
-  return <>{children}</>;
+  // return <>{children}</>;
+  return (
+    <SideNavBar>
+      <></>
+    </SideNavBar>
+  );
 }
