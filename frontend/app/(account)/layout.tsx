@@ -38,6 +38,5 @@ export default function AccountGroupLayout({
     return <></>;
   }
 
-  // return <>{children}</>;
   return <SideNavBar>{children}</SideNavBar>;
 }
