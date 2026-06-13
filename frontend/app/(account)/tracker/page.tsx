@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 
 import DisplayRankingToday from "@/components/tracker/displayRankingData";
-import { RankingUIContext } from "@/components/tracker/rateDayContext";
+import { RankingTrackerContext } from "@/components/tracker/rateDayContext";
 import RateDayTracker from "@/components/tracker/rateDayTracker";
 import { RankingUIDataProp } from "@/lib/interfaces/ranking";
 import { getRankTodayQuery } from "@/lib/queries/ranking";
@@ -34,12 +34,12 @@ export default function TrackerPage() {
   return (
     <div className="page-wrapper">
       <div className="tracker-container">
-        <RankingUIContext.Provider
+        <RankingTrackerContext.Provider
           value={{ refreshRanking, setRefreshRanking }}
         >
           <DisplayRankingToday />
           <RateDayTracker />
-        </RankingUIContext.Provider>
+        </RankingTrackerContext.Provider>
       </div>
     </div>
   );

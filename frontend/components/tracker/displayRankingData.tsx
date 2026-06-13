@@ -1,13 +1,13 @@
 import { useContext, useEffect, useState } from "react";
 
-import { RankingUIContext } from "@/components/tracker/rateDayContext";
+import { RankingTrackerContext } from "@/components/tracker/rateDayContext";
 import { PersonnelProp } from "@/lib/interfaces/personnel";
 import { getPersonnelQuery } from "@/lib/queries/personnel";
 
 interface DisplayRankingTodayProps {}
 
 export default function DisplayRankingToday({}: DisplayRankingTodayProps) {
-  const { refreshRanking } = useContext(RankingUIContext);
+  const { refreshRanking } = useContext(RankingTrackerContext);
 
   const [user, setUser] = useState<PersonnelProp>();
 

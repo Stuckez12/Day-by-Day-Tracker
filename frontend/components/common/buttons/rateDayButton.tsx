@@ -2,7 +2,7 @@ import clsx from "clsx";
 import { useContext } from "react";
 
 import { rankTodayNumberQuery } from "@/lib/queries/ranking";
-import { RankingUIContext } from "@/components/tracker/rateDayContext";
+import { RankingTrackerContext } from "@/components/tracker/rateDayContext";
 
 import "@/styles/tracker/ranking.scss";
 
@@ -15,7 +15,7 @@ export default function RateDayButton({
   ranking,
   current_rank,
 }: RateDayButtonProps) {
-  const { setRefreshRanking } = useContext(RankingUIContext);
+  const { setRefreshRanking } = useContext(RankingTrackerContext);
 
   async function rate_today() {
     const result = await rankTodayNumberQuery({ ranking });

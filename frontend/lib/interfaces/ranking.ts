@@ -8,9 +8,12 @@ export interface RankingProp {
   day: string;
   ranking: number;
 
-  text_events: string;
-  text_notes: string;
+  text_events?: string;
+  text_notes?: string;
 }
 
-export type RankingUIDataProp = Pick<RankingProp, "day"> &
-  Partial<Pick<RankingProp, "ranking" | "text_events" | "text_notes">>;
+export type RankingUIDataProp = Pick<
+  RankingProp,
+  "day" | "text_events" | "text_notes"
+> &
+  Partial<Pick<RankingProp, "ranking">>;

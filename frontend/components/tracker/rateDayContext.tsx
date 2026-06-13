@@ -7,7 +7,7 @@ interface ContextType {
   setRefreshRanking: Dispatch<SetStateAction<RankingUIDataProp>>;
 }
 
-export const RankingUIContext = createContext<ContextType>({
+export const RankingTrackerContext = createContext<ContextType>({
   refreshRanking: {
     day: "",
     ranking: undefined,

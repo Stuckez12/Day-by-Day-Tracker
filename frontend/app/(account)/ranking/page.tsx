@@ -1,7 +1,5 @@
+import RankTable from "@/components/ranking/RankTable";
+
 export default function RankingPage() {
-  return (
-    <>
-      <h1>Page: /ranking</h1>
-    </>
-  );
+  return <RankTable />;
 }

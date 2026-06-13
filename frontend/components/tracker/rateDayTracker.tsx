@@ -1,11 +1,11 @@
 import { useContext } from "react";
 import RateDayButton from "@/components/common/buttons/rateDayButton";
-import { RankingUIContext } from "@/components/tracker/rateDayContext";
+import { RankingTrackerContext } from "@/components/tracker/rateDayContext";
 
 interface RateDayTrackerProps {}
 
 export default function RateDayTracker({}: RateDayTrackerProps) {
-  const { refreshRanking } = useContext(RankingUIContext);
+  const { refreshRanking } = useContext(RankingTrackerContext);
 
   return (
     <div className="rating-button-bar">
