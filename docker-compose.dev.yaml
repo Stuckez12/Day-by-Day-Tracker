@@ -66,6 +66,7 @@ services:
       - app-network
     volumes:
       - ./frontend/app:/app/app
+      - ./frontend/assets:/app/assets
       - ./frontend/components:/app/components
       - ./frontend/lib:/app/lib
       - ./frontend/styles:/app/styles

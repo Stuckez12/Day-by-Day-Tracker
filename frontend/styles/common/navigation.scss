@@ -1,13 +1,13 @@
 .side-nav-container {
-  max-width: 128px;
+  max-width: 144px;
+  min-width: 144px;
+  width: auto;
   height: 100vh;
 
   background-color: grey;
 }
 .nav-item-group-container {
   padding: 8px;
-  max-width: auto;
-  max-height: 64px;
 }
 
 .lower-side-nav-block {
@@ -15,20 +15,28 @@
 }
 
 .side-nav-item-container {
+  display: flex;
+  align-items: center;
+  gap: 8px;
   padding: 8px;
-  max-width: auto;
-  max-height: 64px;
 }
 
 .icon-container {
-  width: auto;
-  height: auto;
+  width: 24px;
+  height: 24px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
-.icon {
+.text-container {
   width: auto;
-  height: auto;
+  height: 24px;
 
-  max-width: 48px;
-  max-height: 48px;
+  p {
+    margin: 0;
+    line-height: 24px;
+    user-select: none;
+  }
 }

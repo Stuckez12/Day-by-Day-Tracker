@@ -11,3 +11,12 @@
     padding: 0px 32px;
   }
 }
+
+.web-page-container {
+  display: flex;
+  flex-direction: row;
+}
+
+.main-content-container {
+  padding: 8px;
+}
