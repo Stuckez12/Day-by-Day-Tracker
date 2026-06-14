@@ -43,3 +43,25 @@ export async function personnelLoginQuery(
     errors: { api: detail_err.detail },
   });
 }
+
+export async function personnelLogoutQuery(): Promise<
+  Result<void, ValidationErrorProp>
+> {
+  const response = await fetch(`${base_url}/api/v1/auth/logout`, {
+    method: "POST",
+    credentials: "include",
+    headers: {
+      "Content-Type": "application/json",
+    },
+  });
+  if (response.ok) {
+    return ok();
+  }
+
+  const detail_err = await response.json();
+  return err({
+    api_response: true,
+    error_count: 1,
+    errors: { api: detail_err.detail },
+  });
+}
