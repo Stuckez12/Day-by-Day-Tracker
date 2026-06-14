@@ -24,6 +24,11 @@ export default function SideNavBar({ children }: SideNavBarProps) {
             name="Rankings"
             redirection="/ranking"
           />
+          <SideNavItem
+            icon={<StarSVG />}
+            name="Personnel"
+            redirection="/personnel"
+          />
         </div>
         <div className="nav-item-group-container lower-side-nav-block"></div>
       </div>

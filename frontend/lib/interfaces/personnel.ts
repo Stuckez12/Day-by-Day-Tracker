@@ -1,5 +1,7 @@
+import { UUID } from "crypto";
+
 export interface PersonnelProp {
-  id: string;
+  id: UUID;
   created_at: string;
   updated_at: string;
 
@@ -11,3 +13,14 @@ export interface PersonnelProp {
 }
 
 export type PersonnelLogin = Pick<PersonnelProp, "email" | "password">;
+
+export type UpdatePersonnelInfo = Pick<
+  PersonnelProp,
+  "first_name" | "last_name"
+>;
+export type UpdatePersonnelEmail = Pick<PersonnelProp, "email">;
+export interface UpdatePersonnelPassword {
+  current_password: string;
+  new_password: string;
+  confirm_password: string;
+}

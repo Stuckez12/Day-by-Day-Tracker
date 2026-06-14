@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 
 import "bootstrap/dist/css/bootstrap.css";
 import "@/styles/colour_pallets.scss";
+import "@/styles/common/form.scss";
 import "@/styles/global.scss";
 
 export const metadata: Metadata = {
