@@ -3,15 +3,17 @@
 import { useState } from "react";
 
 import ListErrors from "@/components/common/errors/ListErrors";
-import TextInputWButton from "@/components/common/form-inputs/TextInputWButton";
+import SubmitButton from "@/components/common/form-inputs/SubmitButton";
+import TextInput from "@/components/common/form-inputs/TextInput";
 import { updateForm } from "@/lib/common/updateForm";
-import { UpdatePersonnelEmail } from "@/lib/interfaces/personnel";
-import { updatePersonnelEmailQuery } from "@/lib/queries/personnel";
+import { UpdatePersonnelInfo } from "@/lib/interfaces/personnel";
+import { updatePersonnelInfoQuery } from "@/lib/queries/personnel";
 
-export default function UpdateEmailForm() {
+export default function UpdateInfoForm() {
   const [errors, setErrors] = useState<string[]>([]);
-  const [form, setForm] = useState<UpdatePersonnelEmail>({
-    email: "",
+  const [form, setForm] = useState<UpdatePersonnelInfo>({
+    first_name: "",
+    last_name: "",
   });
 
   function onChange(e: React.ChangeEvent<HTMLInputElement>) {
@@ -23,7 +25,7 @@ export default function UpdateEmailForm() {
 
     console.log("Form data:", form);
 
-    const result = await updatePersonnelEmailQuery(form);
+    const result = await updatePersonnelInfoQuery(form);
 
     if (result.isOk()) {
       console.log("Email Updated Successfully");
@@ -52,17 +54,21 @@ export default function UpdateEmailForm() {
   return (
     <div>
       <form>
-        <h1>Update Email</h1>
-        <TextInputWButton
-          name="email"
-          type="email"
-          label="Email"
-          value={form.email}
+        <h1>Update Info</h1>
+        <TextInput
+          name="first_name"
+          label="First Name"
+          value={form.first_name}
           onChange={onChange}
-          button_label="Update"
-          onSubmit={submitForm}
+        />
+        <TextInput
+          name="last_name"
+          label="Last Name"
+          value={form.last_name}
+          onChange={onChange}
         />
         <ListErrors errors={errors}></ListErrors>
+        <SubmitButton label="Submit" onSubmit={submitForm} />
       </form>
     </div>
   );

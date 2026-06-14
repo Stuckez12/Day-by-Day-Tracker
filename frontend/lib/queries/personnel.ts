@@ -7,6 +7,7 @@ import { ValidationErrorProp } from "@/lib/interfaces/common";
 import {
   PersonnelProp,
   UpdatePersonnelEmail,
+  UpdatePersonnelInfo,
 } from "@/lib/interfaces/personnel";
 import { validateEmail } from "@/lib/common/validation/validateEmail";
 
@@ -32,6 +33,30 @@ export async function getPersonnelQuery(): Promise<
     api_response: true,
     error_count: 1,
     errors: { api: body.detail },
+  });
+}
+
+export async function updatePersonnelInfoQuery(
+  form: UpdatePersonnelInfo,
+): Promise<Result<PersonnelProp, ValidationErrorProp>> {
+  const response = await fetch(`${base_url}/api/v1/personal/me/details`, {
+    method: "PUT",
+    credentials: "include",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(form),
+  });
+
+  const details = await response.json();
+  if (response.ok) {
+    return ok(details);
+  }
+
+  return err({
+    api_response: true,
+    error_count: 1,
+    errors: { api: details.detail },
   });
 }
 
