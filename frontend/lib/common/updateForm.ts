@@ -1,4 +1,4 @@
-export function updateForm<T extends Record<string, string>>(
+export function updateForm<T extends Record<string, any>>(
   e: React.ChangeEvent<HTMLInputElement>,
   form: T,
   setForm: Function,
