@@ -1,7 +1,8 @@
 "use client";
 
-import { useState } from "react";
+import { useContext, useEffect, useState } from "react";
 
+import { PartialPersonnelContext } from "@/components/common/contexts/personnelContext";
 import ListErrors from "@/components/common/errors/ListErrors";
 import SubmitButton from "@/components/common/form-inputs/SubmitButton";
 import TextInput from "@/components/common/form-inputs/TextInput";
@@ -11,10 +12,19 @@ import { updatePersonnelInfoQuery } from "@/lib/queries/personnel";
 
 export default function UpdateInfoForm() {
   const [errors, setErrors] = useState<string[]>([]);
+  const { partialPersonnel } = useContext(PartialPersonnelContext);
   const [form, setForm] = useState<UpdatePersonnelInfo>({
     first_name: "",
     last_name: "",
   });
+
+  useEffect(() => {
+    if (partialPersonnel.id != undefined) {
+      console.log("doing it");
+      setForm(partialPersonnel as UpdatePersonnelInfo);
+    }
+    console.log("effected");
+  }, [partialPersonnel]);
 
   function onChange(e: React.ChangeEvent<HTMLInputElement>) {
     return updateForm(e, form, setForm);

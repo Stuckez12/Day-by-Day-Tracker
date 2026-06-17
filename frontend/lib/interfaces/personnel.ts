@@ -13,6 +13,7 @@ export interface PersonnelProp {
 }
 
 export type PersonnelLogin = Pick<PersonnelProp, "email" | "password">;
+export type PartialPersonnelProp = Partial<PersonnelProp>;
 
 export type UpdatePersonnelInfo = Pick<
   PersonnelProp,

@@ -1,7 +1,7 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useContext, useEffect, useState } from "react";
 
 import SideNavBar from "@/components/navigation/SideNavBar";
 import { getPersonnelQuery } from "@/lib/queries/personnel";
@@ -9,6 +9,7 @@ import { getPersonnelQuery } from "@/lib/queries/personnel";
 import "bootstrap/dist/css/bootstrap.css";
 import "@/styles/colour_pallets.scss";
 import "@/styles/global.scss";
+import { PartialPersonnelContext } from "@/components/common/contexts/personnelContext";
 
 export default function AccountGroupLayout({
   children,
@@ -17,6 +18,7 @@ export default function AccountGroupLayout({
 }>) {
   const router = useRouter();
   const [checkedUser, setCheckedUser] = useState(false);
+  const { setPartialPersonnel } = useContext(PartialPersonnelContext);
 
   useEffect(() => {
     async function isUserLoggedIn() {
@@ -28,7 +30,13 @@ export default function AccountGroupLayout({
         console.log("Redirect to login");
         console.log(userResult.error);
         router.push("/login");
+
+        return;
       }
+
+      console.log("Setting data");
+
+      setPartialPersonnel(userResult.value);
     }
 
     isUserLoggedIn();

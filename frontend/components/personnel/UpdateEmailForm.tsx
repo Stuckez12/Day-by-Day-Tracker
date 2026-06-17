@@ -1,7 +1,8 @@
 "use client";
 
-import { useState } from "react";
+import { useContext, useEffect, useState } from "react";
 
+import { PartialPersonnelContext } from "@/components/common/contexts/personnelContext";
 import ListErrors from "@/components/common/errors/ListErrors";
 import TextInputWButton from "@/components/common/form-inputs/TextInputWButton";
 import { updateForm } from "@/lib/common/updateForm";
@@ -10,9 +11,16 @@ import { updatePersonnelEmailQuery } from "@/lib/queries/personnel";
 
 export default function UpdateEmailForm() {
   const [errors, setErrors] = useState<string[]>([]);
+  const { partialPersonnel } = useContext(PartialPersonnelContext);
   const [form, setForm] = useState<UpdatePersonnelEmail>({
     email: "",
   });
+
+  useEffect(() => {
+    if (partialPersonnel.id != undefined) {
+      setForm(partialPersonnel as UpdatePersonnelEmail);
+    }
+  }, [partialPersonnel]);
 
   function onChange(e: React.ChangeEvent<HTMLInputElement>) {
     return updateForm(e, form, setForm);
