@@ -6,7 +6,7 @@ from tests.api.constants import INVALID_PASSWORD, INVALID_PERSONNEL_ID, VALID_PA
 
 from src.common.password_hash import pwd_hash
 from src.models import PersonalModel
-from src.schemas import SlimPersonnelSchema
+from src.schemas import PersonnelSchema, SlimPersonnelSchema
 
 
 class TestPersonalRoute:
@@ -17,7 +17,9 @@ class TestPersonalRoute:
         assert result.status_code == status.HTTP_200_OK
 
         data = result.json()
-        assert data == test_personnel.to_dict(clean=True)
+        assert PersonnelSchema.model_validate(data) == PersonnelSchema.model_validate(
+            test_personnel
+        )
 
     def test_get_personnel_invalid_id(self, test_client_v1: TestClient):
         result = test_client_v1.get(f"/personal?personnel_id={INVALID_PERSONNEL_ID}")
@@ -36,7 +38,9 @@ class TestPersonalRoute:
         assert result.status_code == status.HTTP_200_OK
 
         data = result.json()
-        assert data == test_personnel.to_dict(clean=True)
+        assert PersonnelSchema.model_validate(data) == PersonnelSchema.model_validate(
+            test_personnel
+        )
 
     def test_get_personnel_self_no_cookies(
         self,

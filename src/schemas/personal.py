@@ -1,9 +1,11 @@
 from uuid import UUID
 
-from pydantic import BaseModel, ValidationInfo, field_validator
+from pydantic import BaseModel, ConfigDict, ValidationInfo, field_validator
 
 
 class SlimPersonnelSchema(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
     id: UUID
 
     first_name: str
