@@ -34,8 +34,6 @@ export default function AccountGroupLayout({
         return;
       }
 
-      console.log("Setting data");
-
       setPartialPersonnel(userResult.value);
     }
 

@@ -20,10 +20,8 @@ export default function UpdateInfoForm() {
 
   useEffect(() => {
     if (partialPersonnel.id != undefined) {
-      console.log("doing it");
       setForm(partialPersonnel as UpdatePersonnelInfo);
     }
-    console.log("effected");
   }, [partialPersonnel]);
 
   function onChange(e: React.ChangeEvent<HTMLInputElement>) {
@@ -38,7 +36,7 @@ export default function UpdateInfoForm() {
     const result = await updatePersonnelInfoQuery(form);
 
     if (result.isOk()) {
-      console.log("Email Updated Successfully");
+      console.log("Info Updated Successfully");
 
       setErrors([]);
       setForm(result.value);
@@ -56,9 +54,6 @@ export default function UpdateInfoForm() {
     }
 
     setErrors(display_errors);
-
-    console.log("All errors:", all_errors);
-    console.log("Errors:", display_errors);
   }
 
   return (
@@ -77,7 +72,7 @@ export default function UpdateInfoForm() {
           value={form.last_name}
           onChange={onChange}
         />
-        <ListErrors errors={errors}></ListErrors>
+        <ListErrors errors={errors} />
         <SubmitButton label="Submit" onSubmit={submitForm} />
       </form>
     </div>

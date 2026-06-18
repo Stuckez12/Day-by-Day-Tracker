@@ -1,5 +1,5 @@
 export function updateForm<T extends Record<string, any>>(
-  e: React.ChangeEvent<HTMLInputElement>,
+  e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>,
   form: T,
   setForm: Function,
 ) {

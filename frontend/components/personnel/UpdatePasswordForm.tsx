@@ -46,9 +46,6 @@ export default function UpdatePasswordForm() {
     }
 
     setErrors(display_errors);
-
-    console.log("All errors:", all_errors);
-    console.log("Errors:", display_errors);
   }
 
   return (
@@ -73,7 +70,7 @@ export default function UpdatePasswordForm() {
           value={form.confirm_password}
           onChange={onChange}
         />
-        <ListErrors errors={errors}></ListErrors>
+        <ListErrors errors={errors} />
         <SubmitButton label="Submit" onSubmit={submitForm} />
       </form>
     </div>

@@ -85,9 +85,6 @@ export async function rankTodayNumberQuery({
   });
   const body = await response.json();
 
-  console.log(body);
-  console.log("-------------------------------------");
-
   if (response.ok) {
     return ok(body);
   }
@@ -100,8 +97,8 @@ export async function rankTodayNumberQuery({
 }
 
 interface RankTodayNotesQueryProps {
-  text_events: string;
-  text_notes: string;
+  text_events?: string;
+  text_notes?: string;
 }
 
 export async function rankTodayNotesQuery({
@@ -127,9 +124,6 @@ export async function rankTodayNotesQuery({
     body: JSON.stringify(form),
   });
   const body = await response.json();
-
-  console.log(body);
-  console.log("-------------------------------------");
 
   if (response.ok) {
     return ok(body);

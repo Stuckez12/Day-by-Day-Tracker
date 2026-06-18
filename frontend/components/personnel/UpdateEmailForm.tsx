@@ -52,9 +52,6 @@ export default function UpdateEmailForm() {
     }
 
     setErrors(display_errors);
-
-    console.log("All errors:", all_errors);
-    console.log("Errors:", display_errors);
   }
 
   return (
@@ -70,7 +67,7 @@ export default function UpdateEmailForm() {
           button_label="Update"
           onSubmit={submitForm}
         />
-        <ListErrors errors={errors}></ListErrors>
+        <ListErrors errors={errors} />
       </form>
     </div>
   );

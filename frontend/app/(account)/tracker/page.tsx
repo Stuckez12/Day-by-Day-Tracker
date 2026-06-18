@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 
 import DisplayRankingToday from "@/components/tracker/displayRankingData";
 import { RankingTrackerContext } from "@/components/tracker/rateDayContext";
+import RateDayText from "@/components/tracker/rateDayText";
 import RateDayTracker from "@/components/tracker/rateDayTracker";
 import { RankingUIDataProp } from "@/lib/interfaces/ranking";
 import { getRankTodayQuery } from "@/lib/queries/ranking";
@@ -39,6 +40,7 @@ export default function TrackerPage() {
         >
           <DisplayRankingToday />
           <RateDayTracker />
+          <RateDayText />
         </RankingTrackerContext.Provider>
       </div>
     </div>

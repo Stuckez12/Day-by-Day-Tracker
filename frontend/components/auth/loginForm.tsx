@@ -50,9 +50,6 @@ export default function LoginForm() {
     }
 
     setErrors(display_errors);
-
-    console.log("All errors:", all_errors);
-    console.log("Errors:", display_errors);
   }
 
   return (
@@ -72,7 +69,7 @@ export default function LoginForm() {
           value={form.password}
           onChange={onChange}
         />
-        <ListErrors errors={errors}></ListErrors>
+        <ListErrors errors={errors} />
         <SubmitButton label="Submit" onSubmit={submitForm} />
       </form>
     </div>

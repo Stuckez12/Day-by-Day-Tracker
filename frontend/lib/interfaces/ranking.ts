@@ -19,3 +19,8 @@ export type RankingUIDataProp = Pick<
   "day" | "text_events" | "text_notes"
 > &
   Partial<Pick<RankingProp, "ranking">>;
+
+export type RankingTextDataProp = Pick<
+  RankingProp,
+  "text_events" | "text_notes"
+>;
