@@ -38,7 +38,7 @@ export default function AccountGroupLayout({
     }
 
     isUserLoggedIn();
-  }, []);
+  });
 
   if (!checkedUser) {
     return <></>;

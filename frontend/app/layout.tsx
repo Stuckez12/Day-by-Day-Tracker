@@ -1,7 +1,5 @@
 "use client";
 
-import type { Metadata } from "next";
-
 import "bootstrap/dist/css/bootstrap.css";
 import "@/styles/colour_pallets.scss";
 import "@/styles/common/form.scss";
@@ -9,11 +7,6 @@ import "@/styles/global.scss";
 import { PartialPersonnelContext } from "@/components/common/contexts/personnelContext";
 import { PartialPersonnelProp } from "@/lib/interfaces/personnel";
 import { useState } from "react";
-
-// export const metadata: Metadata = {
-//   title: "DbD Tracker",
-//   description: "Web app to track the day",
-// };
 
 export default function RootLayout({
   children,

@@ -8,9 +8,9 @@ import { updateForm } from "@/lib/common/updateForm";
 import { RankingTextDataProp } from "@/lib/interfaces/ranking";
 import { rankTodayNotesQuery } from "@/lib/queries/ranking";
 
-interface RateDayTextProps {}
+// interface RateDayTextProps {}
 
-export default function RateDayText({}: RateDayTextProps) {
+export default function RateDayText() {
   const [errors, setErrors] = useState<string[]>([]);
   const { refreshRanking } = useContext(RankingTrackerContext);
   const [form, setForm] = useState<RankingTextDataProp>({
@@ -23,6 +23,7 @@ export default function RateDayText({}: RateDayTextProps) {
   }
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setForm(refreshRanking as RankingTextDataProp);
   }, [refreshRanking]);
 

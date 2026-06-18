@@ -8,9 +8,9 @@ import { getAllRanksQuery } from "@/lib/queries/ranking";
 
 import "@/styles/common/tables.scss";
 
-interface RankTableProps {}
+// interface RankTableProps {}
 
-export default function RankTable({}: RankTableProps) {
+export default function RankTable() {
   const [allRanks, setAllRanks] = useState<RankingProp[]>();
 
   useEffect(() => {

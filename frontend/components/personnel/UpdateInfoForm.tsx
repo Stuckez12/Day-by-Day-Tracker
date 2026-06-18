@@ -20,6 +20,7 @@ export default function UpdateInfoForm() {
 
   useEffect(() => {
     if (partialPersonnel.id != undefined) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setForm(partialPersonnel as UpdatePersonnelInfo);
     }
   }, [partialPersonnel]);

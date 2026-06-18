@@ -99,7 +99,7 @@ export async function updatePersonnelEmailQuery(
 export async function updatePersonnelPasswordQuery(
   form: UpdatePersonnelPassword,
 ): Promise<Result<PersonnelProp, ValidationErrorProp>> {
-  let password_errors = validatePassword(form.new_password);
+  const password_errors = validatePassword(form.new_password);
 
   if (password_errors.length > 0) {
     return err({

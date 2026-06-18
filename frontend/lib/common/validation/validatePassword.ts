@@ -1,5 +1,6 @@
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 export function validatePassword(password: string) {
-  let errors: string[] = [];
+  const errors: string[] = [];
 
   // TODO
 

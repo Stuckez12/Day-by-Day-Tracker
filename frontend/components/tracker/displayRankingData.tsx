@@ -4,9 +4,9 @@ import { RankingTrackerContext } from "@/components/tracker/rateDayContext";
 import { PersonnelProp } from "@/lib/interfaces/personnel";
 import { getPersonnelQuery } from "@/lib/queries/personnel";
 
-interface DisplayRankingTodayProps {}
+// interface DisplayRankingTodayProps {}
 
-export default function DisplayRankingToday({}: DisplayRankingTodayProps) {
+export default function DisplayRankingToday() {
   const { refreshRanking } = useContext(RankingTrackerContext);
 
   const [user, setUser] = useState<PersonnelProp>();

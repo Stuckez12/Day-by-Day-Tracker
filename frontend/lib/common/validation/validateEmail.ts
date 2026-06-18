@@ -1,5 +1,5 @@
 export function validateEmail(email: string) {
-  let errors: string[] = [];
+  const errors: string[] = [];
 
   if (email.length < 5) {
     return ["Insufficient email provided"];
