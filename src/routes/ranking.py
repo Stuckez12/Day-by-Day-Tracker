@@ -1,3 +1,4 @@
+import logging
 import uuid
 from datetime import date
 
@@ -5,7 +6,12 @@ from fastapi import APIRouter, Cookie, HTTPException, Query, status
 from sqlalchemy.exc import NoResultFound
 
 from src.common import PersonalServiceDep, RankingServiceDep
-from src.schemas import RankingNotesRequest, RankingRequest, RankingSchema
+from src.schemas import (
+    RankingADayRequest,
+    RankingNotesRequest,
+    RankingRequest,
+    RankingSchema,
+)
 
 
 api = APIRouter(prefix="/ranking", tags=["Ranking"])
@@ -40,18 +46,34 @@ def get_todays_ranking(
 
 
 @api.put(
+    "/",
+    response_model=RankingSchema,
+    status_code=status.HTTP_202_ACCEPTED,
+)
+def rank_a_day(
+    request: RankingADayRequest,
+    service: RankingServiceDep,
+    personnel_id: uuid.UUID = Cookie(..., include_in_schema=False),
+):
+    logging.info("YAAAAAHHHHHH")
+    rank_data = service.fetch_date(personnel_id, request.day)
+
+    return service.rank_a_day(rank_data, request)
+
+
+@api.put(
     "/rank",
     response_model=RankingSchema,
     status_code=status.HTTP_202_ACCEPTED,
 )
-def rank_day(
+def rank_today(
     request: RankingRequest,
     service: RankingServiceDep,
     personnel_id: uuid.UUID = Cookie(..., include_in_schema=False),
 ):
     rank_data = service.fetch_date(personnel_id, request.day)
 
-    return service.rank_day(rank_data, request.ranking)
+    return service.rank_today(rank_data, request.ranking)
 
 
 @api.put(

@@ -15,7 +15,7 @@ from src.schemas import (
 api = APIRouter(prefix="/personal", tags=["Personal"])
 
 
-@api.get("/", status_code=status.HTTP_200_OK)
+@api.get("/", status_code=status.HTTP_200_OK, response_model=PersonnelSchema)
 def get_personnel(
     service: PersonalServiceDep, personnel_id: uuid.UUID = Query(title="Personal ID")
 ):
@@ -29,7 +29,7 @@ def get_personnel(
     )
 
 
-@api.get("/me", status_code=status.HTTP_200_OK)
+@api.get("/me", status_code=status.HTTP_200_OK, response_model=PersonnelSchema)
 def get_personnel_self(
     service: PersonalServiceDep,
     personnel_id: uuid.UUID = Cookie(..., include_in_schema=False),

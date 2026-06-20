@@ -1,0 +1,42 @@
+.side-nav-container {
+  max-width: 144px;
+  min-width: 144px;
+  width: auto;
+  height: 100vh;
+
+  background-color: grey;
+}
+.nav-item-group-container {
+  padding: 8px;
+}
+
+.lower-side-nav-block {
+  margin-top: auto;
+}
+
+.side-nav-item-container {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px;
+}
+
+.icon-container {
+  width: 24px;
+  height: 24px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.text-container {
+  width: auto;
+  height: 24px;
+
+  p {
+    margin: 0;
+    line-height: 24px;
+    user-select: none;
+  }
+}

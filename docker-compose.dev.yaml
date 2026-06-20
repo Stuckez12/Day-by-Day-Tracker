@@ -60,17 +60,24 @@ services:
     build:
       context: ./frontend
       dockerfile: Dockerfile
-    entrypoint: ["npm", "run", "dev", "--", "--host", "0.0.0.0", "--port", "3000"]
     expose:
       - "3000"
     networks:
       - app-network
     volumes:
-      - ./frontend:/app
-      - /app/node_modules
+      - ./frontend/app:/app/app
+      - ./frontend/assets:/app/assets
+      - ./frontend/components:/app/components
+      - ./frontend/lib:/app/lib
+      - ./frontend/styles:/app/styles
+      # - ./frontend/:/app/
     environment:
-      - CHOKIDAR_USEPOLLING=true
-    env_file: .env
+      WATCHPACK_POLLING: "true"
+      CHOKIDAR_USEPOLLING: "true"
+      CHOKIDAR_INTERVAL: "20"
+    env_file:
+      - .env
+    restart: unless-stopped
 
   redis:
     image: redis:8.2.5-bookworm

@@ -86,10 +86,10 @@ class TestRankerService:
         test_session.delete(rank)
         test_session.commit()
 
-    def test_rank_day_success(
+    def test_rank_today_success(
         self, test_ranking_service: RankingService, test_ranker: RankerModel
     ):
-        ranked = test_ranking_service.rank_day(test_ranker, 10)
+        ranked = test_ranking_service.rank_today(test_ranker, 10)
         rank_instance = test_ranking_service.get_by_id(test_ranker.id)
 
         assert ranked.ranking == 10

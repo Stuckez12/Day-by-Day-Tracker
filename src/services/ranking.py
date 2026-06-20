@@ -5,7 +5,7 @@ from sqlalchemy.exc import NoResultFound
 from sqlalchemy.orm import Session
 
 from src.models import RankerModel
-from src.schemas import RankingNotesRequest, RankingSchema
+from src.schemas import RankingADayRequest, RankingNotesRequest, RankingSchema
 from src.services.base import BaseDBService
 
 
@@ -51,7 +51,17 @@ class RankingService(BaseDBService[RankerModel]):
         except NoResultFound:
             return self.insert_new_date(personnel_id, date)
 
-    def rank_day(self, rank_row: RankerModel, set_rank: int):
+    def rank_a_day(self, rank_row: RankerModel, data: RankingADayRequest):
+        rank_row.ranking = data.ranking
+        rank_row.text_events = data.text_events
+        rank_row.text_notes = data.text_notes
+
+        self.db.commit()
+        self.db.refresh(rank_row)
+
+        return RankingSchema(**rank_row.to_dict())
+
+    def rank_today(self, rank_row: RankerModel, set_rank: int) -> RankingSchema:
         rank_row.ranking = set_rank
 
         self.db.commit()

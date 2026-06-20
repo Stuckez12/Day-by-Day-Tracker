@@ -13,6 +13,7 @@ from src.schemas.personal import (
 from src.schemas.ranking import (
     GetAllRankingsResponse,
     GetRangedRankingsResponse,
+    RankingADayRequest,
     RankingListSchema,
     RankingNotesRequest,
     RankingRequest,
