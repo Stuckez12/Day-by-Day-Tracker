@@ -1,3 +1,4 @@
+import logging
 import uuid
 from datetime import date
 
@@ -54,6 +55,7 @@ def rank_a_day(
     service: RankingServiceDep,
     personnel_id: uuid.UUID = Cookie(..., include_in_schema=False),
 ):
+    logging.info("YAAAAAHHHHHH")
     rank_data = service.fetch_date(personnel_id, request.day)
 
     return service.rank_a_day(rank_data, request)

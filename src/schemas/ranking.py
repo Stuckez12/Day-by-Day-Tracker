@@ -33,6 +33,8 @@ class RankingRequest(BaseModel):
                 detail="A rank must be provided",
             )
 
+        ranking = int(ranking)
+
         if ranking < 0 or ranking > 10:
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,

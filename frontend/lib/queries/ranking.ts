@@ -5,7 +5,7 @@ import Cookies from "js-cookie";
 import { err, ok, Result } from "neverthrow";
 
 import { ValidationErrorProp } from "@/lib/interfaces/common";
-import { RankingProp } from "@/lib/interfaces/ranking";
+import { RankingProp, RankingUIDataProp } from "@/lib/interfaces/ranking";
 
 const base_url = process.env.NEXT_PUBLIC_API_URL;
 
@@ -45,6 +45,42 @@ export async function getAllRanksQuery(): Promise<
       "Content-Type": "application/json",
       Cookie: `personnel_id=${token}`,
     },
+  });
+  const body = await response.json();
+
+  if (response.ok) {
+    return ok(body);
+  }
+
+  return err({
+    api_response: true,
+    error_count: 1,
+    errors: { api: body.detail },
+  });
+}
+
+export async function rankDayQuery({
+  day,
+  ranking,
+  text_events,
+  text_notes,
+}: RankingUIDataProp): Promise<Result<RankingProp, ValidationErrorProp>> {
+  const form = {
+    day: day,
+    ranking: ranking?.toString(),
+    text_events: text_events,
+    text_notes: text_notes,
+  };
+
+  const token = Cookies.get("personnel_id");
+  const response = await fetch(`${base_url}/api/v1/ranking`, {
+    method: "PUT",
+    credentials: "include",
+    headers: {
+      "Content-Type": "application/json",
+      Cookie: `personnel_id=${token}`,
+    },
+    body: JSON.stringify(form),
   });
   const body = await response.json();
 

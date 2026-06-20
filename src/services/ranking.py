@@ -61,7 +61,7 @@ class RankingService(BaseDBService[RankerModel]):
 
         return RankingSchema(**rank_row.to_dict())
 
-    def rank_today(self, rank_row: RankerModel, set_rank: int):
+    def rank_today(self, rank_row: RankerModel, set_rank: int) -> RankingSchema:
         rank_row.ranking = set_rank
 
         self.db.commit()

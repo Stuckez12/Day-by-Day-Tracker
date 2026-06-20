@@ -38,7 +38,7 @@ export default function AccountGroupLayout({
     }
 
     isUserLoggedIn();
-  });
+  }, [checkedUser, setPartialPersonnel, router]);
 
   if (!checkedUser) {
     return <></>;
