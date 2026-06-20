@@ -49,6 +49,11 @@ class RankingNotesRequest(BaseModel):
     text_notes: str | None = None
 
 
+class RankingADayRequest(RankingRequest):
+    text_events: str | None = None
+    text_notes: str | None = None
+
+
 class RankingListSchema(BaseModel):
     min: date
     max: date
