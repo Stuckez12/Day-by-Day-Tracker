@@ -1,14 +1,7 @@
-import { MouseEventHandler } from "react";
-
 interface TextInputProps {
   label: string;
-  onSubmit: MouseEventHandler<HTMLButtonElement>;
 }
 
-export default function SubmitButton({ label, onSubmit }: TextInputProps) {
-  return (
-    <button className="submit-button" onClick={onSubmit}>
-      {label}
-    </button>
-  );
+export default function SubmitButton({ label }: TextInputProps) {
+  return <button className="submit-button">{label}</button>;
 }

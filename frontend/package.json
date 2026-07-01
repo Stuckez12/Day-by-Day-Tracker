@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "next dev --webpack",
+    "dev": "next dev",
     "build": "next build",
     "start": "next start",
     "lint": "eslint"
@@ -17,8 +17,7 @@
     "next": "16.2.6",
     "react": "19.2.4",
     "react-dom": "19.2.4",
-    "sass": "^1.100.0",
-    "scss": "^0.2.4"
+    "sass": "^1.100.0"
   },
   "devDependencies": {
     "@svgr/webpack": "^8.1.0",

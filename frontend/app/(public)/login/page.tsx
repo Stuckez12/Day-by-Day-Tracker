@@ -1,5 +1,3 @@
-"use client";
-
 import LoginForm from "@/components/auth/loginForm";
 import PageWrapper from "@/components/common/PageWrapper";
 

@@ -21,14 +21,14 @@ export default function UpdatePasswordForm() {
     return updateForm(e, form, setForm);
   }
 
-  async function submitForm(e: React.MouseEvent<HTMLButtonElement>) {
+  async function submitForm(e: React.SubmitEvent<HTMLFormElement>) {
     e.preventDefault();
 
     console.log("Form data:", form);
 
     const result = await updatePersonnelPasswordQuery(form);
 
-    if (result.isOk()) {
+    if (result.ok) {
       console.log("Password Updated Successfully");
 
       setErrors([]);
@@ -50,7 +50,7 @@ export default function UpdatePasswordForm() {
 
   return (
     <div>
-      <form>
+      <form onSubmit={submitForm}>
         <h1>Update Password</h1>
         <PasswordInput
           name="current_password"
@@ -71,7 +71,7 @@ export default function UpdatePasswordForm() {
           onChange={onChange}
         />
         <ListErrors errors={errors} />
-        <SubmitButton label="Submit" onSubmit={submitForm} />
+        <SubmitButton label="Submit" />
       </form>
     </div>
   );

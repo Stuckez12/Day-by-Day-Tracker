@@ -26,23 +26,28 @@ export default function LoginForm() {
     return updateForm(e, form, setForm);
   }
 
-  async function submitForm(e: React.MouseEvent<HTMLButtonElement>) {
+  async function submitForm(e: React.SubmitEvent<HTMLFormElement>) {
     e.preventDefault();
 
-    console.log("Form data:", form);
+    // console.log("Form data:", form);
 
-    const [queryError, _] = await personnelLoginQuery(form);
+    console.log(`URL`);
+    console.log("URL 2");
+    console.log("Form data:", form, "URL:", process.env.BASE_API_URL);
+    console.log("End");
 
-    if (queryError == null) {
+    const result = await personnelLoginQuery(form);
+
+    if (result.ok) {
       console.log("Login Success. Routing to homepage");
       router.push("/tracker");
       return;
     }
 
-    const all_errors = queryError.error.errors;
+    const all_errors = result.error.errors;
     let display_errors: string[] = [];
 
-    if (queryError.error.api_response) {
+    if (result.error.api_response) {
       display_errors = [`${all_errors.api}`];
     } else {
       display_errors = display_errors.concat(all_errors.email);
@@ -54,7 +59,7 @@ export default function LoginForm() {
 
   return (
     <div className="login-form-container">
-      <form className="login-form">
+      <form className="login-form" onSubmit={submitForm}>
         <h1>Login</h1>
         <TextInput
           name="email"
@@ -70,7 +75,7 @@ export default function LoginForm() {
           onChange={onChange}
         />
         <ListErrors errors={errors} />
-        <SubmitButton label="Submit" onSubmit={submitForm} />
+        <SubmitButton label="Submit" />
       </form>
     </div>
   );

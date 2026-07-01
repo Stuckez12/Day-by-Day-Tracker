@@ -34,11 +34,11 @@ export default function UpdateEmailForm() {
 
     const result = await updatePersonnelEmailQuery(form);
 
-    if (result.isOk()) {
+    if (result.ok) {
       console.log("Email Updated Successfully");
 
       setErrors([]);
-      setForm(result.value);
+      setForm(result.data);
 
       return;
     }

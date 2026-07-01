@@ -26,7 +26,7 @@ export default function AccountGroupLayout({
 
       setCheckedUser(true);
 
-      if (userResult.isErr()) {
+      if (!userResult.ok) {
         console.log("Redirect to login");
         console.log(userResult.error);
         router.push("/login");
@@ -34,7 +34,7 @@ export default function AccountGroupLayout({
         return;
       }
 
-      setPartialPersonnel(userResult.value);
+      setPartialPersonnel(userResult.data);
     }
 
     isUserLoggedIn();

@@ -22,8 +22,8 @@ export default function TrackerPage() {
     async function fetchRank() {
       const result = await getRankTodayQuery();
 
-      if (result.isOk()) {
-        setRefreshRanking(result.value);
+      if (result.ok) {
+        setRefreshRanking(result.data);
       } else {
         console.log("Error when getting data");
         console.log(result.error);
