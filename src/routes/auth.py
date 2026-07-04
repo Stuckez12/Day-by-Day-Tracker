@@ -20,11 +20,7 @@ def log_in(request: LogInRequest, response: Response, service: AuthServiceDep):
 
     response.status_code = status.HTTP_204_NO_CONTENT
 
-    res = service.set_login_cookies(response, personnel)
-
-    print(res.headers)
-
-    return res
+    return service.set_login_cookies(response, personnel)
 
 
 @api.post("/logout", status_code=status.HTTP_200_OK)
