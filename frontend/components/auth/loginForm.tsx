@@ -29,13 +29,6 @@ export default function LoginForm() {
   async function submitForm(e: React.SubmitEvent<HTMLFormElement>) {
     e.preventDefault();
 
-    // console.log("Form data:", form);
-
-    console.log(`URL`);
-    console.log("URL 2");
-    console.log("Form data:", form, "URL:", process.env.BASE_API_URL);
-    console.log("End");
-
     const result = await personnelLoginQuery(form);
 
     if (result.ok) {

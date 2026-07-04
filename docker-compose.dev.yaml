@@ -60,6 +60,8 @@ services:
     build:
       context: ./frontend
       dockerfile: Dockerfile
+      args:
+        NEXT_PUBLIC_BASE_API_URL: http://192.168.1.219
     expose:
       - "3000"
     networks:

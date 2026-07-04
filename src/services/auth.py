@@ -51,6 +51,12 @@ class AuthService(PersonalService):
     def set_login_cookies(
         self, response: Response, personnel: PersonalModel
     ) -> Response:
-        response.set_cookie("personnel_id", str(personnel.id))
+        response.set_cookie(
+            "personnel_id",
+            str(personnel.id),
+            httponly=True,
+            path="/",
+            samesite="lax",
+        )
 
         return response

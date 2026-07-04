@@ -1,18 +1,17 @@
-"use server";
+"use client";
 
 import { Temporal } from "@js-temporal/polyfill";
 import Cookies from "js-cookie";
 
 import { Result, ValidationErrorProp } from "@/lib/interfaces/common";
 import { RankingProp, RankingUIDataProp } from "@/lib/interfaces/ranking";
-
-const base_url = process.env.BASE_API_URL;
+import { BASE_API_URL } from "../common/envParams";
 
 export async function getRankTodayQuery(): Promise<
   Result<RankingProp, ValidationErrorProp>
 > {
   const token = Cookies.get("personnel_id");
-  const response = await fetch(`${base_url}/api/v1/ranking/today`, {
+  const response = await fetch(`${BASE_API_URL}/api/v1/ranking/today`, {
     method: "GET",
     credentials: "include",
     headers: {
@@ -40,7 +39,7 @@ export async function getAllRanksQuery(): Promise<
   Result<RankingProp[], ValidationErrorProp>
 > {
   const token = Cookies.get("personnel_id");
-  const response = await fetch(`${base_url}/api/v1/ranking/all`, {
+  const response = await fetch(`${BASE_API_URL}/api/v1/ranking/all`, {
     method: "GET",
     credentials: "include",
     headers: {
@@ -78,7 +77,7 @@ export async function rankDayQuery({
   };
 
   const token = Cookies.get("personnel_id");
-  const response = await fetch(`${base_url}/api/v1/ranking`, {
+  const response = await fetch(`${BASE_API_URL}/api/v1/ranking`, {
     method: "PUT",
     credentials: "include",
     headers: {
@@ -118,7 +117,7 @@ export async function rankTodayNumberQuery({
   };
 
   const token = Cookies.get("personnel_id");
-  const response = await fetch(`${base_url}/api/v1/ranking/rank`, {
+  const response = await fetch(`${BASE_API_URL}/api/v1/ranking/rank`, {
     method: "PUT",
     credentials: "include",
     headers: {
@@ -161,7 +160,7 @@ export async function rankTodayNotesQuery({
   };
 
   const token = Cookies.get("personnel_id");
-  const response = await fetch(`${base_url}/api/v1/ranking/rank/notes`, {
+  const response = await fetch(`${BASE_API_URL}/api/v1/ranking/rank/notes`, {
     method: "PUT",
     credentials: "include",
     headers: {

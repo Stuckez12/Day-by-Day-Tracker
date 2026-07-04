@@ -1,7 +1,6 @@
-"use server";
+"use client";
 
-import { cookies } from "next/headers";
-
+import Cookies from "js-cookie";
 import { Result, ValidationErrorProp } from "@/lib/interfaces/common";
 import {
   PersonnelProp,
@@ -11,15 +10,13 @@ import {
 } from "@/lib/interfaces/personnel";
 import { validateEmail } from "@/lib/common/validation/validateEmail";
 import { validatePassword } from "@/lib/common/validation/validatePassword";
-
-const base_url = process.env.BASE_API_URL;
+import { BASE_API_URL } from "../common/envParams";
 
 export async function getPersonnelQuery(): Promise<
   Result<PersonnelProp, ValidationErrorProp>
 > {
-  const cookieStore = await cookies();
-  const token = cookieStore.get("personnel_id")?.value;
-  const response = await fetch(`${base_url}/api/v1/personal/me`, {
+  const token = Cookies.get("personnel_id");
+  const response = await fetch(`${BASE_API_URL}/api/v1/personal/me`, {
     method: "GET",
     headers: {
       Cookie: `personnel_id=${token}`,
@@ -44,9 +41,8 @@ export async function getPersonnelQuery(): Promise<
 export async function updatePersonnelInfoQuery(
   form: UpdatePersonnelInfo,
 ): Promise<Result<PersonnelProp, ValidationErrorProp>> {
-  const cookieStore = await cookies();
-  const token = cookieStore.get("personnel_id")?.value;
-  const response = await fetch(`${base_url}/api/v1/personal/me/details`, {
+  const token = Cookies.get("personnel_id");
+  const response = await fetch(`${BASE_API_URL}/api/v1/personal/me/details`, {
     method: "PUT",
     credentials: "include",
     headers: {
@@ -87,9 +83,8 @@ export async function updatePersonnelEmailQuery(
     };
   }
 
-  const cookieStore = await cookies();
-  const token = cookieStore.get("personnel_id")?.value;
-  const response = await fetch(`${base_url}/api/v1/personal/me/email`, {
+  const token = Cookies.get("personnel_id");
+  const response = await fetch(`${BASE_API_URL}/api/v1/personal/me/email`, {
     method: "PUT",
     credentials: "include",
     headers: {
@@ -141,9 +136,8 @@ export async function updatePersonnelPasswordQuery(
     };
   }
 
-  const cookieStore = await cookies();
-  const token = cookieStore.get("personnel_id")?.value;
-  const response = await fetch(`${base_url}/api/v1/personal/me/password`, {
+  const token = Cookies.get("personnel_id");
+  const response = await fetch(`${BASE_API_URL}/api/v1/personal/me/password`, {
     method: "PUT",
     credentials: "include",
     headers: {

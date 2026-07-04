@@ -1,13 +1,10 @@
-"use server";
-
-import { cookies } from "next/headers";
+"use client";
 
 import { validateEmail } from "@/lib/common/validation/validateEmail";
 import { validatePassword } from "@/lib/common/validation/validatePassword";
 import { Result, ValidationErrorProp } from "@/lib/interfaces/common";
 import { PersonnelLogin } from "@/lib/interfaces/personnel";
-
-const base_url = process.env.BASE_API_URL;
+import { BASE_API_URL } from "../common/envParams";
 
 export async function personnelLoginQuery(
   form: PersonnelLogin,
@@ -28,7 +25,7 @@ export async function personnelLoginQuery(
     };
   }
 
-  const response = await fetch(`${base_url}/api/v1/auth/login`, {
+  const response = await fetch(`${BASE_API_URL}/api/v1/auth/login`, {
     method: "POST",
     credentials: "include",
     headers: {
@@ -38,11 +35,6 @@ export async function personnelLoginQuery(
   });
 
   if (response.ok) {
-    cookies().set("personnel_id", token, {
-      httpOnly: true,
-      path: "/",
-    });
-
     return { ok: true, data: null };
   }
 
@@ -61,7 +53,7 @@ export async function personnelLoginQuery(
 export async function personnelLogoutQuery(): Promise<
   Result<void, ValidationErrorProp>
 > {
-  const response = await fetch(`${base_url}/api/v1/auth/logout`, {
+  const response = await fetch(`${BASE_API_URL}/api/v1/auth/logout`, {
     method: "POST",
     credentials: "include",
     headers: {

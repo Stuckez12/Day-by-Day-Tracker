@@ -14,7 +14,7 @@ function Logout() {
     async function logout() {
       const result = await personnelLogoutQuery();
 
-      if (result.isOk()) {
+      if (result.ok) {
         console.log("Success. Logged out");
         router.push("/login");
       } else {
