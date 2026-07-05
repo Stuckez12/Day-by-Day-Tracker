@@ -11,6 +11,6 @@ COPY . .
 ARG NEXT_PUBLIC_BASE_API_URL
 ENV NEXT_PUBLIC_BASE_API_URL=$NEXT_PUBLIC_BASE_API_URL
 
-RUN next build
+# RUN next build
 
 CMD ["npm", "run", "start"]
