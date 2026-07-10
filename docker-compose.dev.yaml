@@ -60,12 +60,13 @@ services:
     build:
       context: ./frontend
       dockerfile: Dockerfile
-      args:
-        NEXT_PUBLIC_BASE_API_URL: http://192.168.1.219
+      # target: dev
+    # command: ["npm", "run", "dev"]
     expose:
       - "3000"
     networks:
       - app-network
+    tty: true
     volumes:
       - ./frontend/app:/app/app
       - ./frontend/assets:/app/assets
@@ -79,8 +80,7 @@ services:
       CHOKIDAR_INTERVAL: "20"
       # NODE_ENV: development
       NODE_ENV: production
-    env_file:
-      - .env
+      NEXT_PUBLIC_BASE_API_URL: ${NEXT_PUBLIC_BASE_API_URL}
     restart: unless-stopped
 
   redis:

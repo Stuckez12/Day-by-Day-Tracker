@@ -74,5 +74,3 @@ jobs:
           push: true
           cache-from: type=gha
           cache-to: type=gha,mode=max
-          build-args: |
-            NEXT_PUBLIC_BASE_API_URL=${{ secrets.NEXT_PUBLIC_BASE_API_URL }}

@@ -1,6 +1,7 @@
 "use client";
 
 import { useRouter } from "next/navigation";
+import { signIn } from "next-auth/react";
 import { useState } from "react";
 
 import ListErrors from "@/components/common/errors/ListErrors";

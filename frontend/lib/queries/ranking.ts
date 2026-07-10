@@ -1,11 +1,12 @@
-"use client";
+"use server";
 
 import { Temporal } from "@js-temporal/polyfill";
 import Cookies from "js-cookie";
 
 import { Result, ValidationErrorProp } from "@/lib/interfaces/common";
 import { RankingProp, RankingUIDataProp } from "@/lib/interfaces/ranking";
-import { BASE_API_URL } from "../common/envParams";
+
+const BASE_API_URL = process.env.NEXT_PUBLIC_BASE_API_URL;
 
 export async function getRankTodayQuery(): Promise<
   Result<RankingProp, ValidationErrorProp>

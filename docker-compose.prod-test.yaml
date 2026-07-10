@@ -47,7 +47,7 @@ services:
       context: ./frontend
       dockerfile: Dockerfile
       args:
-        NEXT_PUBLIC_BASE_API_URL: http://localhost
+        BASE_API_URL: http://localhost
     expose:
       - "3000"
     networks:

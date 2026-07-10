@@ -1,10 +1,11 @@
-"use client";
+"use server";
 
 import { validateEmail } from "@/lib/common/validation/validateEmail";
 import { validatePassword } from "@/lib/common/validation/validatePassword";
 import { Result, ValidationErrorProp } from "@/lib/interfaces/common";
 import { PersonnelLogin } from "@/lib/interfaces/personnel";
-import { BASE_API_URL } from "../common/envParams";
+
+const BASE_API_URL = process.env.NEXT_PUBLIC_BASE_API_URL;
 
 export async function personnelLoginQuery(
   form: PersonnelLogin,

@@ -1,16 +1,18 @@
-FROM node:21.7-alpine AS base
+FROM node:22.11-alpine AS base
 
-RUN apk add --no-cache libc6-compat
 WORKDIR /app
 
-# Install dependencies based on the preferred package manager
+RUN apk update && apk upgrade --no-cache
 COPY package*.json ./
-RUN npm ci
+
+RUN npm install
 COPY . .
 
-ARG NEXT_PUBLIC_BASE_API_URL
-ENV NEXT_PUBLIC_BASE_API_URL=$NEXT_PUBLIC_BASE_API_URL
+FROM base AS dev
+CMD ["npm", "run", "dev"]
 
-# RUN next build
+FROM base AS prod
 
-CMD ["npm", "run", "start"]
+RUN npm run build
+
+CMD ["sh", "-c", "npm run start"]

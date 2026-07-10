@@ -1,4 +1,4 @@
-"use client";
+"use server";
 
 import Cookies from "js-cookie";
 import { Result, ValidationErrorProp } from "@/lib/interfaces/common";
@@ -10,7 +10,8 @@ import {
 } from "@/lib/interfaces/personnel";
 import { validateEmail } from "@/lib/common/validation/validateEmail";
 import { validatePassword } from "@/lib/common/validation/validatePassword";
-import { BASE_API_URL } from "../common/envParams";
+
+const BASE_API_URL = process.env.NEXT_PUBLIC_BASE_API_URL;
 
 export async function getPersonnelQuery(): Promise<
   Result<PersonnelProp, ValidationErrorProp>
