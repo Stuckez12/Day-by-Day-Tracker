@@ -1,187 +1,82 @@
-"use server";
-
 import { Temporal } from "@js-temporal/polyfill";
-import Cookies from "js-cookie";
 
+import { getBearerHeaders } from "@/lib/common/auth/getAccessToken";
 import { Result, ValidationErrorProp } from "@/lib/interfaces/common";
 import { RankingProp, RankingUIDataProp } from "@/lib/interfaces/ranking";
 
 const BASE_API_URL = process.env.NEXT_PUBLIC_BASE_API_URL;
+const unauthorized = (): Result<never, ValidationErrorProp> => ({
+  ok: false,
+  error: {
+    api_response: true,
+    error_count: 1,
+    errors: { api: ["Your session has expired. Please sign in again."] },
+  },
+});
 
-export async function getRankTodayQuery(): Promise<
-  Result<RankingProp, ValidationErrorProp>
-> {
-  const token = Cookies.get("personnel_id");
-  const response = await fetch(`${BASE_API_URL}/api/v1/ranking/today`, {
-    method: "GET",
-    credentials: "include",
+async function rankingRequest<T>(
+  path: string,
+  init: RequestInit = {},
+): Promise<Result<T, ValidationErrorProp>> {
+  const authorization = await getBearerHeaders();
+  if (!authorization) return unauthorized();
+
+  const response = await fetch(`${BASE_API_URL}/api/v1/ranking${path}`, {
+    ...init,
     headers: {
-      "Content-Type": "application/json",
-      Cookie: `personnel_id=${token}`,
+      ...authorization,
+      ...(init.body ? { "Content-Type": "application/json" } : {}),
     },
   });
   const body = await response.json();
 
-  if (response.ok) {
-    return { ok: true, data: body };
-  }
-
-  return {
-    ok: false,
-    error: {
-      api_response: true,
-      error_count: 1,
-      errors: { api: body.detail },
-    },
-  };
+  return response.ok
+    ? { ok: true, data: body }
+    : {
+        ok: false,
+        error: {
+          api_response: true,
+          error_count: 1,
+          errors: { api: [body.detail ?? "Request failed"] },
+        },
+      };
 }
 
-export async function getAllRanksQuery(): Promise<
-  Result<RankingProp[], ValidationErrorProp>
-> {
-  const token = Cookies.get("personnel_id");
-  const response = await fetch(`${BASE_API_URL}/api/v1/ranking/all`, {
-    method: "GET",
-    credentials: "include",
-    headers: {
-      "Content-Type": "application/json",
-      Cookie: `personnel_id=${token}`,
-    },
+export function getRankTodayQuery() {
+  return rankingRequest<RankingProp>("/today");
+}
+
+export function getAllRanksQuery() {
+  return rankingRequest<RankingProp[]>("/all");
+}
+
+export function rankDayQuery(data: RankingUIDataProp) {
+  return rankingRequest<RankingProp>("", {
+    method: "PUT",
+    body: JSON.stringify({ ...data, ranking: data.ranking?.toString() }),
   });
-  const body = await response.json();
-
-  if (response.ok) {
-    return { ok: true, data: body };
-  }
-
-  return {
-    ok: false,
-    error: {
-      api_response: true,
-      error_count: 1,
-      errors: { api: body.detail },
-    },
-  };
 }
 
-export async function rankDayQuery({
-  day,
-  ranking,
+export function rankTodayNumberQuery({ ranking }: { ranking: number }) {
+  return rankingRequest<RankingProp>("/rank", {
+    method: "PUT",
+    body: JSON.stringify({ day: Temporal.Now.plainDateISO().toString(), ranking }),
+  });
+}
+
+export function rankTodayNotesQuery({
   text_events,
   text_notes,
-}: RankingUIDataProp): Promise<Result<RankingProp, ValidationErrorProp>> {
-  const form = {
-    day: day,
-    ranking: ranking?.toString(),
-    text_events: text_events,
-    text_notes: text_notes,
-  };
-
-  const token = Cookies.get("personnel_id");
-  const response = await fetch(`${BASE_API_URL}/api/v1/ranking`, {
-    method: "PUT",
-    credentials: "include",
-    headers: {
-      "Content-Type": "application/json",
-      Cookie: `personnel_id=${token}`,
-    },
-    body: JSON.stringify(form),
-  });
-  const body = await response.json();
-
-  if (response.ok) {
-    return { ok: true, data: body };
-  }
-
-  return {
-    ok: false,
-    error: {
-      api_response: true,
-      error_count: 1,
-      errors: { api: body.detail },
-    },
-  };
-}
-
-interface RankTodayNumberQueryProps {
-  ranking: number;
-}
-
-export async function rankTodayNumberQuery({
-  ranking,
-}: RankTodayNumberQueryProps): Promise<
-  Result<RankingProp, ValidationErrorProp>
-> {
-  const form = {
-    day: Temporal.Now.plainDateISO().toString(),
-    ranking: ranking,
-  };
-
-  const token = Cookies.get("personnel_id");
-  const response = await fetch(`${BASE_API_URL}/api/v1/ranking/rank`, {
-    method: "PUT",
-    credentials: "include",
-    headers: {
-      "Content-Type": "application/json",
-      Cookie: `personnel_id=${token}`,
-    },
-    body: JSON.stringify(form),
-  });
-  const body = await response.json();
-
-  if (response.ok) {
-    return { ok: true, data: body };
-  }
-
-  return {
-    ok: false,
-    error: {
-      api_response: true,
-      error_count: 1,
-      errors: { api: body.detail },
-    },
-  };
-}
-
-interface RankTodayNotesQueryProps {
+}: {
   text_events?: string;
   text_notes?: string;
-}
-
-export async function rankTodayNotesQuery({
-  text_events,
-  text_notes,
-}: RankTodayNotesQueryProps): Promise<
-  Result<RankingProp, ValidationErrorProp>
-> {
-  const form = {
-    day: Temporal.Now.plainDateISO().toString(),
-    text_events: text_events,
-    text_notes: text_notes,
-  };
-
-  const token = Cookies.get("personnel_id");
-  const response = await fetch(`${BASE_API_URL}/api/v1/ranking/rank/notes`, {
+}) {
+  return rankingRequest<RankingProp>("/rank/notes", {
     method: "PUT",
-    credentials: "include",
-    headers: {
-      "Content-Type": "application/json",
-      Cookie: `personnel_id=${token}`,
-    },
-    body: JSON.stringify(form),
+    body: JSON.stringify({
+      day: Temporal.Now.plainDateISO().toString(),
+      text_events,
+      text_notes,
+    }),
   });
-  const body = await response.json();
-
-  if (response.ok) {
-    return { ok: true, data: body };
-  }
-
-  return {
-    ok: false,
-    error: {
-      api_response: true,
-      error_count: 1,
-      errors: { api: body.detail },
-    },
-  };
 }

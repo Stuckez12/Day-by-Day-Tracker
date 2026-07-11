@@ -3,6 +3,7 @@
 import { PartialPersonnelContext } from "@/components/common/contexts/personnelContext";
 import { PartialPersonnelProp } from "@/lib/interfaces/personnel";
 import { useState } from "react";
+import { SessionProvider } from "next-auth/react";
 
 export default function ClientLayout({
   children,
@@ -21,10 +22,12 @@ export default function ClientLayout({
     });
 
   return (
-    <PartialPersonnelContext.Provider
-      value={{ partialPersonnel, setPartialPersonnel }}
-    >
-      {children}
-    </PartialPersonnelContext.Provider>
+    <SessionProvider>
+      <PartialPersonnelContext.Provider
+        value={{ partialPersonnel, setPartialPersonnel }}
+      >
+        {children}
+      </PartialPersonnelContext.Provider>
+    </SessionProvider>
   );
 }

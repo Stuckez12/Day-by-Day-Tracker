@@ -52,6 +52,8 @@ services:
       - "3000"
     networks:
       - app-network
+    environment:
+      API_INTERNAL_URL: http://api:8000
     volumes:
       - ./frontend:/app
       - /app/node_modules

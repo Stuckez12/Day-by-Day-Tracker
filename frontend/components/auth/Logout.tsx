@@ -1,7 +1,7 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { personnelLogoutQuery } from "@/lib/queries/auth";
+import { signOut } from "next-auth/react";
 
 import "@/styles/forms/login-form.scss";
 
@@ -11,19 +11,7 @@ function Logout() {
   function onSubmit(e: React.MouseEvent<HTMLButtonElement>) {
     e.preventDefault();
 
-    async function logout() {
-      const result = await personnelLogoutQuery();
-
-      if (result.ok) {
-        console.log("Success. Logged out");
-        router.push("/login");
-      } else {
-        console.log("Error when logging out");
-        console.log(result.error);
-      }
-    }
-
-    logout();
+    signOut({ redirect: false }).then(() => router.replace("/login"));
   }
 
   return (

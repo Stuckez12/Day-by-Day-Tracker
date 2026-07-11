@@ -1,10 +1,12 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { useContext, useEffect, useState } from "react";
+import { useContext, useEffect } from "react";
+import { useSession } from "next-auth/react";
 
 import SideNavBar from "@/components/navigation/SideNavBar";
 import { getPersonnelQuery } from "@/lib/queries/personnel";
+import { getAccessToken } from "@/lib/common/auth/getAccessToken";
 
 import "bootstrap/dist/css/bootstrap.css";
 import "@/styles/colour_pallets.scss";
@@ -17,30 +19,41 @@ export default function AccountGroupLayout({
   children: React.ReactNode;
 }>) {
   const router = useRouter();
-  const [checkedUser, setCheckedUser] = useState(false);
+  const { data: session, status } = useSession();
   const { setPartialPersonnel } = useContext(PartialPersonnelContext);
 
   useEffect(() => {
-    async function isUserLoggedIn() {
+    async function loadPersonnel() {
+      if (status !== "authenticated") {
+        return;
+      }
+
+      const accessToken = await getAccessToken();
+
+      if (!accessToken) {
+        router.replace("/login");
+        return;
+      }
+
       const userResult = await getPersonnelQuery();
 
-      setCheckedUser(true);
-
       if (!userResult.ok) {
-        console.log("Redirect to login");
-        console.log(userResult.error);
         router.push("/login");
-
         return;
       }
 
       setPartialPersonnel(userResult.data);
     }
 
-    isUserLoggedIn();
-  }, [checkedUser, setPartialPersonnel, router]);
+    if (status === "unauthenticated") {
+      router.replace("/login");
+      return;
+    }
 
-  if (!checkedUser) {
+    loadPersonnel();
+  }, [setPartialPersonnel, router, status]);
+
+  if (status !== "authenticated") {
     return <></>;
   }
 

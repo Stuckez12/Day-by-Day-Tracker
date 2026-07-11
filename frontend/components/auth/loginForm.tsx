@@ -10,7 +10,7 @@ import SubmitButton from "@/components/common/form-inputs/SubmitButton";
 import TextInput from "@/components/common/form-inputs/TextInput";
 import { updateForm } from "@/lib/common/updateForm";
 import { PersonnelLogin } from "@/lib/interfaces/personnel";
-import { personnelLoginQuery } from "@/lib/queries/auth";
+import { getAccessToken } from "@/lib/common/auth/getAccessToken";
 
 import "@/styles/forms/login-form.scss";
 
@@ -30,34 +30,24 @@ export default function LoginForm() {
   async function submitForm(e: React.SubmitEvent<HTMLFormElement>) {
     e.preventDefault();
 
-    const result2 = await personnelLoginQuery(form);
-
-    const email = form.email;
-    const password = form.password;
-
     const result = await signIn("credentials", {
-      email,
-      password,
+      ...form,
       redirect: false,
     });
 
     if (result?.ok) {
-      console.log("Login Success. Routing to homepage");
-      router.push("/tracker");
+      const accessToken = await getAccessToken();
+
+      if (!accessToken) {
+        setErrors(["Unable to start your session. Please try again."]);
+        return;
+      }
+
+      router.replace("/tracker");
       return;
     }
 
-    const all_errors = result.error.errors;
-    let display_errors: string[] = [];
-
-    if (result.error.api_response) {
-      display_errors = [`${all_errors.api}`];
-    } else {
-      display_errors = display_errors.concat(all_errors.email);
-      display_errors = display_errors.concat(all_errors.password);
-    }
-
-    setErrors(display_errors);
+    setErrors(["Invalid email or password"]);
   }
 
   return (

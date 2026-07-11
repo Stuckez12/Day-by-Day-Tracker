@@ -1,6 +1,6 @@
-"use server";
-
-import Cookies from "js-cookie";
+import { getBearerHeaders } from "@/lib/common/auth/getAccessToken";
+import { validateEmail } from "@/lib/common/validation/validateEmail";
+import { validatePassword } from "@/lib/common/validation/validatePassword";
 import { Result, ValidationErrorProp } from "@/lib/interfaces/common";
 import {
   PersonnelProp,
@@ -8,157 +8,92 @@ import {
   UpdatePersonnelInfo,
   UpdatePersonnelPassword,
 } from "@/lib/interfaces/personnel";
-import { validateEmail } from "@/lib/common/validation/validateEmail";
-import { validatePassword } from "@/lib/common/validation/validatePassword";
 
 const BASE_API_URL = process.env.NEXT_PUBLIC_BASE_API_URL;
+const unauthorized = (): Result<never, ValidationErrorProp> => ({
+  ok: false,
+  error: {
+    api_response: true,
+    error_count: 1,
+    errors: { api: ["Your session has expired. Please sign in again."] },
+  },
+});
 
-export async function getPersonnelQuery(): Promise<
-  Result<PersonnelProp, ValidationErrorProp>
-> {
-  const token = Cookies.get("personnel_id");
-  const response = await fetch(`${BASE_API_URL}/api/v1/personal/me`, {
-    method: "GET",
+async function personnelRequest<T>(
+  path: string,
+  init: RequestInit = {},
+): Promise<Result<T, ValidationErrorProp>> {
+  const authorization = await getBearerHeaders();
+  if (!authorization) return unauthorized();
+
+  const response = await fetch(`${BASE_API_URL}/api/v1/personal${path}`, {
+    ...init,
     headers: {
-      Cookie: `personnel_id=${token}`,
+      ...authorization,
+      ...(init.body ? { "Content-Type": "application/json" } : {}),
     },
   });
   const body = await response.json();
 
-  if (response.ok) {
-    return { ok: true, data: body };
-  }
-
-  return {
-    ok: false,
-    error: {
-      api_response: true,
-      error_count: 1,
-      errors: { api: body.detail },
-    },
-  };
+  return response.ok
+    ? { ok: true, data: body }
+    : {
+        ok: false,
+        error: {
+          api_response: true,
+          error_count: 1,
+          errors: { api: [body.detail ?? "Request failed"] },
+        },
+      };
 }
 
-export async function updatePersonnelInfoQuery(
-  form: UpdatePersonnelInfo,
-): Promise<Result<PersonnelProp, ValidationErrorProp>> {
-  const token = Cookies.get("personnel_id");
-  const response = await fetch(`${BASE_API_URL}/api/v1/personal/me/details`, {
+export function getPersonnelQuery() {
+  return personnelRequest<PersonnelProp>("/me");
+}
+
+export function updatePersonnelInfoQuery(form: UpdatePersonnelInfo) {
+  return personnelRequest<PersonnelProp>("/me/details", {
     method: "PUT",
-    credentials: "include",
-    headers: {
-      "Content-Type": "application/json",
-      Cookie: `personnel_id=${token}`,
-    },
     body: JSON.stringify(form),
   });
-  const body = await response.json();
-
-  if (response.ok) {
-    return { ok: true, data: body };
-  }
-
-  return {
-    ok: false,
-    error: {
-      api_response: true,
-      error_count: 1,
-      errors: { api: body.detail },
-    },
-  };
 }
 
 export async function updatePersonnelEmailQuery(
   form: UpdatePersonnelEmail,
 ): Promise<Result<PersonnelProp, ValidationErrorProp>> {
-  const email_errors = validateEmail(form.email);
-
-  if (email_errors.length > 0) {
+  const errors = validateEmail(form.email);
+  if (errors.length) {
     return {
       ok: false,
-      error: {
-        api_response: false,
-        error_count: email_errors.length,
-        errors: { api: email_errors },
-      },
+      error: { api_response: false, error_count: errors.length, errors: { api: errors } },
     };
   }
 
-  const token = Cookies.get("personnel_id");
-  const response = await fetch(`${BASE_API_URL}/api/v1/personal/me/email`, {
+  return personnelRequest<PersonnelProp>("/me/email", {
     method: "PUT",
-    credentials: "include",
-    headers: {
-      "Content-Type": "application/json",
-      Cookie: `personnel_id=${token}`,
-    },
     body: JSON.stringify(form),
   });
-  const body = await response.json();
-
-  if (response.ok) {
-    return { ok: true, data: body };
-  }
-
-  return {
-    ok: false,
-    error: {
-      api_response: true,
-      error_count: 1,
-      errors: { api: body.detail },
-    },
-  };
 }
 
 export async function updatePersonnelPasswordQuery(
   form: UpdatePersonnelPassword,
 ): Promise<Result<PersonnelProp, ValidationErrorProp>> {
-  const password_errors = validatePassword(form.new_password);
-
-  if (password_errors.length > 0) {
+  const errors = validatePassword(form.new_password);
+  if (errors.length) {
     return {
       ok: false,
-      error: {
-        api_response: false,
-        error_count: password_errors.length,
-        errors: { api: password_errors },
-      },
+      error: { api_response: false, error_count: errors.length, errors: { api: errors } },
+    };
+  }
+  if (form.new_password !== form.confirm_password) {
+    return {
+      ok: false,
+      error: { api_response: false, error_count: 1, errors: { new_password: ["Passwords do not match"] } },
     };
   }
 
-  if (form.new_password != form.confirm_password) {
-    return {
-      ok: false,
-      error: {
-        api_response: false,
-        error_count: 1,
-        errors: { new_password: ["Passwords do not match"] },
-      },
-    };
-  }
-
-  const token = Cookies.get("personnel_id");
-  const response = await fetch(`${BASE_API_URL}/api/v1/personal/me/password`, {
+  return personnelRequest<PersonnelProp>("/me/password", {
     method: "PUT",
-    credentials: "include",
-    headers: {
-      "Content-Type": "application/json",
-      Cookie: `personnel_id=${token}`,
-    },
     body: JSON.stringify(form),
   });
-  const body = await response.json();
-
-  if (response.ok) {
-    return { ok: true, data: body };
-  }
-
-  return {
-    ok: false,
-    error: {
-      api_response: true,
-      error_count: 1,
-      errors: { api: body.detail },
-    },
-  };
 }

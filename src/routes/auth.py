@@ -1,6 +1,7 @@
-from fastapi import APIRouter, Request, Response, status
+from fastapi import APIRouter, status
 
 from src.common import AuthServiceDep
+from src.common.security import create_access_token
 from src.schemas import CreatePersonnelRequest, LogInRequest, SlimPersonnelSchema
 
 
@@ -19,14 +20,12 @@ def log_in(request: LogInRequest, service: AuthServiceDep):
     personnel = service.log_in(request)
 
     return {
-        "token": str(personnel.id),
+        "access_token": create_access_token(personnel.id),
+        "token_type": "bearer",
         "personnel": personnel.model_dump(),
     }
 
 
-@api.post("/logout", status_code=status.HTTP_200_OK)
-def log_out(_: Request, response: Response):
-    response.status_code = status.HTTP_204_NO_CONTENT
-    response.delete_cookie("personnel_id")
-
-    return response
+@api.post("/logout", status_code=status.HTTP_204_NO_CONTENT)
+def log_out():
+    return None

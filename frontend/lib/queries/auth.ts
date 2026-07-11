@@ -5,13 +5,16 @@ import { validatePassword } from "@/lib/common/validation/validatePassword";
 import { Result, ValidationErrorProp } from "@/lib/interfaces/common";
 import { PersonnelLogin } from "@/lib/interfaces/personnel";
 
-const BASE_API_URL = process.env.NEXT_PUBLIC_BASE_API_URL;
+// NextAuth runs on the server. In Docker it must reach the API over the
+// service network rather than via the browser-facing URL.
+const BASE_API_URL =
+  process.env.API_INTERNAL_URL ?? process.env.NEXT_PUBLIC_BASE_API_URL;
 
 export async function personnelLoginQuery(
   form: PersonnelLogin,
-): Promise<Result<null, ValidationErrorProp>> {
+): Promise<Result<LoginResponse, ValidationErrorProp>> {
   const email_errors = validateEmail(form.email);
-  const password_errors = validatePassword(form.email);
+  const password_errors = validatePassword(form.password);
 
   const validation_errors = [...email_errors, ...password_errors];
 
@@ -36,7 +39,7 @@ export async function personnelLoginQuery(
   });
 
   if (response.ok) {
-    return { ok: true, data: null };
+    return { ok: true, data: await response.json() };
   }
 
   const err = await response.json();
@@ -48,6 +51,17 @@ export async function personnelLoginQuery(
       error_count: 1,
       errors: { api: err.detail },
     },
+  };
+}
+
+interface LoginResponse {
+  access_token: string;
+  token_type: "bearer";
+  personnel: {
+    id: string;
+    email: string;
+    first_name: string;
+    last_name: string;
   };
 }
 

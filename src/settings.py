@@ -24,6 +24,11 @@ class AppConfig(BaseSettings):
     # Celery
     REDIS_URL: str = "redis://redis:6379"
 
+    # Authentication. JWT_SECRET should be distinct from the NextAuth secret.
+    JWT_SECRET: str = ""
+    JWT_EXPIRE_MINUTES: int = 480
+    NEXTAUTH_SECRET: str = ""
+
     @property
     def CELERY_URL(self):
         return f"{self.REDIS_URL}/0"

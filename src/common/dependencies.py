@@ -1,9 +1,11 @@
+import uuid
 from typing import Annotated
 
 from fastapi import Depends
 from sqlalchemy.orm import Session
 
 from src.common import get_db
+from src.common.security import get_current_personnel_id
 from src.services import AuthService, PersonalService, RankingService, TaskService
 
 
@@ -30,3 +32,4 @@ AuthServiceDep = Annotated[AuthService, Depends(get_auth_service)]
 PersonalServiceDep = Annotated[PersonalService, Depends(get_personal_service)]
 RankingServiceDep = Annotated[RankingService, Depends(get_ranking_service)]
 TaskServiceDep = Annotated[TaskService, Depends(get_task_service)]
+CurrentPersonnelId = Annotated[uuid.UUID, Depends(get_current_personnel_id)]

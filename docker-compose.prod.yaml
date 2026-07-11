@@ -61,6 +61,8 @@ services:
     networks:
       - app-network
     env_file: .env.prod
+    environment:
+      API_INTERNAL_URL: http://api:8000
     restart: unless-stopped
 
   redis:
