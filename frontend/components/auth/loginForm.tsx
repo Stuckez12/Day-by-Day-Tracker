@@ -30,9 +30,18 @@ export default function LoginForm() {
   async function submitForm(e: React.SubmitEvent<HTMLFormElement>) {
     e.preventDefault();
 
-    const result = await personnelLoginQuery(form);
+    const result2 = await personnelLoginQuery(form);
 
-    if (result.ok) {
+    const email = form.email;
+    const password = form.password;
+
+    const result = await signIn("credentials", {
+      email,
+      password,
+      redirect: false,
+    });
+
+    if (result?.ok) {
       console.log("Login Success. Routing to homepage");
       router.push("/tracker");
       return;

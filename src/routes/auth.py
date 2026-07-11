@@ -15,12 +15,13 @@ def register_personnel(request: CreatePersonnelRequest, service: AuthServiceDep)
 
 
 @api.post("/login", status_code=status.HTTP_200_OK)
-def log_in(request: LogInRequest, response: Response, service: AuthServiceDep):
+def log_in(request: LogInRequest, service: AuthServiceDep):
     personnel = service.log_in(request)
 
-    response.status_code = status.HTTP_204_NO_CONTENT
-
-    return service.set_login_cookies(response, personnel)
+    return {
+        "token": str(personnel.id),
+        "personnel": personnel.model_dump(),
+    }
 
 
 @api.post("/logout", status_code=status.HTTP_200_OK)

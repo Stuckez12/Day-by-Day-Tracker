@@ -3,7 +3,7 @@ from sqlalchemy.orm import Session
 
 from src.common.password_hash import pwd_hash
 from src.models import PersonalModel
-from src.schemas import CreatePersonnelRequest, LogInRequest
+from src.schemas import CreatePersonnelRequest, LogInRequest, SlimPersonnelSchema
 from src.services.personal import PersonalService
 
 
@@ -29,7 +29,7 @@ class AuthService(PersonalService):
 
         return self.create_personnel(data)
 
-    def log_in(self, data: LogInRequest) -> PersonalModel:
+    def log_in(self, data: LogInRequest) -> SlimPersonnelSchema:
         failed_login_message = "Invalid email or password"
 
         personnel = (
@@ -46,7 +46,7 @@ class AuthService(PersonalService):
         if not confirm_password:
             raise ValueError(failed_login_message)
 
-        return personnel
+        return SlimPersonnelSchema.model_validate(personnel)
 
     def set_login_cookies(
         self, response: Response, personnel: PersonalModel
