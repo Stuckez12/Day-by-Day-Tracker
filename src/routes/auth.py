@@ -24,8 +24,3 @@ def log_in(request: LogInRequest, service: AuthServiceDep):
         "token_type": "bearer",
         "personnel": personnel.model_dump(),
     }
-
-
-@api.post("/logout", status_code=status.HTTP_204_NO_CONTENT)
-def log_out():
-    return None

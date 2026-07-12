@@ -12,11 +12,10 @@ from src.schemas import RankingSchema
 class TestRankingRoute:
     def test_get_ranking_default(
         self,
-        test_set_cookies: None,
-        test_client_v1: TestClient,
+        test_client_user: TestClient,
         test_ranker: RankerModel,
     ):
-        result = test_client_v1.get("/ranking")
+        result = test_client_user.get("/ranking")
         assert result.status_code == status.HTTP_200_OK
 
         data = result.json()
@@ -24,11 +23,10 @@ class TestRankingRoute:
 
     def test_get_ranking_w_specified_date(
         self,
-        test_set_cookies: None,
-        test_client_v1: TestClient,
+        test_client_user: TestClient,
         test_ranker_set_date: RankerModel,
     ):
-        result = test_client_v1.get(f"/ranking?date={test_ranker_set_date.day}")
+        result = test_client_user.get(f"/ranking?date={test_ranker_set_date.day}")
         assert result.status_code == status.HTTP_200_OK
 
         data = result.json()
@@ -36,25 +34,20 @@ class TestRankingRoute:
 
     def test_get_ranking_invalid_personnel_cookie(
         self,
-        test_set_invalid_cookies: str,
-        test_client_v1: TestClient,
+        test_client: TestClient,
         test_ranker: RankerModel,
     ):
-        result = test_client_v1.get(f"/ranking?date={test_ranker.day}")
-        assert result.status_code == status.HTTP_404_NOT_FOUND
-
-        response = result.json()
-        assert response["detail"] == f"Personnel {test_set_invalid_cookies} not found"
+        result = test_client.get(f"/ranking?date={test_ranker.day}")
+        assert result.status_code == status.HTTP_401_UNAUTHORIZED
 
     def test_get_all_personnel_rankings(
         self,
-        test_set_cookies: None,
-        test_client_v1: TestClient,
+        test_client_user: TestClient,
         test_ranker: RankerModel,
         test_ranker_none: RankerModel,
         test_ranker_set_date: RankerModel,
     ):
-        result = test_client_v1.get("/ranking/all")
+        result = test_client_user.get("/ranking/all")
         assert result.status_code == status.HTTP_200_OK
 
         data = result.json()
@@ -63,28 +56,17 @@ class TestRankingRoute:
         assert data[2] == test_ranker_set_date.to_dict(clean=True)
 
     def test_get_all_personnel_rankings_no_personnel_cookie(
-        self, test_client_v1: TestClient
+        self, test_client: TestClient
     ):
-        result = test_client_v1.get("/ranking/all")
-        assert result.status_code == status.HTTP_422_UNPROCESSABLE_CONTENT
-
-        response = result.json()
-        assert "detail" in response
-        assert len(response["detail"]) == 1
-
-        error_message = response["detail"][0]
-        assert error_message["type"] == "missing"
-        assert error_message["loc"] == ["cookie", "personnel_id"]
-        assert error_message["msg"] == "Field required"
-        assert error_message["input"] is None
+        result = test_client.get("/ranking/all")
+        assert result.status_code == status.HTTP_401_UNAUTHORIZED
 
     def test_get_todays_personnel_rankings(
         self,
-        test_set_cookies: None,
-        test_client_v1: TestClient,
+        test_client_user: TestClient,
         test_ranker: RankerModel,
     ):
-        result = test_client_v1.get("/ranking/today")
+        result = test_client_user.get("/ranking/today")
         assert result.status_code == status.HTTP_200_OK
 
         data = result.json()
@@ -93,11 +75,10 @@ class TestRankingRoute:
     def test_get_todays_personnel_rankings_not_in_database(
         self,
         test_session: Session,
-        test_set_cookies: None,
-        test_client_v1: TestClient,
+        test_client_user: TestClient,
         test_date_today: date,
     ):
-        result = test_client_v1.get("/ranking/today")
+        result = test_client_user.get("/ranking/today")
         assert result.status_code == status.HTTP_200_OK
 
         data = result.json()
@@ -121,30 +102,19 @@ class TestRankingRoute:
             test_session.commit()
 
     def test_get_todays_personnel_rankings_no_personnel_cookie(
-        self, test_client_v1: TestClient
+        self, test_client: TestClient
     ):
-        result = test_client_v1.get("/ranking/today")
-        assert result.status_code == status.HTTP_422_UNPROCESSABLE_CONTENT
-
-        response = result.json()
-        assert "detail" in response
-        assert len(response["detail"]) == 1
-
-        error_message = response["detail"][0]
-        assert error_message["type"] == "missing"
-        assert error_message["loc"] == ["cookie", "personnel_id"]
-        assert error_message["msg"] == "Field required"
-        assert error_message["input"] is None
+        result = test_client.get("/ranking/today")
+        assert result.status_code == status.HTTP_401_UNAUTHORIZED
 
     def test_rank_day(
         self,
-        test_set_cookies: None,
-        test_client_v1: TestClient,
+        test_client_user: TestClient,
         test_date_today: date,
         test_personnel: PersonalModel,
         test_ranker_none: RankerModel,
     ):
-        result = test_client_v1.put(
+        result = test_client_user.put(
             "/ranking/rank",
             json={"day": test_date_today.strftime("%Y-%m-%d"), "ranking": 10},
         )
@@ -158,13 +128,12 @@ class TestRankingRoute:
 
     def test_rank_day_rerank_day(
         self,
-        test_set_cookies: None,
-        test_client_v1: TestClient,
+        test_client_user: TestClient,
         test_date_today: date,
         test_personnel: PersonalModel,
         test_ranker_none: RankerModel,
     ):
-        result = test_client_v1.put(
+        result = test_client_user.put(
             "/ranking/rank",
             json={"day": test_date_today.strftime("%Y-%m-%d"), "ranking": 10},
         )
@@ -178,13 +147,12 @@ class TestRankingRoute:
 
     def test_rank_day_day_not_in_database(
         self,
-        test_set_cookies: None,
         test_session: Session,
-        test_client_v1: TestClient,
+        test_client_user: TestClient,
         test_date_today: date,
         test_personnel: PersonalModel,
     ):
-        result = test_client_v1.put(
+        result = test_client_user.put(
             "/ranking/rank",
             json={"day": test_date_today.strftime("%Y-%m-%d"), "ranking": 10},
         )
@@ -209,35 +177,25 @@ class TestRankingRoute:
 
     def test_rank_day_no_personnel_cookie(
         self,
-        test_client_v1: TestClient,
+        test_client: TestClient,
         test_date_today: date,
     ):
-        result = test_client_v1.put(
+        result = test_client.put(
             "/ranking/rank",
             json={"day": test_date_today.strftime("%Y-%m-%d"), "ranking": 10},
         )
-        assert result.status_code == status.HTTP_422_UNPROCESSABLE_CONTENT
+        assert result.status_code == status.HTTP_401_UNAUTHORIZED
 
-        response = result.json()
-        assert "detail" in response
-        assert len(response["detail"]) == 1
-
-        error_message = response["detail"][0]
-        assert error_message["type"] == "missing"
-        assert error_message["loc"] == ["cookie", "personnel_id"]
-        assert error_message["msg"] == "Field required"
-        assert error_message["input"] is None
-
-    def test_rank_day_no_day_provided(
-        self, test_set_cookies: None, test_client_v1: TestClient
-    ):
-        result = test_client_v1.put("/ranking/rank", json={"ranking": 10})
+    def test_rank_day_no_day_provided(self, test_client_user: TestClient):
+        result = test_client_user.put("/ranking/rank", json={"ranking": 10})
         assert result.status_code == status.HTTP_422_UNPROCESSABLE_CONTENT
 
     def test_rank_day_no_ranking_provided(
-        self, test_set_cookies: None, test_client_v1: TestClient, test_date_today: date
+        self,
+        test_client_user: TestClient,
+        test_date_today: date,
     ):
-        result = test_client_v1.put(
+        result = test_client_user.put(
             "/ranking/rank",
             json={"day": test_date_today.strftime("%Y-%m-%d")},
         )
@@ -247,9 +205,11 @@ class TestRankingRoute:
         assert data["detail"] == "A rank must be provided"
 
     def test_rank_day_ranking_too_low(
-        self, test_set_cookies: None, test_client_v1: TestClient, test_date_today: date
+        self,
+        test_client_user: TestClient,
+        test_date_today: date,
     ):
-        result = test_client_v1.put(
+        result = test_client_user.put(
             "/ranking/rank",
             json={"day": test_date_today.strftime("%Y-%m-%d"), "ranking": -1},
         )
@@ -259,9 +219,11 @@ class TestRankingRoute:
         assert data["detail"] == "Ranking must be between 0 and 10"
 
     def test_rank_day_ranking_too_high(
-        self, test_set_cookies: None, test_client_v1: TestClient, test_date_today: date
+        self,
+        test_client_user: TestClient,
+        test_date_today: date,
     ):
-        result = test_client_v1.put(
+        result = test_client_user.put(
             "/ranking/rank",
             json={"day": test_date_today.strftime("%Y-%m-%d"), "ranking": 11},
         )
@@ -272,12 +234,11 @@ class TestRankingRoute:
 
     def test_rank_date_notes(
         self,
-        test_set_cookies: None,
-        test_client_v1: TestClient,
+        test_client_user: TestClient,
         test_date_today: date,
         test_ranker: RankerModel,
     ):
-        result = test_client_v1.put(
+        result = test_client_user.put(
             "/ranking/rank/notes",
             json={
                 "day": test_date_today.strftime("%Y-%m-%d"),
@@ -295,31 +256,17 @@ class TestRankingRoute:
 
     def test_rank_date_notes_no_personnel_cookie(
         self,
-        test_client_v1: TestClient,
+        test_client: TestClient,
         test_date_today: date,
     ):
-        result = test_client_v1.put(
+        result = test_client.put(
             "/ranking/rank/notes",
             json={"day": test_date_today.strftime("%Y-%m-%d")},
         )
-        assert result.status_code == status.HTTP_422_UNPROCESSABLE_CONTENT
+        assert result.status_code == status.HTTP_401_UNAUTHORIZED
 
-        response = result.json()
-        assert "detail" in response
-        assert len(response["detail"]) == 1
-
-        error_message = response["detail"][0]
-        assert error_message["type"] == "missing"
-        assert error_message["loc"] == ["cookie", "personnel_id"]
-        assert error_message["msg"] == "Field required"
-        assert error_message["input"] is None
-
-    def test_rank_date_notes_not_found_rank(
-        self,
-        test_set_cookies: None,
-        test_client_v1: TestClient,
-    ):
-        result = test_client_v1.put("/ranking/rank/notes", json={"day": "2004-04-04"})
+    def test_rank_date_notes_not_found_rank(self, test_client_user: TestClient):
+        result = test_client_user.put("/ranking/rank/notes", json={"day": "2004-04-04"})
         assert result.status_code == status.HTTP_404_NOT_FOUND
 
         response = result.json()

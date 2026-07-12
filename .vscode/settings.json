@@ -1,5 +1,7 @@
 {
   "editor.inlayHints.enabled": "offUnlessPressed",
+  "python.languageServer": "Pylance",
+  "ty.disableLanguageServices": true,
 
   "[python]": {
     "editor.defaultFormatter": "charliermarsh.ruff",

@@ -4,7 +4,7 @@ from datetime import date
 from fastapi import APIRouter, HTTPException, Query, status
 from sqlalchemy.exc import NoResultFound
 
-from src.common import CurrentPersonnelId, PersonalServiceDep, RankingServiceDep
+from src.common import CurrentPersonnelID, PersonalServiceDep, RankingServiceDep
 from src.schemas import (
     RankingADayRequest,
     RankingNotesRequest,
@@ -20,7 +20,7 @@ api = APIRouter(prefix="/ranking", tags=["Ranking"])
 def get_ranking(
     service: RankingServiceDep,
     personnel_service: PersonalServiceDep,
-    personnel_id: CurrentPersonnelId,
+    personnel_id: CurrentPersonnelID,
     date: date = Query(default_factory=date.today, title="Date"),
 ):
     personnel_service.personnel_exists(personnel_id)
@@ -31,7 +31,7 @@ def get_ranking(
 @api.get("/all", status_code=status.HTTP_200_OK)
 def get_all_rankings(
     service: RankingServiceDep,
-    personnel_id: CurrentPersonnelId,
+    personnel_id: CurrentPersonnelID,
 ):
     return service.get_all_personnel_rankings(personnel_id)
 
@@ -39,7 +39,7 @@ def get_all_rankings(
 @api.get("/today", status_code=status.HTTP_200_OK)
 def get_todays_ranking(
     service: RankingServiceDep,
-    personnel_id: CurrentPersonnelId,
+    personnel_id: CurrentPersonnelID,
 ):
     return service.fetch_date(personnel_id, date.today())
 
@@ -52,7 +52,7 @@ def get_todays_ranking(
 def rank_a_day(
     request: RankingADayRequest,
     service: RankingServiceDep,
-    personnel_id: CurrentPersonnelId,
+    personnel_id: CurrentPersonnelID,
 ):
     logging.info("YAAAAAHHHHHH")
     rank_data = service.fetch_date(personnel_id, request.day)
@@ -68,7 +68,7 @@ def rank_a_day(
 def rank_today(
     request: RankingRequest,
     service: RankingServiceDep,
-    personnel_id: CurrentPersonnelId,
+    personnel_id: CurrentPersonnelID,
 ):
     rank_data = service.fetch_date(personnel_id, request.day)
 
@@ -83,7 +83,7 @@ def rank_today(
 def rank_date_notes(
     request: RankingNotesRequest,
     service: RankingServiceDep,
-    personnel_id: CurrentPersonnelId,
+    personnel_id: CurrentPersonnelID,
 ):
     try:
         rank = service.get_by_date(personnel_id, request.day)

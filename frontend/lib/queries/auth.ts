@@ -64,29 +64,3 @@ interface LoginResponse {
     last_name: string;
   };
 }
-
-export async function personnelLogoutQuery(): Promise<
-  Result<void, ValidationErrorProp>
-> {
-  const response = await fetch(`${BASE_API_URL}/api/v1/auth/logout`, {
-    method: "POST",
-    credentials: "include",
-    headers: {
-      "Content-Type": "application/json",
-    },
-  });
-  const body = await response.json();
-
-  if (response.ok) {
-    return { ok: true, data: body };
-  }
-
-  return {
-    ok: false,
-    error: {
-      api_response: true,
-      error_count: 1,
-      errors: { api: body.detail },
-    },
-  };
-}

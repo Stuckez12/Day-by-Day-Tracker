@@ -1,6 +1,8 @@
-from fastapi import APIRouter, HTTPException, status
+from uuid import UUID
 
-from src.common import CurrentPersonnelId, PersonalServiceDep
+from fastapi import APIRouter, HTTPException, Query, status
+
+from src.common import CurrentPersonnelID, PersonalServiceDep
 from src.schemas import (
     PersonnelSchema,
     SlimPersonnelSchema,
@@ -14,9 +16,7 @@ api = APIRouter(prefix="/personal", tags=["Personal"])
 
 
 @api.get("/", status_code=status.HTTP_200_OK, response_model=PersonnelSchema)
-def get_personnel(
-    service: PersonalServiceDep, personnel_id: CurrentPersonnelId
-):
+def get_personnel(service: PersonalServiceDep, personnel_id: UUID):
     personnel = service.get_by_id(personnel_id)
 
     if personnel:
@@ -30,7 +30,7 @@ def get_personnel(
 @api.get("/me", status_code=status.HTTP_200_OK, response_model=PersonnelSchema)
 def get_personnel_self(
     service: PersonalServiceDep,
-    personnel_id: CurrentPersonnelId,
+    personnel_id: CurrentPersonnelID,
 ):
     return service.personnel_exists(personnel_id)
 
@@ -45,7 +45,7 @@ def get_all_personnel(service: PersonalServiceDep):
 @api.delete("/", status_code=status.HTTP_200_OK)
 def delete_personnel(
     service: PersonalServiceDep,
-    personnel_id: CurrentPersonnelId,
+    personnel_id: UUID = Query(title="Personal ID"),
 ):
     personnel = service.personnel_exists(personnel_id)
 
@@ -60,7 +60,7 @@ def delete_personnel(
 def update_personnel_details(
     request: UpdatePersonnelDetailsRequest,
     service: PersonalServiceDep,
-    personnel_id: CurrentPersonnelId,
+    personnel_id: CurrentPersonnelID,
 ):
     personnel = service.personnel_exists(personnel_id)
 
@@ -73,7 +73,7 @@ def update_personnel_details(
 def update_personnel_email(
     request: UpdatePersonnelEmailRequest,
     service: PersonalServiceDep,
-    personnel_id: CurrentPersonnelId,
+    personnel_id: CurrentPersonnelID,
 ):
     personnel = service.personnel_exists(personnel_id)
 
@@ -86,7 +86,7 @@ def update_personnel_email(
 def update_personnel_password(
     request: UpdatePersonnelPasswordRequest,
     service: PersonalServiceDep,
-    personnel_id: CurrentPersonnelId,
+    personnel_id: CurrentPersonnelID,
 ):
     personnel = service.personnel_exists(personnel_id)
 
