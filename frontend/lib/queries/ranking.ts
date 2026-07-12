@@ -1,8 +1,14 @@
 import { Temporal } from "@js-temporal/polyfill";
 
-import { getBearerHeaders } from "@/lib/common/auth/getAccessToken";
+import {
+  getAccessToken,
+  getBearerHeaders,
+} from "@/lib/common/auth/getAccessToken";
 import { Result, ValidationErrorProp } from "@/lib/interfaces/common";
 import { RankingProp, RankingUIDataProp } from "@/lib/interfaces/ranking";
+import { APICall, MustBeLoggedIn } from "@/lib/queries/base";
+
+const API = new APICall(process.env.NEXT_PUBLIC_BASE_API_URL!);
 
 const BASE_API_URL = process.env.NEXT_PUBLIC_BASE_API_URL;
 const unauthorized = (): Result<never, ValidationErrorProp> => ({
@@ -30,41 +36,89 @@ async function rankingRequest<T>(
   });
   const body = await response.json();
 
-  return response.ok
-    ? { ok: true, data: body }
-    : {
-        ok: false,
-        error: {
-          api_response: true,
-          error_count: 1,
-          errors: { api: [body.detail ?? "Request failed"] },
-        },
-      };
+  if (response.ok) {
+    return { ok: true, data: body };
+  }
+
+  return {
+    ok: false,
+    error: {
+      api_response: true,
+      error_count: 1,
+      errors: { api: [body.detail ?? "Request failed"] },
+    },
+  };
 }
 
-export function getRankTodayQuery() {
-  return rankingRequest<RankingProp>("/today");
+export async function getRankTodayQuery(): Promise<
+  Result<RankingProp, ValidationErrorProp>
+> {
+  const token = await getAccessToken();
+  if (!token) {
+    return {
+      ok: false,
+      error: MustBeLoggedIn,
+    };
+  }
+
+  const response = await API.get({ url_path: "/today", token: token });
+  const body = await response.json();
+
+  if (response.ok) {
+    return {
+      ok: true,
+      data: body,
+    };
+  }
+
+  return {
+    ok: false,
+    error: {
+      api_response: true,
+      error_count: 1,
+      errors: { api: body.detail },
+    },
+  };
 }
 
-export function getAllRanksQuery() {
+export async function getAllRanksQuery() {
+  const token = await getAccessToken();
+  if (!token) {
+    return MustBeLoggedIn;
+  }
+
+  const response = await API.get({ url_path: "/all", token: token });
   return rankingRequest<RankingProp[]>("/all");
 }
 
-export function rankDayQuery(data: RankingUIDataProp) {
+export async function rankDayQuery(data: RankingUIDataProp) {
+  const token = await getAccessToken();
+  if (!token) {
+    return MustBeLoggedIn;
+  }
+
+  const response = await API.post({
+    url_path: "/today",
+    body: data,
+    token: token,
+  });
   return rankingRequest<RankingProp>("", {
     method: "PUT",
     body: JSON.stringify({ ...data, ranking: data.ranking?.toString() }),
   });
 }
 
-export function rankTodayNumberQuery({ ranking }: { ranking: number }) {
+export async function rankTodayNumberQuery({ ranking }: { ranking: number }) {
   return rankingRequest<RankingProp>("/rank", {
     method: "PUT",
-    body: JSON.stringify({ day: Temporal.Now.plainDateISO().toString(), ranking }),
+    body: JSON.stringify({
+      day: Temporal.Now.plainDateISO().toString(),
+      ranking,
+    }),
   });
 }
 
-export function rankTodayNotesQuery({
+export async function rankTodayNotesQuery({
   text_events,
   text_notes,
 }: {
