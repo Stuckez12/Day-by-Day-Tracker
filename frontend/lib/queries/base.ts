@@ -1,4 +1,4 @@
-import { ValidationErrorProp } from "@/lib/interfaces/common";
+import { Result, ValidationErrorProp } from "@/lib/interfaces/common";
 
 interface Request {
   url_path: string;
@@ -25,63 +25,103 @@ export class APICall {
   }
 
   private define_headers(req: Request, req_type: RequestType) {
-    let headers: Record<string, string> = {
+    const headers: Record<string, string> = {
       "Content-Type": "application/json",
     };
 
     if (req.token !== null) {
-      headers["Authorisation"] = `Bearer ${req.token}`;
+      headers["Authorization"] = `Bearer ${req.token}`;
     }
 
     return headers;
   }
 
-  public async get(req: Request) {
+  private async handle_response<T>(
+    response: Response,
+  ): Promise<Result<T, ValidationErrorProp>> {
+    let body = null;
+
+    try {
+      if (response.status !== 204) {
+        body = await response.json();
+      }
+    } catch {
+      body = null;
+    }
+
+    if (response.ok) {
+      return { ok: true, data: body };
+    }
+
+    return {
+      ok: false,
+      error: {
+        api_response: true,
+        error_count: 1,
+        errors: { api: body?.detail ?? "Unknown API error" },
+      },
+    };
+  }
+
+  public async get<T>(req: Request) {
     const headers = this.define_headers(req, RequestType.GET);
-    return await fetch(req.url_path, {
+    const response = await fetch(`${this.base_url}/api${req.url_path}`, {
       method: "GET",
       headers: headers,
     });
+
+    return this.handle_response<T>(response);
   }
 
-  public async post(req: RequestBody) {
+  public async post<T>(req: RequestBody) {
     const headers = this.define_headers(req, RequestType.POST);
-    return await fetch(req.url_path, {
+    const response = await fetch(`${this.base_url}/api${req.url_path}`, {
       method: "POST",
       body: JSON.stringify(req.body),
       headers: headers,
     });
+
+    return this.handle_response<T>(response);
   }
 
-  public async put(req: RequestBody) {
+  public async put<T>(req: RequestBody) {
     const headers = this.define_headers(req, RequestType.PUT);
-    return await fetch(req.url_path, {
+    const response = await fetch(`${this.base_url}/api${req.url_path}`, {
       method: "PUT",
       body: JSON.stringify(req.body),
       headers: headers,
     });
+
+    return this.handle_response<T>(response);
   }
 
-  public async patch(req: RequestBody) {
+  public async patch<T>(req: RequestBody) {
     const headers = this.define_headers(req, RequestType.PATCH);
-    return await fetch(req.url_path, {
+    const response = await fetch(`${this.base_url}/api${req.url_path}`, {
       method: "PATCH",
       body: JSON.stringify(req.body),
       headers: headers,
     });
+
+    return this.handle_response<T>(response);
   }
 
-  public async delete(req: Request) {
+  public async delete<T>(req: Request) {
     const headers = this.define_headers(req, RequestType.DELETE);
-    return await fetch(req.url_path, {
+    const response = await fetch(`${this.base_url}/api${req.url_path}`, {
       method: "DELETE",
       headers: headers,
     });
+
+    return this.handle_response<T>(response);
   }
 }
 
-export const MustBeLoggedIn = {
-  api_response: false,
-  error_count: 1,
-  errors: { account: ["You must be logged in to perform this action"] },
-} as ValidationErrorProp;
+export const MustBeLoggedIn: Result<never, ValidationErrorProp> = {
+  ok: false,
+  error: {
+    api_response: false,
+    error_count: 1,
+    errors: { account: ["You must be logged in to perform this action"] },
+  },
+};

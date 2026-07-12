@@ -1,14 +1,24 @@
 "use server";
 
+import { getAccessToken } from "@/lib/common/auth/getAccessToken";
 import { validateEmail } from "@/lib/common/validation/validateEmail";
 import { validatePassword } from "@/lib/common/validation/validatePassword";
 import { Result, ValidationErrorProp } from "@/lib/interfaces/common";
 import { PersonnelLogin } from "@/lib/interfaces/personnel";
+import { APICall, MustBeLoggedIn } from "@/lib/queries/base";
 
-// NextAuth runs on the server. In Docker it must reach the API over the
-// service network rather than via the browser-facing URL.
-const BASE_API_URL =
-  process.env.API_INTERNAL_URL ?? process.env.NEXT_PUBLIC_BASE_API_URL;
+const API = new APICall(process.env.NEXT_PUBLIC_BASE_API_URL!);
+
+interface LoginResponse {
+  access_token: string;
+  token_type: "bearer";
+  personnel: {
+    id: string;
+    email: string;
+    first_name: string;
+    last_name: string;
+  };
+}
 
 export async function personnelLoginQuery(
   form: PersonnelLogin,
@@ -29,38 +39,8 @@ export async function personnelLoginQuery(
     };
   }
 
-  const response = await fetch(`${BASE_API_URL}/api/v1/auth/login`, {
-    method: "POST",
-    credentials: "include",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify(form),
+  return await API.post<LoginResponse>({
+    url_path: "/v1/auth/login",
+    body: form,
   });
-
-  if (response.ok) {
-    return { ok: true, data: await response.json() };
-  }
-
-  const err = await response.json();
-
-  return {
-    ok: false,
-    error: {
-      api_response: true,
-      error_count: 1,
-      errors: { api: err.detail },
-    },
-  };
-}
-
-interface LoginResponse {
-  access_token: string;
-  token_type: "bearer";
-  personnel: {
-    id: string;
-    email: string;
-    first_name: string;
-    last_name: string;
-  };
 }
