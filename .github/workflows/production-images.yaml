@@ -20,6 +20,10 @@ jobs:
       - name: Upgrade Database
         run: docker compose -f docker-compose.prod-test.yaml exec api alembic -c /api/alembic.ini upgrade head
 
+      - name: Docker
+        run: |
+          docker logs day-by-day-tracker-frontend-1
+
       - name: Frontend Check
         run: |
           curl --fail http://localhost/login

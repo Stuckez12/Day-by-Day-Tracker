@@ -1,139 +1,104 @@
-"use client";
+"use server";
 
-import Cookies from "js-cookie";
-import { err, ok, Result } from "neverthrow";
-
-import { ValidationErrorProp } from "@/lib/interfaces/common";
+import { getAccessToken } from "@/lib/common/auth/getAccessToken";
+import { validateEmail } from "@/lib/common/validation/validateEmail";
+import { validatePassword } from "@/lib/common/validation/validatePassword";
+import { Result, ValidationErrorProp } from "@/lib/interfaces/common";
 import {
   PersonnelProp,
   UpdatePersonnelEmail,
   UpdatePersonnelInfo,
   UpdatePersonnelPassword,
 } from "@/lib/interfaces/personnel";
-import { validateEmail } from "@/lib/common/validation/validateEmail";
-import { validatePassword } from "@/lib/common/validation/validatePassword";
+import { APICall, MustBeLoggedIn } from "@/lib/queries/base";
 
-const base_url = process.env.NEXT_PUBLIC_API_URL;
+const API = new APICall(process.env.BASE_API_URL!);
 
-export async function getPersonnelQuery(): Promise<
-  Result<PersonnelProp, ValidationErrorProp>
-> {
-  const token = Cookies.get("personnel_id");
-  const response = await fetch(`${base_url}/api/v1/personal/me`, {
-    method: "GET",
-    headers: {
-      Cookie: `personnel_id=${token}`,
-    },
-  });
-  const body = await response.json();
-
-  if (response.ok) {
-    return ok(body);
+export async function getPersonnelQuery() {
+  const token = await getAccessToken();
+  if (!token) {
+    return MustBeLoggedIn;
   }
 
-  return err({
-    api_response: true,
-    error_count: 1,
-    errors: { api: body.detail },
+  return await API.get<PersonnelProp>({
+    url_path: "/v1/personal/me",
+    token: token,
   });
 }
 
-export async function updatePersonnelInfoQuery(
-  form: UpdatePersonnelInfo,
-): Promise<Result<PersonnelProp, ValidationErrorProp>> {
-  const response = await fetch(`${base_url}/api/v1/personal/me/details`, {
-    method: "PUT",
-    credentials: "include",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify(form),
-  });
-
-  const details = await response.json();
-  if (response.ok) {
-    return ok(details);
+export async function updatePersonnelInfoQuery(form: UpdatePersonnelInfo) {
+  const token = await getAccessToken();
+  if (!token) {
+    return MustBeLoggedIn;
   }
 
-  return err({
-    api_response: true,
-    error_count: 1,
-    errors: { api: details.detail },
+  return await API.put<PersonnelProp>({
+    url_path: "/v1/personal/me/details",
+    token: token,
+    body: form,
   });
 }
 
 export async function updatePersonnelEmailQuery(
   form: UpdatePersonnelEmail,
 ): Promise<Result<PersonnelProp, ValidationErrorProp>> {
-  const email_errors = validateEmail(form.email);
-
-  if (email_errors.length > 0) {
-    return err({
-      api_response: false,
-      error_count: email_errors.length,
-      errors: { email: email_errors },
-    });
+  const token = await getAccessToken();
+  if (!token) {
+    return MustBeLoggedIn;
   }
 
-  const response = await fetch(`${base_url}/api/v1/personal/me/email`, {
-    method: "PUT",
-    credentials: "include",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify(form),
-  });
-
-  const details = await response.json();
-  if (response.ok) {
-    return ok(details);
+  const errors = validateEmail(form.email);
+  if (errors.length) {
+    return {
+      ok: false,
+      error: {
+        api_response: false,
+        error_count: errors.length,
+        errors: { api: errors },
+      },
+    };
   }
 
-  return err({
-    api_response: true,
-    error_count: 1,
-    errors: { api: details.detail },
+  return await API.put<PersonnelProp>({
+    url_path: "/v1/personal/me/email",
+    token: token,
+    body: form,
   });
 }
 
 export async function updatePersonnelPasswordQuery(
   form: UpdatePersonnelPassword,
 ): Promise<Result<PersonnelProp, ValidationErrorProp>> {
-  const password_errors = validatePassword(form.new_password);
-
-  if (password_errors.length > 0) {
-    return err({
-      api_response: false,
-      error_count: password_errors.length,
-      errors: { new_password: password_errors },
-    });
+  const token = await getAccessToken();
+  if (!token) {
+    return MustBeLoggedIn;
   }
 
-  if (form.new_password != form.confirm_password) {
-    return err({
-      api_response: false,
-      error_count: 1,
-      errors: { new_password: ["Passwords do not match"] },
-    });
+  const errors = validatePassword(form.new_password);
+  if (errors.length) {
+    return {
+      ok: false,
+      error: {
+        api_response: false,
+        error_count: errors.length,
+        errors: { api: errors },
+      },
+    };
+  }
+  if (form.new_password !== form.confirm_password) {
+    return {
+      ok: false,
+      error: {
+        api_response: false,
+        error_count: 1,
+        errors: { new_password: ["Passwords do not match"] },
+      },
+    };
   }
 
-  const response = await fetch(`${base_url}/api/v1/personal/me/password`, {
-    method: "PUT",
-    credentials: "include",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify(form),
-  });
-
-  const details = await response.json();
-  if (response.ok) {
-    return ok(details);
-  }
-
-  return err({
-    api_response: true,
-    error_count: 1,
-    errors: { api: details.detail },
+  return await API.put<PersonnelProp>({
+    url_path: "/v1/personal/me/password",
+    token: token,
+    body: form,
   });
 }

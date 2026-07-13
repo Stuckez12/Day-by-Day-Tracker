@@ -20,7 +20,7 @@ services:
       PGADMIN_DEFAULT_EMAIL: ${PGADMIN_EMAIL}
       PGADMIN_DEFAULT_PASSWORD: ${PGADMIN_PASSWORD}
     ports:
-      - "5000:80"
+      - "6000:80"
     volumes:
       - pgadmin-data:/var/lib/pgadmin
     networks:
@@ -60,10 +60,13 @@ services:
     build:
       context: ./frontend
       dockerfile: Dockerfile
+      target: dev
+    command: ["npm", "run", "dev"]
     expose:
       - "3000"
     networks:
       - app-network
+    tty: true
     volumes:
       - ./frontend/app:/app/app
       - ./frontend/assets:/app/assets
@@ -75,8 +78,11 @@ services:
       WATCHPACK_POLLING: "true"
       CHOKIDAR_USEPOLLING: "true"
       CHOKIDAR_INTERVAL: "20"
-    env_file:
-      - .env
+      NODE_ENV: development
+      # NODE_ENV: production
+      BASE_API_URL: ${BASE_API_URL}
+      NEXTAUTH_SECRET: ${NEXTAUTH_SECRET}
+      API_INTERNAL_URL: http://api:8000
     restart: unless-stopped
 
   redis:

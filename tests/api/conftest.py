@@ -51,29 +51,6 @@ def test_session() -> Generator[Session, None, None]:
     db_gen.close()
 
 
-@pytest.fixture
-def test_set_cookies(test_client_v1: TestClient, test_personnel: PersonalModel):
-    response = test_client_v1.post(
-        "/auth/login",
-        json={"email": test_personnel.email, "password": VALID_PASSWORD},
-    )
-    assert response.status_code == 204
-
-    yield
-
-    test_client_v1.cookies.pop("personnel_id", None)
-
-
-@pytest.fixture
-def test_set_invalid_cookies(test_client_v1: TestClient):
-    id = str(uuid.uuid4())
-    test_client_v1.cookies.set("personnel_id", id)
-
-    yield id
-
-    test_client_v1.cookies.pop("personnel_id", None)
-
-
 @pytest.fixture(scope="session")
 def test_date_today() -> Generator[date, None, None]:
     yield date.today()
@@ -104,8 +81,26 @@ def celery_worker(celery_app):
 
 
 @pytest.fixture(scope="function")
-def test_client_v1():
-    yield TestClient(fastapi_app, base_url="http://testserver/api/v1")
+def test_client():
+    yield TestClient(fastapi_app, base_url="http://test_client/api/v1")
+
+
+@pytest.fixture(scope="function")
+def test_client_user(test_personnel: PersonalModel):
+    client = TestClient(fastapi_app, base_url="http://test_client_user/api/v1")
+    response = client.post(
+        "/auth/login",
+        json={"email": test_personnel.email, "password": VALID_PASSWORD},
+    )
+    assert response.status_code == 200
+
+    client.headers.update(
+        {"Authorization": f"Bearer {response.json()['access_token']}"}
+    )
+
+    yield client
+
+    client.headers.pop("Authorization", None)
 
 
 ################################################################################

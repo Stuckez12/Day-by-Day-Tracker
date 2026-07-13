@@ -1,3 +1,5 @@
+"use client";
+
 import { useContext, useEffect, useState } from "react";
 
 import { RankingTrackerContext } from "@/components/tracker/rateDayContext";
@@ -15,10 +17,10 @@ export default function DisplayRankingToday() {
     async function get_personnel() {
       const result = await getPersonnelQuery();
 
-      if (result.isOk()) {
+      if (result.ok) {
         console.log("Success");
-        console.log(result.value);
-        setUser(result.value);
+        console.log(result.data);
+        setUser(result.data);
       } else {
         console.log("Error Occurred");
         console.log(result.error);

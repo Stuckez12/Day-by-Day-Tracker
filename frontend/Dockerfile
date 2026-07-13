@@ -1,13 +1,18 @@
-FROM node:21.7-alpine AS base
+FROM node:22.11-alpine AS base
 
-FROM base AS deps
-# Check https://github.com/nodejs/docker-node/tree/b4117f9333da4138b03a546ec926ef50a31506c3#nodealpine to understand why libc6-compat might be needed.
-RUN apk add --no-cache libc6-compat
 WORKDIR /app
 
-# Install dependencies based on the preferred package manager
+RUN apk update && apk upgrade --no-cache
 COPY package*.json ./
-RUN npm ci
+
+RUN npm install
 COPY . .
 
-CMD npm run dev
+FROM base AS dev
+CMD ["npm", "run", "dev"]
+
+FROM base AS prod
+
+RUN npm run build
+
+CMD ["sh", "-c", "npm run start"]

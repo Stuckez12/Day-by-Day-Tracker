@@ -4,7 +4,7 @@ from sqlalchemy.orm import Session
 
 from src.common.password_hash import pwd_hash
 from src.models import PersonalModel
-from src.schemas import CreatePersonnelRequest, LogInRequest
+from src.schemas import CreatePersonnelRequest, LogInRequest, SlimPersonnelSchema
 from src.services import AuthService
 from tests.api.constants import VALID_PASSWORD
 
@@ -71,7 +71,7 @@ class TestAuthService:
         )
 
         result = test_auth_service.log_in(data)
-        assert result == test_personnel
+        assert result == SlimPersonnelSchema.model_validate(test_personnel)
 
     def test_log_in_personnel_invalid_email(self, test_auth_service: AuthService):
         data = LogInRequest(

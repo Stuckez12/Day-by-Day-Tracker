@@ -1,67 +1,45 @@
-"use client";
+"use server";
 
-import { err, ok, Result } from "neverthrow";
 import { validateEmail } from "@/lib/common/validation/validateEmail";
 import { validatePassword } from "@/lib/common/validation/validatePassword";
-import { ValidationErrorProp } from "@/lib/interfaces/common";
+import { Result, ValidationErrorProp } from "@/lib/interfaces/common";
 import { PersonnelLogin } from "@/lib/interfaces/personnel";
+import { APICall } from "@/lib/queries/base";
 
-const base_url = process.env.NEXT_PUBLIC_API_URL;
+const API = new APICall(process.env.BASE_API_URL!);
+
+interface LoginResponse {
+  access_token: string;
+  token_type: "bearer";
+  personnel: {
+    id: string;
+    email: string;
+    first_name: string;
+    last_name: string;
+  };
+}
 
 export async function personnelLoginQuery(
   form: PersonnelLogin,
-): Promise<Result<void, ValidationErrorProp>> {
+): Promise<Result<LoginResponse, ValidationErrorProp>> {
   const email_errors = validateEmail(form.email);
-  const password_errors = validatePassword(form.email);
+  const password_errors = validatePassword(form.password);
 
   const validation_errors = [...email_errors, ...password_errors];
 
   if (validation_errors.length > 0) {
-    return err({
-      api_response: false,
-      error_count: validation_errors.length,
-      errors: { email: email_errors, password: password_errors },
-    });
+    return {
+      ok: false,
+      error: {
+        api_response: false,
+        error_count: validation_errors.length,
+        errors: { email: email_errors, password: password_errors },
+      },
+    };
   }
 
-  const response = await fetch(`${base_url}/api/v1/auth/login`, {
-    method: "POST",
-    credentials: "include",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify(form),
-  });
-  if (response.ok) {
-    return ok();
-  }
-
-  const detail_err = await response.json();
-  return err({
-    api_response: true,
-    error_count: 1,
-    errors: { api: detail_err.detail },
-  });
-}
-
-export async function personnelLogoutQuery(): Promise<
-  Result<void, ValidationErrorProp>
-> {
-  const response = await fetch(`${base_url}/api/v1/auth/logout`, {
-    method: "POST",
-    credentials: "include",
-    headers: {
-      "Content-Type": "application/json",
-    },
-  });
-  if (response.ok) {
-    return ok();
-  }
-
-  const detail_err = await response.json();
-  return err({
-    api_response: true,
-    error_count: 1,
-    errors: { api: detail_err.detail },
+  return await API.post<LoginResponse>({
+    url_path: "/v1/auth/login",
+    body: form,
   });
 }

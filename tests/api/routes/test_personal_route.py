@@ -11,9 +11,11 @@ from src.schemas import PersonnelSchema, SlimPersonnelSchema
 
 class TestPersonalRoute:
     def test_get_personnel_success(
-        self, test_client_v1: TestClient, test_personnel: PersonalModel
+        self,
+        test_client_user: TestClient,
+        test_personnel: PersonalModel,
     ):
-        result = test_client_v1.get(f"/personal?personnel_id={test_personnel.id}")
+        result = test_client_user.get(f"/personal?personnel_id={test_personnel.id}")
         assert result.status_code == status.HTTP_200_OK
 
         data = result.json()
@@ -21,8 +23,8 @@ class TestPersonalRoute:
             test_personnel
         )
 
-    def test_get_personnel_invalid_id(self, test_client_v1: TestClient):
-        result = test_client_v1.get(f"/personal?personnel_id={INVALID_PERSONNEL_ID}")
+    def test_get_personnel_invalid_id(self, test_client_user: TestClient):
+        result = test_client_user.get(f"/personal?personnel_id={INVALID_PERSONNEL_ID}")
         assert result.status_code == status.HTTP_404_NOT_FOUND
 
         data = result.json()
@@ -30,11 +32,10 @@ class TestPersonalRoute:
 
     def test_get_personnel_self_success(
         self,
-        test_set_cookies: None,
-        test_client_v1: TestClient,
+        test_client_user: TestClient,
         test_personnel: PersonalModel,
     ):
-        result = test_client_v1.get("/personal/me")
+        result = test_client_user.get("/personal/me")
         assert result.status_code == status.HTTP_200_OK
 
         data = result.json()
@@ -44,30 +45,19 @@ class TestPersonalRoute:
 
     def test_get_personnel_self_no_cookies(
         self,
-        test_client_v1: TestClient,
+        test_client: TestClient,
     ):
-        result = test_client_v1.get("/personal/me")
-        assert result.status_code == status.HTTP_422_UNPROCESSABLE_CONTENT
-
-        response = result.json()
-        assert "detail" in response
-        assert len(response["detail"]) == 1
-
-        error_message = response["detail"][0]
-        assert error_message["type"] == "missing"
-        assert error_message["loc"] == ["cookie", "personnel_id"]
-        assert error_message["msg"] == "Field required"
-        assert error_message["input"] is None
+        result = test_client.get("/personal/me")
+        assert result.status_code == status.HTTP_401_UNAUTHORIZED
 
     def test_get_all_personnel_success(
         self,
-        test_set_cookies: None,
-        test_client_v1: TestClient,
+        test_client_user: TestClient,
         test_personnel: PersonalModel,
         test_personnel_2: PersonalModel,
         test_personnel_3: PersonalModel,
     ):
-        result = test_client_v1.get("/personal/all")
+        result = test_client_user.get("/personal/all")
         assert result.status_code == status.HTTP_200_OK
 
         data = result.json()
@@ -78,12 +68,11 @@ class TestPersonalRoute:
 
     def test_update_personnel_details_update_all_values(
         self,
-        test_set_cookies: None,
         test_session: Session,
-        test_client_v1: TestClient,
+        test_client_user: TestClient,
         test_personnel: PersonalModel,
     ):
-        result = test_client_v1.put(
+        result = test_client_user.put(
             "/personal/me/details",
             json={
                 "first_name": "Updated",
@@ -111,12 +100,11 @@ class TestPersonalRoute:
 
     def test_update_personnel_details_update_first_name(
         self,
-        test_set_cookies: None,
         test_session: Session,
-        test_client_v1: TestClient,
+        test_client_user: TestClient,
         test_personnel: PersonalModel,
     ):
-        result = test_client_v1.put(
+        result = test_client_user.put(
             "/personal/me/details",
             json={
                 "first_name": "Updated",
@@ -143,12 +131,11 @@ class TestPersonalRoute:
 
     def test_update_personnel_details_update_last_name(
         self,
-        test_set_cookies: None,
         test_session: Session,
-        test_client_v1: TestClient,
+        test_client_user: TestClient,
         test_personnel: PersonalModel,
     ):
-        result = test_client_v1.put(
+        result = test_client_user.put(
             "/personal/me/details",
             json={
                 "last_name": "Updated",
@@ -175,12 +162,11 @@ class TestPersonalRoute:
 
     def test_update_personnel_details_update_nothing(
         self,
-        test_set_cookies: None,
         test_session: Session,
-        test_client_v1: TestClient,
+        test_client_user: TestClient,
         test_personnel: PersonalModel,
     ):
-        result = test_client_v1.put(
+        result = test_client_user.put(
             "/personal/me/details",
             json={},
         )
@@ -196,26 +182,16 @@ class TestPersonalRoute:
             .filter(PersonalModel.id == test_personnel.id)
             .one()
         )
-
         test_session.refresh(personnel)
 
         assert personnel == test_personnel
         assert personnel.first_name == test_personnel.first_name
         assert personnel.last_name == test_personnel.last_name
 
-    def test_update_personnel_details_does_not_exist(self, test_client_v1: TestClient):
-        test_client_v1.cookies.set(name="personnel_id", value=INVALID_PERSONNEL_ID)
-
-        result = test_client_v1.put("/personal/me/details", json={})
-        assert result.status_code == status.HTTP_404_NOT_FOUND
-
-        data = result.json()
-        assert data["detail"] == f"Personnel {INVALID_PERSONNEL_ID} not found"
-
     def test_update_personnel_details_invalid_empty_first_name(
-        self, test_set_cookies: None, test_client_v1: TestClient
+        self, test_client_user: TestClient
     ):
-        result = test_client_v1.put(
+        result = test_client_user.put(
             "/personal/me/details",
             json={"first_name": ""},
         )
@@ -225,9 +201,9 @@ class TestPersonalRoute:
         assert data["detail"][0]["msg"] == "Value error, first_name must not be empty"
 
     def test_update_personnel_details_invalid_empty_last_name(
-        self, test_set_cookies: None, test_client_v1: TestClient
+        self, test_client_user: TestClient
     ):
-        result = test_client_v1.put(
+        result = test_client_user.put(
             "/personal/me/details",
             json={"last_name": ""},
         )
@@ -238,10 +214,9 @@ class TestPersonalRoute:
 
     def test_update_personnel_email(
         self,
-        test_set_cookies: None,
-        test_client_v1: TestClient,
+        test_client_user: TestClient,
     ):
-        result = test_client_v1.put(
+        result = test_client_user.put(
             "/personal/me/email",
             json={"email": "new@email.com"},
         )
@@ -252,11 +227,10 @@ class TestPersonalRoute:
 
     def test_update_personnel_password(
         self,
-        test_set_cookies: None,
-        test_client_v1: TestClient,
+        test_client_user: TestClient,
         test_personnel: PersonalModel,
     ):
-        result = test_client_v1.put(
+        result = test_client_user.put(
             "/personal/me/password",
             json={
                 "current_password": VALID_PASSWORD,
@@ -273,10 +247,9 @@ class TestPersonalRoute:
 
     def test_update_personnel_password_incorrect_current_password(
         self,
-        test_set_cookies: None,
-        test_client_v1: TestClient,
+        test_client_user: TestClient,
     ):
-        result = test_client_v1.put(
+        result = test_client_user.put(
             "/personal/me/password",
             json={
                 "current_password": INVALID_PASSWORD,
@@ -292,12 +265,11 @@ class TestPersonalRoute:
     def test_update_personnel_password__password_hashing_fails(
         self,
         mocker: MockerFixture,
-        test_set_cookies: None,
-        test_client_v1: TestClient,
+        test_client_user: TestClient,
     ):
         mocker.patch.object(pwd_hash, "hash", side_effect=ValueError("Forced Error"))
 
-        result = test_client_v1.put(
+        result = test_client_user.put(
             "/personal/me/password",
             json={
                 "current_password": VALID_PASSWORD,
@@ -313,10 +285,10 @@ class TestPersonalRoute:
     def test_delete_personnel_success(
         self,
         test_session: Session,
-        test_client_v1: TestClient,
+        test_client_user: TestClient,
         test_personnel: PersonalModel,
     ):
-        result = test_client_v1.delete(f"/personal?id={test_personnel.id}")
+        result = test_client_user.delete(f"/personal?personnel_id={test_personnel.id}")
         assert result.status_code == status.HTTP_200_OK
 
         data = result.json()
@@ -330,8 +302,10 @@ class TestPersonalRoute:
 
         assert personnel is None
 
-    def test_delete_personnel_does_not_exist(self, test_client_v1: TestClient):
-        result = test_client_v1.delete(f"/personal?id={INVALID_PERSONNEL_ID}")
+    def test_delete_personnel_does_not_exist(self, test_client_user: TestClient):
+        result = test_client_user.delete(
+            f"/personal?personnel_id={INVALID_PERSONNEL_ID}"
+        )
         assert result.status_code == status.HTTP_404_NOT_FOUND
 
         data = result.json()

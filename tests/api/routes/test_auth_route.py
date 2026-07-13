@@ -1,5 +1,6 @@
 from uuid import UUID
 
+import jwt
 import pytest
 from fastapi import status
 from fastapi.testclient import TestClient
@@ -9,20 +10,22 @@ from tests.api.constants import INVALID_PASSWORD, VALID_PASSWORD
 
 from src.common.password_hash import pwd_hash
 from src.models import PersonalModel
+from src.schemas.personal import SlimPersonnelSchema
+from src.settings import app_config
 
 
 class TestAuthRoute:
     def test_register_personnel_success(
-        self, test_session: Session, test_client_v1: TestClient
+        self, test_session: Session, test_client_user: TestClient
     ):
         request_data = {
-            "email": "email@email.com",
+            "email": "test@email.now",
             "password": "Password1.",
             "first_name": "Test",
             "last_name": "User",
         }
 
-        result = test_client_v1.post(
+        result = test_client_user.post(
             "/auth/register",
             json=request_data,
         )
@@ -46,7 +49,10 @@ class TestAuthRoute:
         ],
     )
     def test_register_personnel_empty_data(
-        self, test_client_v1: TestClient, empty_param_name: str, expected_response: str
+        self,
+        test_client_user: TestClient,
+        empty_param_name: str,
+        expected_response: str,
     ):
         data = {
             "email": "dead@email.com",
@@ -56,7 +62,7 @@ class TestAuthRoute:
         }
         data[empty_param_name] = ""
 
-        result = test_client_v1.post(
+        result = test_client_user.post(
             "/auth/register",
             json=data,
         )
@@ -67,9 +73,9 @@ class TestAuthRoute:
         assert data["detail"][0]["msg"] == expected_response
 
     def test_register_personnel_email_already_in_use(
-        self, test_client_v1: TestClient, test_personnel: PersonalModel
+        self, test_client_user: TestClient, test_personnel: PersonalModel
     ):
-        result = test_client_v1.post(
+        result = test_client_user.post(
             "/auth/register",
             json={
                 "email": test_personnel.email,
@@ -86,14 +92,14 @@ class TestAuthRoute:
     def test_register_personnel_password_hashing_fails(
         self,
         mocker: MockerFixture,
-        test_client_v1: TestClient,
+        test_client_user: TestClient,
     ):
         mocker.patch.object(pwd_hash, "hash", side_effect=ValueError("Forced Error"))
 
-        result = test_client_v1.post(
+        result = test_client_user.post(
             "/auth/register",
             json={
-                "email": "email@email.com",
+                "email": "test@email.now",
                 "password": "Password1.",
                 "first_name": "Test",
                 "last_name": "User",
@@ -104,19 +110,32 @@ class TestAuthRoute:
         data = result.json()
         assert data["detail"] == "Unable to hash password. Please try again"
 
-    def test_log_in(self, test_client_v1: TestClient, test_personnel: PersonalModel):
-        result = test_client_v1.post(
+    def test_log_in(self, test_client_user: TestClient, test_personnel: PersonalModel):
+        result = test_client_user.post(
             "/auth/login",
             json={
                 "email": test_personnel.email,
                 "password": VALID_PASSWORD,
             },
         )
-        assert result.status_code == status.HTTP_204_NO_CONTENT
-        assert result.cookies["personnel_id"]
+        assert result.status_code == status.HTTP_200_OK
 
-    def test_log_in_user_does_not_exist(self, test_client_v1: TestClient):
-        result = test_client_v1.post(
+        data = result.json()
+        assert jwt.decode(
+            data.get("access_token"), app_config.JWT_SECRET, algorithms=["HS256"]
+        )
+        assert data.get("token_type") == "bearer"
+        assert SlimPersonnelSchema.model_validate(data.get("personnel")), (
+            "Invalid schema returned"
+        )
+        assert SlimPersonnelSchema.model_validate(
+            data.get("personnel")
+        ) == SlimPersonnelSchema.model_validate(test_personnel), (
+            "Mismatched schema returned"
+        )
+
+    def test_log_in_user_does_not_exist(self, test_client_user: TestClient):
+        result = test_client_user.post(
             "/auth/login",
             json={
                 "email": "invalid@email.com",
@@ -129,9 +148,9 @@ class TestAuthRoute:
         assert data["detail"] == "Invalid email or password"
 
     def test_log_in_invalid_password(
-        self, test_client_v1: TestClient, test_personnel: PersonalModel
+        self, test_client_user: TestClient, test_personnel: PersonalModel
     ):
-        result = test_client_v1.post(
+        result = test_client_user.post(
             "/auth/login",
             json={
                 "email": test_personnel.email,
@@ -142,19 +161,3 @@ class TestAuthRoute:
 
         data = result.json()
         assert data["detail"] == "Invalid email or password"
-
-    def test_log_out(
-        self,
-        test_set_cookies: None,
-        test_client_v1: TestClient,
-        test_personnel: PersonalModel,
-    ):
-        result = test_client_v1.post(
-            "/auth/logout",
-            json={
-                "email": test_personnel.email,
-                "password": INVALID_PASSWORD,
-            },
-        )
-        assert result.status_code == status.HTTP_204_NO_CONTENT
-        assert test_client_v1.cookies.get("personnel_id") is None

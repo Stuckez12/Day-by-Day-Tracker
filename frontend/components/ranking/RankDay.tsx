@@ -1,3 +1,5 @@
+"use client";
+
 import { useState } from "react";
 
 import ListErrors from "@/components/common/errors/ListErrors";
@@ -23,15 +25,15 @@ function RankDay() {
     return updateForm(e, form, setForm);
   }
 
-  async function submitForm(e: React.MouseEvent<HTMLButtonElement>) {
+  async function submitForm(e: React.SubmitEvent<HTMLFormElement>) {
     e.preventDefault();
 
     console.log("Form data:", form);
 
     const result = await rankDayQuery(form);
 
-    if (result.isOk()) {
-      setForm(result.value);
+    if (result.ok) {
+      setForm(result.data);
       setErrors([]);
       return;
     }
@@ -55,7 +57,7 @@ function RankDay() {
   }
 
   return (
-    <div>
+    <form onSubmit={submitForm}>
       <TextInput name="day" label="Day" value={form.day} onChange={onChange} />
       <TextInput
         name="ranking"
@@ -74,8 +76,8 @@ function RankDay() {
         onChange={onChange}
       />
       <ListErrors errors={errors} />
-      <SubmitButton label="Submit" onSubmit={submitForm} />
-    </div>
+      <SubmitButton label="Submit" />
+    </form>
   );
 }
 

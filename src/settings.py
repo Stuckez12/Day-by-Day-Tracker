@@ -1,7 +1,9 @@
 import os
 from typing import Literal, cast
 
+from pydantic import model_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
+from typing_extensions import Self
 
 
 class AppConfig(BaseSettings):
@@ -28,6 +30,17 @@ class AppConfig(BaseSettings):
     def CELERY_URL(self):
         return f"{self.REDIS_URL}/0"
 
+    # JWT tokens
+    JWT_SECRET: str = ""
+    JWT_EXPIRE_MINUTES: int = 480
+
+    @model_validator(mode="after")
+    def require_jwt_secret(self) -> Self:
+        if self.JWT_SECRET == "":
+            raise RuntimeError("JWT_SECRET must be set")
+
+        return self
+
     # Maintenance
     BACKUP_PATH: str
 
@@ -43,6 +56,9 @@ class TestAppConfig(AppConfig):
     @property
     def db_url(self):
         return f"postgresql+psycopg2://{self.DATABASE_USERNAME}:{self.DATABASE_PASSWORD}@{self.DATABASE_HOST}:{self.DATABASE_PORT}/test_dbdt"
+
+    # JWT tokens
+    JWT_SECRET: str = "test-token"
 
     # Maintenance
     BACKUP_PATH: str = "/"

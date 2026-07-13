@@ -6,3 +6,4 @@ from src.common.dependencies import (
     RankingServiceDep,
     TaskServiceDep,
 )
+from src.common.security import CurrentPersonnelID

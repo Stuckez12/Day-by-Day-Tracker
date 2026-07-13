@@ -17,8 +17,8 @@ export default function RankTable() {
     async function get_all_ranks() {
       const result = await getAllRanksQuery();
 
-      if (result.isOk()) {
-        setAllRanks(result.value);
+      if (result.ok) {
+        setAllRanks(result.data);
       } else {
         console.log("Error when getting data");
         console.log(result.error);

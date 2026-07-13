@@ -1,3 +1,5 @@
+"use client";
+
 import { useContext, useEffect, useState } from "react";
 
 import ListErrors from "@/components/common/errors/ListErrors";
@@ -27,15 +29,15 @@ export default function RateDayText() {
     setForm(refreshRanking as RankingTextDataProp);
   }, [refreshRanking]);
 
-  async function submitForm(e: React.MouseEvent<HTMLButtonElement>) {
+  async function submitForm(e: React.SubmitEvent<HTMLFormElement>) {
     e.preventDefault();
 
     console.log("Form data:", form);
 
     const result = await rankTodayNotesQuery(form);
 
-    if (result.isOk()) {
-      setForm(result.value);
+    if (result.ok) {
+      setForm(result.data);
 
       return;
     }
@@ -53,7 +55,7 @@ export default function RateDayText() {
   }
 
   return (
-    <div>
+    <form onSubmit={submitForm}>
       <TextAreaInput
         name="text_events"
         value={form.text_events}
@@ -65,7 +67,7 @@ export default function RateDayText() {
         onChange={onChange}
       />
       <ListErrors errors={errors} />
-      <SubmitButton label="Submit" onSubmit={submitForm} />
-    </div>
+      <SubmitButton label="Submit" />
+    </form>
   );
 }

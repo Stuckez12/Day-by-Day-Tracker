@@ -1,6 +1,7 @@
 "use client";
 
 import { useRouter } from "next/navigation";
+import { signIn } from "next-auth/react";
 import { useState } from "react";
 
 import ListErrors from "@/components/common/errors/ListErrors";
@@ -9,7 +10,7 @@ import SubmitButton from "@/components/common/form-inputs/SubmitButton";
 import TextInput from "@/components/common/form-inputs/TextInput";
 import { updateForm } from "@/lib/common/updateForm";
 import { PersonnelLogin } from "@/lib/interfaces/personnel";
-import { personnelLoginQuery } from "@/lib/queries/auth";
+import { getAccessToken } from "@/lib/common/auth/getAccessToken";
 
 import "@/styles/forms/login-form.scss";
 
@@ -26,35 +27,32 @@ export default function LoginForm() {
     return updateForm(e, form, setForm);
   }
 
-  async function submitForm(e: React.MouseEvent<HTMLButtonElement>) {
+  async function submitForm(e: React.SubmitEvent<HTMLFormElement>) {
     e.preventDefault();
 
-    console.log("Form data:", form);
+    const result = await signIn("credentials", {
+      ...form,
+      redirect: false,
+    });
 
-    const [queryError, _] = await personnelLoginQuery(form);
+    if (result?.ok) {
+      const accessToken = await getAccessToken();
 
-    if (queryError == null) {
-      console.log("Login Success. Routing to homepage");
-      router.push("/tracker");
+      if (!accessToken) {
+        setErrors(["Unable to start your session. Please try again."]);
+        return;
+      }
+
+      router.replace("/tracker");
       return;
     }
 
-    const all_errors = queryError.error.errors;
-    let display_errors: string[] = [];
-
-    if (queryError.error.api_response) {
-      display_errors = [`${all_errors.api}`];
-    } else {
-      display_errors = display_errors.concat(all_errors.email);
-      display_errors = display_errors.concat(all_errors.password);
-    }
-
-    setErrors(display_errors);
+    setErrors(["Invalid email or password"]);
   }
 
   return (
     <div className="login-form-container">
-      <form className="login-form">
+      <form className="login-form" onSubmit={submitForm}>
         <h1>Login</h1>
         <TextInput
           name="email"
@@ -70,7 +68,7 @@ export default function LoginForm() {
           onChange={onChange}
         />
         <ListErrors errors={errors} />
-        <SubmitButton label="Submit" onSubmit={submitForm} />
+        <SubmitButton label="Submit" />
       </form>
     </div>
   );

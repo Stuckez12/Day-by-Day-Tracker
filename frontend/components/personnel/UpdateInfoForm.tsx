@@ -29,18 +29,18 @@ export default function UpdateInfoForm() {
     return updateForm(e, form, setForm);
   }
 
-  async function submitForm(e: React.MouseEvent<HTMLButtonElement>) {
+  async function submitForm(e: React.SubmitEvent<HTMLFormElement>) {
     e.preventDefault();
 
     console.log("Form data:", form);
 
     const result = await updatePersonnelInfoQuery(form);
 
-    if (result.isOk()) {
+    if (result.ok) {
       console.log("Info Updated Successfully");
 
       setErrors([]);
-      setForm(result.value);
+      setForm(result.data);
 
       return;
     }
@@ -59,7 +59,7 @@ export default function UpdateInfoForm() {
 
   return (
     <div>
-      <form>
+      <form onSubmit={submitForm}>
         <h1>Update Info</h1>
         <TextInput
           name="first_name"
@@ -74,7 +74,7 @@ export default function UpdateInfoForm() {
           onChange={onChange}
         />
         <ListErrors errors={errors} />
-        <SubmitButton label="Submit" onSubmit={submitForm} />
+        <SubmitButton label="Submit" />
       </form>
     </div>
   );

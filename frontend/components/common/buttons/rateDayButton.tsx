@@ -20,12 +20,12 @@ export default function RateDayButton({
   async function rate_today() {
     const result = await rankTodayNumberQuery({ ranking });
 
-    if (result.isErr()) {
+    if (result.ok) {
+      console.log("Success");
+      setRefreshRanking(result.data);
+    } else {
       console.log("Error");
       console.log(result.error);
-    } else {
-      console.log("Success");
-      setRefreshRanking(result.value);
     }
   }
 
