@@ -1,13 +1,12 @@
 "use server";
 
-import { getAccessToken } from "@/lib/common/auth/getAccessToken";
 import { validateEmail } from "@/lib/common/validation/validateEmail";
 import { validatePassword } from "@/lib/common/validation/validatePassword";
 import { Result, ValidationErrorProp } from "@/lib/interfaces/common";
 import { PersonnelLogin } from "@/lib/interfaces/personnel";
-import { APICall, MustBeLoggedIn } from "@/lib/queries/base";
+import { APICall } from "@/lib/queries/base";
 
-const API = new APICall(process.env.NEXT_PUBLIC_BASE_API_URL!);
+const API = new APICall(process.env.BASE_API_URL!);
 
 interface LoginResponse {
   access_token: string;

@@ -1,3 +1,5 @@
+"use server";
+
 import { Temporal } from "@js-temporal/polyfill";
 
 import { getAccessToken } from "@/lib/common/auth/getAccessToken";
@@ -5,7 +7,7 @@ import { Result, ValidationErrorProp } from "@/lib/interfaces/common";
 import { RankingProp, RankingUIDataProp } from "@/lib/interfaces/ranking";
 import { APICall, MustBeLoggedIn } from "@/lib/queries/base";
 
-const API = new APICall(process.env.NEXT_PUBLIC_BASE_API_URL!);
+const API = new APICall(process.env.BASE_API_URL!);
 
 export async function getRankTodayQuery(): Promise<
   Result<RankingProp, ValidationErrorProp>
