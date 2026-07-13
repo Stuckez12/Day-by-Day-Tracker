@@ -46,17 +46,23 @@ services:
     build:
       context: ./frontend
       dockerfile: Dockerfile
-      args:
-        BASE_API_URL: http://localhost
     expose:
       - "3000"
     networks:
       - app-network
-    environment:
-      API_INTERNAL_URL: http://api:8000
+    tty: true
     volumes:
-      - ./frontend:/app
-      - /app/node_modules
+      - ./frontend/app:/app/app
+      - ./frontend/assets:/app/assets
+      - ./frontend/components:/app/components
+      - ./frontend/lib:/app/lib
+      - ./frontend/styles:/app/styles
+      # - ./frontend/:/app/
+    environment:
+      NODE_ENV: production
+      BASE_API_URL: http://localhost
+      NEXTAUTH_SECRET: secret-for-me-to-only-know
+      API_INTERNAL_URL: http://api:8000
     restart: unless-stopped
 
   redis:
