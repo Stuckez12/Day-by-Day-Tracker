@@ -10,8 +10,6 @@ import SubmitButton from "@/components/common/form-inputs/SubmitButton";
 import TextInput from "@/components/common/form-inputs/TextInput";
 import { updateForm } from "@/lib/common/updateForm";
 import { PersonnelLogin } from "@/lib/interfaces/personnel";
-import { getAccessToken } from "@/lib/common/auth/getAccessToken";
-
 import "@/styles/forms/login-form.scss";
 
 export default function LoginForm() {
@@ -36,13 +34,6 @@ export default function LoginForm() {
     });
 
     if (result?.ok) {
-      const accessToken = await getAccessToken();
-
-      if (!accessToken) {
-        setErrors(["Unable to start your session. Please try again."]);
-        return;
-      }
-
       router.replace("/tracker");
       return;
     }
@@ -52,7 +43,7 @@ export default function LoginForm() {
 
   return (
     <div className="login-form-container">
-      <form className="login-form" onSubmit={submitForm}>
+      <form className="login-form" method="post" onSubmit={submitForm}>
         <h1>Login</h1>
         <TextInput
           name="email"

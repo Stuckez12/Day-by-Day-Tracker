@@ -12,7 +12,13 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Ruff
+      - name: Formatting
+        uses: astral-sh/ruff-action@v3
+        with:
+          version: latest
+          args: format src --check --config pyproject.toml
+
+      - name: Linting
         uses: astral-sh/ruff-action@v3
         with:
           args: check src --config pyproject.toml

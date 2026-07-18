@@ -1,9 +1,11 @@
 "use server";
 
-import { getSession } from "next-auth/react";
+import { getServerSession } from "next-auth";
+
+import { authOptions } from "@/auth";
 
 export async function getAccessToken(): Promise<string | null> {
-  const session = await getSession();
+  const session = await getServerSession(authOptions);
 
   return session?.accessToken ?? null;
 }
