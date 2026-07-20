@@ -31,7 +31,7 @@ def upgrade() -> None:
     rows = conn.execute(text("SELECT id FROM personal")).fetchall()
 
     for i, row in enumerate(rows):
-        unique_email = f"user{i+1}@example.com"
+        unique_email = f"user{i + 1}@example.com"
 
         conn.execute(
             text("""

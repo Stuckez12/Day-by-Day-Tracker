@@ -1,6 +1,6 @@
 services:
   db:
-    image: postgres:17 
+    image: postgres:17
     ports:
       - ${DATABASE_PORT}:${DATABASE_PORT}
     networks:
@@ -8,9 +8,9 @@ services:
     volumes:
       - postgres_data:/var/lib/postgresql/data
     environment:
-        POSTGRES_USER: ${DATABASE_USERNAME}
-        POSTGRES_PASSWORD: ${DATABASE_PASSWORD}
-        POSTGRES_PORT: ${DATABASE_PORT}
+      POSTGRES_USER: ${DATABASE_USERNAME}
+      POSTGRES_PASSWORD: ${DATABASE_PASSWORD}
+      POSTGRES_DB: ${DATABASE_DB_NAME}
     env_file: .env
     attach: false
 
@@ -60,8 +60,8 @@ services:
     build:
       context: ./frontend
       dockerfile: Dockerfile
-      target: dev
-    command: ["npm", "run", "dev"]
+    #   target: dev
+    # command: [ "npm", "run", "dev" ]
     expose:
       - "3000"
     networks:
@@ -73,15 +73,17 @@ services:
       - ./frontend/components:/app/components
       - ./frontend/lib:/app/lib
       - ./frontend/styles:/app/styles
+      - ./frontend/next.config.ts:/app/next.config.ts
       # - ./frontend/:/app/
     environment:
-      WATCHPACK_POLLING: "true"
-      CHOKIDAR_USEPOLLING: "true"
-      CHOKIDAR_INTERVAL: "20"
-      NODE_ENV: development
-      # NODE_ENV: production
+      # WATCHPACK_POLLING: "true"
+      # CHOKIDAR_USEPOLLING: "true"
+      # CHOKIDAR_INTERVAL: "20"
+      # NODE_ENV: development
+      NODE_ENV: production
       BASE_API_URL: ${BASE_API_URL}
       NEXTAUTH_SECRET: ${NEXTAUTH_SECRET}
+      NEXTAUTH_URL: ${NEXTAUTH_URL:-http://192.168.18.128}
       API_INTERNAL_URL: http://api:8000
     restart: unless-stopped
 
@@ -124,11 +126,9 @@ services:
     env_file: .env
     entrypoint: celery -A src.main worker -Ofair --concurrency=4 --loglevel=INFO -E
 
-
 networks:
   app-network:
     driver: bridge
-
 
 volumes:
   pgadmin-data:

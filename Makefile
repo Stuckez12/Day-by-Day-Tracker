@@ -43,6 +43,7 @@ reset:
 
 
 lint:
+	@uv run ruff format src --check
 	@uv run ruff check ./src
 	@uv run ty check ./src
 
