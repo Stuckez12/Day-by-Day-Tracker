@@ -1,6 +1,6 @@
 import { Result, ValidationErrorProp } from "@/lib/interfaces/common";
 
-interface Request {
+export interface Request {
   url_path: string;
   token?: string;
 }
