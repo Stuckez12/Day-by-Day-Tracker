@@ -5,7 +5,7 @@ export interface Request {
   token?: string;
 }
 
-interface RequestBody extends Request {
+export interface RequestBody extends Request {
   body: Record<string, unknown>;
 }
 
