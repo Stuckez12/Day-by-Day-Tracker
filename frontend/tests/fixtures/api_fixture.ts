@@ -1,26 +1,32 @@
-import { afterAll, beforeEach, beforeAll, vi } from "vitest";
-import { APICall, Request, RequestBody } from "@/lib/queries/base";
+import { afterEach, beforeEach, vi } from "vitest";
+
+import { APICall, Request } from "@/lib/queries/base";
 import { Result, ValidationErrorProp } from "@/lib/interfaces/common";
 
-const apiCall = new APICall("");
+vi.mock("@/lib/common/auth/getAccessToken", () => ({
+  getAccessToken: vi.fn(),
+}));
 
-interface MockGetRequest {
-  url: string;
-  output: Result<unknown, ValidationErrorProp>;
-}
+import { getAccessToken } from "@/lib/common/auth/getAccessToken";
 
-interface MockPostRequest {
+interface MockRequest {
   url: string;
   output: Result<unknown, ValidationErrorProp>;
 }
 
 export function useAPIFixture() {
   const mockAPIGet = vi.spyOn(APICall.prototype, "get");
-  let mockedGetRequests: MockGetRequest[] = [];
+  let mockedGetRequests: MockRequest[] = [];
   const mockAPIPost = vi.spyOn(APICall.prototype, "post");
-  let mockedPostRequests: MockPostRequest[] = [];
+  let mockedPostRequests: MockRequest[] = [];
+  const mockAPIPut = vi.spyOn(APICall.prototype, "put");
+  let mockedPutRequests: MockRequest[] = [];
 
-  beforeAll(() => {
+  const test_token = "test-token";
+
+  beforeEach(() => {
+    vi.mocked(getAccessToken).mockResolvedValue(test_token);
+
     mockAPIGet.mockImplementation(async (req) => {
       for (let i = 0; i < mockedGetRequests.length; i++) {
         const mock_req = mockedGetRequests[i];
@@ -42,20 +48,30 @@ export function useAPIFixture() {
 
       throw new Error(`${req.url_path} was not mocked`);
     });
+
+    mockAPIPut.mockImplementation(async (req) => {
+      for (let i = 0; i < mockedPutRequests.length; i++) {
+        const mock_req = mockedPutRequests[i];
+        if (mock_req.url === req.url_path) {
+          return mock_req.output;
+        }
+      }
+
+      throw new Error(`${req.url_path} was not mocked`);
+    });
   });
 
-  afterAll(() => {
+  afterEach(() => {
     mockedGetRequests = [];
-    mockedPostRequests = [];
-    mockAPIGet.mockRestore();
-    mockAPIPost.mockRestore();
-  });
-
-  beforeEach(() => {
-    mockedGetRequests = [];
-    mockedPostRequests = [];
     mockAPIGet.mockClear();
+
+    mockedPostRequests = [];
     mockAPIPost.mockClear();
+
+    mockedPutRequests = [];
+    mockAPIPut.mockClear();
+
+    vi.mocked(getAccessToken).mockReset();
   });
 
   function mockGet(
@@ -72,10 +88,20 @@ export function useAPIFixture() {
     mockedPostRequests.push({ url: input.url_path, output: output });
   }
 
+  function mockPut(
+    input: Request,
+    output: Result<unknown, ValidationErrorProp>,
+  ) {
+    mockedPutRequests.push({ url: input.url_path, output: output });
+  }
+
   return {
+    test_token,
     mockAPIGet,
     mockGet,
     mockAPIPost,
     mockPost,
+    mockAPIPut,
+    mockPut,
   };
 }
