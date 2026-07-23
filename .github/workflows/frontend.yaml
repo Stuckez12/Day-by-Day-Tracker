@@ -7,7 +7,7 @@ on:
     types: [published]
 
 jobs:
-  lint:
+  checks:
     runs-on: ubuntu-latest
 
     defaults:
@@ -31,3 +31,7 @@ jobs:
       - name: Run lint
         working-directory: frontend
         run: npm run lint
+
+      - name: Run tests
+        working-directory: frontend
+        run: npm test
