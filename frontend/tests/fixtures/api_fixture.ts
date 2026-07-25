@@ -22,11 +22,7 @@ export function useAPIFixture() {
   const mockAPIPut = vi.spyOn(APICall.prototype, "put");
   let mockedPutRequests: MockRequest[] = [];
 
-  const test_token = "test-token";
-
   beforeEach(() => {
-    vi.mocked(getAccessToken).mockResolvedValue(test_token);
-
     mockAPIGet.mockImplementation(async (req) => {
       for (let i = 0; i < mockedGetRequests.length; i++) {
         const mock_req = mockedGetRequests[i];
@@ -74,6 +70,13 @@ export function useAPIFixture() {
     vi.mocked(getAccessToken).mockReset();
   });
 
+  function mockToken() {
+    const token = "test-token";
+    vi.mocked(getAccessToken).mockResolvedValue(token);
+
+    return token;
+  }
+
   function mockGet(
     input: Request,
     output: Result<unknown, ValidationErrorProp>,
@@ -96,7 +99,7 @@ export function useAPIFixture() {
   }
 
   return {
-    test_token,
+    mockToken,
     mockAPIGet,
     mockGet,
     mockAPIPost,

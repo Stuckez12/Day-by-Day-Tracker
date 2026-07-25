@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 
 import { useAPIFixture } from "@/tests/fixtures/api_fixture";
 
+import { MustBeLoggedIn } from "@/lib/queries/base";
 import {
   getPersonnelQuery,
   updatePersonnelEmailQuery,
@@ -18,6 +19,7 @@ const APIFixture = useAPIFixture();
 
 describe("getPersonnelQuery", () => {
   it("returns successful", async () => {
+    const token = APIFixture.mockToken();
     APIFixture.mockGet(
       {
         url_path: "/v1/personal/me",
@@ -28,8 +30,19 @@ describe("getPersonnelQuery", () => {
 
     expect(APIFixture.mockAPIGet).toHaveBeenCalledWith({
       url_path: "/v1/personal/me",
-      token: APIFixture.test_token,
+      token: token,
     });
+  });
+
+  it("fails with no token", async () => {
+    APIFixture.mockGet(
+      {
+        url_path: "/v1/personal/me",
+      },
+      { ok: true, data: {} },
+    );
+    const response = await getPersonnelQuery();
+    expect(response).toBe(MustBeLoggedIn);
   });
 });
 
@@ -39,6 +52,7 @@ describe("updatePersonnelInfoQuery", () => {
       first_name: "First Name",
       last_name: "Last Name",
     } as UpdatePersonnelInfo;
+    const token = APIFixture.mockToken();
     APIFixture.mockPut(
       {
         url_path: "/v1/personal/me/details",
@@ -49,9 +63,24 @@ describe("updatePersonnelInfoQuery", () => {
 
     expect(APIFixture.mockAPIPut).toHaveBeenCalledWith({
       url_path: "/v1/personal/me/details",
-      token: APIFixture.test_token,
+      token: token,
       body: data,
     });
+  });
+
+  it("fails with no token", async () => {
+    const data = {
+      first_name: "First Name",
+      last_name: "Last Name",
+    } as UpdatePersonnelInfo;
+    APIFixture.mockPut(
+      {
+        url_path: "/v1/personal/me/details",
+      },
+      { ok: true, data: {} },
+    );
+    const response = await updatePersonnelInfoQuery(data);
+    expect(response).toBe(MustBeLoggedIn);
   });
 });
 
@@ -60,6 +89,7 @@ describe("updatePersonnelEmailQuery", () => {
     const data = {
       email: "test@email.com",
     } as UpdatePersonnelEmail;
+    const token = APIFixture.mockToken();
     APIFixture.mockPut(
       {
         url_path: "/v1/personal/me/email",
@@ -70,16 +100,30 @@ describe("updatePersonnelEmailQuery", () => {
 
     expect(APIFixture.mockAPIPut).toHaveBeenCalledWith({
       url_path: "/v1/personal/me/email",
-      token: APIFixture.test_token,
+      token: token,
       body: data,
     });
+  });
+
+  it("fails with no token", async () => {
+    const data = {
+      email: "test@email.com",
+    } as UpdatePersonnelEmail;
+    APIFixture.mockPut(
+      {
+        url_path: "/v1/personal/me/email",
+      },
+      { ok: true, data: {} },
+    );
+    const response = await updatePersonnelEmailQuery(data);
+    expect(response).toBe(MustBeLoggedIn);
   });
 
   it("fails on invalid short email", async () => {
     const data = {
       email: "aaaa",
     } as UpdatePersonnelEmail;
-
+    const token = APIFixture.mockToken();
     APIFixture.mockPut(
       {
         url_path: "/v1/personal/me/email",
@@ -101,7 +145,7 @@ describe("updatePersonnelEmailQuery", () => {
     const data = {
       email: "aaaaa",
     } as UpdatePersonnelEmail;
-
+    APIFixture.mockToken();
     APIFixture.mockPut(
       {
         url_path: "/v1/personal/me/email",
@@ -129,6 +173,7 @@ describe("updatePersonnelPasswordQuery", () => {
       new_password: "new-pw",
       confirm_password: "new-pw",
     } as UpdatePersonnelPassword;
+    const token = APIFixture.mockToken();
     APIFixture.mockPut(
       {
         url_path: "/v1/personal/me/password",
@@ -139,9 +184,25 @@ describe("updatePersonnelPasswordQuery", () => {
 
     expect(APIFixture.mockAPIPut).toHaveBeenCalledWith({
       url_path: "/v1/personal/me/password",
-      token: APIFixture.test_token,
+      token: token,
       body: data,
     });
+  });
+
+  it("fails with no token", async () => {
+    const data = {
+      current_password: "old-pw",
+      new_password: "new-pw",
+      confirm_password: "new-pw",
+    } as UpdatePersonnelPassword;
+    APIFixture.mockPut(
+      {
+        url_path: "/v1/personal/me/password",
+      },
+      { ok: true, data: {} },
+    );
+    const response = await updatePersonnelPasswordQuery(data);
+    expect(response).toBe(MustBeLoggedIn);
   });
 
   it("fails on invalid password", async () => {
@@ -167,7 +228,7 @@ describe("updatePersonnelPasswordQuery", () => {
       new_password: "new-pw",
       confirm_password: "different-pw",
     } as UpdatePersonnelPassword;
-
+    APIFixture.mockToken();
     APIFixture.mockPut(
       {
         url_path: "/v1/personal/me/email",
