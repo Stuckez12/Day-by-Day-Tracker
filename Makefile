@@ -6,9 +6,6 @@
 start:
 	@docker compose -f docker-compose.dev.yaml up -d
 
-fstart:
-	@docker compose -f docker-compose.dev.yaml watch
-
 stop:
 	@docker compose -f docker-compose.dev.yaml stop
 
@@ -84,14 +81,14 @@ tests:
 	@docker compose -f docker-compose.dev.yaml exec api sh -c "pytest -vv -q -s $(TEST_PATH)"
 	@docker compose -f docker-compose.dev.yaml exec db psql -U postgres -c "DROP DATABASE test_dbdt;"
 
-
-test-db:
-	docker run -d --name postgres-testing -e POSTGRES_PASSWORD=testing -e POSTGRES_USER=testing -e POSTGRES_DB=testing -p 5435:5432 postgres:latest
+ftests:
+	@cd frontend && npm test
 
 
 checks:
-	@$(MAKE) lint
 	@$(MAKE) flint
+	@$(MAKE) ftests
+	@$(MAKE) lint
 	@$(MAKE) tests
 
 

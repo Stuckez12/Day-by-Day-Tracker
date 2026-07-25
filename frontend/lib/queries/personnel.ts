@@ -54,7 +54,7 @@ export async function updatePersonnelEmailQuery(
       error: {
         api_response: false,
         error_count: errors.length,
-        errors: { api: errors },
+        errors: { email: errors },
       },
     };
   }
@@ -81,7 +81,7 @@ export async function updatePersonnelPasswordQuery(
       error: {
         api_response: false,
         error_count: errors.length,
-        errors: { api: errors },
+        errors: { new_password: errors },
       },
     };
   }
