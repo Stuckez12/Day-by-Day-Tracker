@@ -19,7 +19,7 @@ export default function AccountGroupLayout({
   children: React.ReactNode;
 }>) {
   const router = useRouter();
-  const { data: session, status } = useSession();
+  const { data: _session, status } = useSession();
   const { setPartialPersonnel } = useContext(PartialPersonnelContext);
 
   useEffect(() => {

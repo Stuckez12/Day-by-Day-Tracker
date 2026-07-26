@@ -24,7 +24,7 @@ export class APICall {
     this.base_url = base_url;
   }
 
-  private define_headers(req: Request, req_type: RequestType) {
+  private define_headers(req: Request, _req_type: RequestType) {
     const headers: Record<string, string> = {
       "Content-Type": "application/json",
     };
