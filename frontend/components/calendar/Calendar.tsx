@@ -8,6 +8,7 @@ import { getRankingRangeQuery } from "@/lib/queries/ranking";
 import { RankingProp } from "@/lib/interfaces/ranking";
 import CalendarItem from "@/components/calendar/CalendarItem";
 import { CalendarItemData } from "@/lib/interfaces/calendar";
+import CalendarHeader from "./CalendarHeader";
 
 export default function Calendar() {
   const calendarRef = useRef<HTMLDivElement>(null);
@@ -33,7 +34,7 @@ export default function Calendar() {
     };
   }, []);
 
-  // Set the calendar width
+  // Set calendar data
   useEffect(() => {
     function setCalendarDatesWData(
       data: RankingProp[],
@@ -61,9 +62,6 @@ export default function Calendar() {
             rowData.push({ data: data[0], date: checkingDate.toString() });
             data.shift();
           } else {
-            console.log(
-              `Earliest: ${data[0].day}. Not found ${checkingDate.toString()}.`,
-            );
             rowData.push({ data: null, date: checkingDate.toString() });
           }
         }
@@ -72,11 +70,10 @@ export default function Calendar() {
       }
 
       setCalendarDatesData(calendarData);
-      console.log(calendarData);
     }
 
     async function setCalendarData() {
-      const monthSelected = Temporal.PlainDate.from("2026-07-01");
+      const monthSelected = Temporal.PlainDate.from("2026-08-01");
 
       const monthFirstDayData = getDateValues(monthSelected.toString());
       const monthDayCount = getDayCountForMonth(monthSelected.toString());
@@ -115,14 +112,6 @@ export default function Calendar() {
 
   const weekdays = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
   const calendarItemSize = 40;
-  const calendarDates = [
-    // Temp
-    [1, 2, 3, 4, 5, 6, 7],
-    [1, 2, 3, 4, 5, 6, 7],
-    [1, 2, 3, 4, 5, 6, 7],
-    [1, 2, 3, 4, 5, 6, 7],
-    [1, 2, 3, 4, 5, 6, 7],
-  ];
 
   return (
     <div className="w-auto bg-white height-48">
@@ -141,11 +130,10 @@ export default function Calendar() {
               height={calendarItemSize}
               key={day}
             >
-              <span>{day}</span>
+              <CalendarHeader header={day} />
             </GridItem>
           ))}
         </GridRow>
-        {/* // replace with calendarDatesData once completed */}
         {calendarDatesData.map((row, i) => (
           <GridRow
             width={calendarItemSize * 7}
