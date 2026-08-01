@@ -1,11 +1,9 @@
-import RankDay from "@/components/ranking/RankDay";
-import RankTable from "@/components/ranking/RankTable";
+import Calendar from "@/components/calendar/Calendar";
 
 export default function RankingPage() {
   return (
     <div>
-      <RankDay />
-      <RankTable />
+      <Calendar />
     </div>
   );
 }

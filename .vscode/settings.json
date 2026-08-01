@@ -16,4 +16,9 @@
   "[typescriptreact]": {
     "editor.defaultFormatter": "esbenp.prettier-vscode"
   },
+  "tailwindCSS.experimental.configFile": "frontend/global.css",
+  "editor.quickSuggestions": {
+    "strings": "on"
+  },
+  "workbench.experimental.modernUI": false
 }
