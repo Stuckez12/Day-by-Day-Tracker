@@ -37,6 +37,26 @@ export async function getAllRanksQuery(): Promise<
   });
 }
 
+export async function getRankingRangeQuery(
+  min_date: string,
+  max_date: string,
+): Promise<Result<RankingProp[], ValidationErrorProp>> {
+  const token = await getAccessToken();
+  if (!token) {
+    return MustBeLoggedIn;
+  }
+
+  const params = new URLSearchParams({
+    min_date,
+    max_date,
+  });
+
+  return await API.get<RankingProp[]>({
+    url_path: `/v1/ranking/range?${params}`,
+    token: token,
+  });
+}
+
 export async function rankDayQuery(
   data: RankingUIDataProp,
 ): Promise<Result<RankingProp, ValidationErrorProp>> {
