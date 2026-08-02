@@ -1,4 +1,3 @@
-import { ReactNode } from "react";
 import Link from "next/link";
 
 import "@/styles/common/navigation.scss";

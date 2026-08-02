@@ -43,12 +43,12 @@ export default function Calendar() {
       rowCount: number,
     ) {
       let currentDate = Temporal.PlainDate.from(startDate);
-      let calendarData = [];
+      const calendarData = [];
 
       data.reverse();
 
       for (let row = 0; row < rowCount; row++) {
-        let rowData = [];
+        const rowData = [];
 
         for (let item = 0; item < weekdayCount; item++) {
           const checkingDate = currentDate;
@@ -133,10 +133,10 @@ export default function Calendar() {
       <div className="flex flex-column">
         <GridRow
           width={calendarItemSize * 7}
-          height={calendarItemSize}
+          height={calendarItemSize / 2}
           key={"Calendar Index"}
         >
-          {weekdays.map((day, i) => (
+          {weekdays.map((day, _) => (
             <GridItem
               width={calendarItemSize}
               height={calendarItemSize}

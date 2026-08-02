@@ -1,3 +1,5 @@
+import Image from "next/image";
+
 interface IconProp {
   svgPath: string;
   alt: string;
@@ -17,5 +19,5 @@ export default function Icon({
     svgPath = basePath + svgPath;
   }
 
-  return <img src={svgPath} alt={alt} width={width} height={height} />;
+  return <Image src={svgPath} alt={alt} width={width} height={height} />;
 }

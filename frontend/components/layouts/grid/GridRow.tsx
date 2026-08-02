@@ -7,7 +7,7 @@ interface GridRowProps {
 export default function GridRow({ children, width, height }: GridRowProps) {
   return (
     <div
-      className="w-full h-full bg-red-50 flex flex-row"
+      className="w-full h-full flex flex-row"
       style={{ maxWidth: `${width}px`, maxHeight: `${height}px` }}
     >
       {children}
