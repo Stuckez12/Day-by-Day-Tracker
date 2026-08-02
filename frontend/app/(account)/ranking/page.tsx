@@ -1,9 +1,10 @@
 import Calendar from "@/components/calendar/Calendar";
+import PageWrapper from "@/components/common/PageWrapper";
 
 export default function RankingPage() {
   return (
-    <div>
+    <PageWrapper>
       <Calendar />
-    </div>
+    </PageWrapper>
   );
 }

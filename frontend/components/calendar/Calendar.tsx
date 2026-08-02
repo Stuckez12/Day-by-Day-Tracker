@@ -9,6 +9,8 @@ import { RankingProp } from "@/lib/interfaces/ranking";
 import CalendarItem from "@/components/calendar/CalendarItem";
 import { CalendarItemData } from "@/lib/interfaces/calendar";
 import CalendarHeader from "./CalendarHeader";
+import Button from "@/components/common/buttons/Button";
+import Icon from "@/components/common/Icon";
 
 export default function Calendar() {
   const calendarRef = useRef<HTMLDivElement>(null);
@@ -18,21 +20,6 @@ export default function Calendar() {
   >([]);
 
   const weekdayCount = 7;
-
-  // Set the calendar width
-  useEffect(() => {
-    if (!calendarRef.current) return;
-
-    const observer = new ResizeObserver(([entry]) => {
-      setCalendarWidth(entry.contentRect.width);
-    });
-
-    observer.observe(calendarRef.current);
-
-    return () => {
-      observer.disconnect();
-    };
-  }, []);
 
   // Set calendar data
   useEffect(() => {
@@ -114,9 +101,20 @@ export default function Calendar() {
   const calendarItemSize = 40;
 
   return (
-    <div className="w-auto bg-white height-48">
-      <div className="">
-        <p>August</p>
+    <div className="w-inherit flex flex-column gap-y-2">
+      <div className="flex gap-x-2" style={{ width: calendarItemSize * 7 }}>
+        <Button style="secondary" size="square">
+          <Icon svgPath="/arrows/arrow-back-rounded.svg" alt="Back Arrow" />
+        </Button>
+        <Button style="secondary" size="sharp">
+          August
+        </Button>
+        <Button style="secondary" size="square">
+          <Icon
+            svgPath="/arrows/arrow-forward-rounded.svg"
+            alt="Forward Arrow"
+          />
+        </Button>
       </div>
       <div className="flex flex-column">
         <GridRow

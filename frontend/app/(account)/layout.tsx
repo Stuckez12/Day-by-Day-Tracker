@@ -8,7 +8,7 @@ import SideNavBar from "@/components/navigation/SideNavBar";
 import { getPersonnelQuery } from "@/lib/queries/personnel";
 import { getAccessToken } from "@/lib/common/auth/getAccessToken";
 
-import "bootstrap/dist/css/bootstrap.css";
+// import "bootstrap/dist/css/bootstrap.css";
 import "@/styles/colour_pallets.scss";
 import "@/styles/global.scss";
 import { PartialPersonnelContext } from "@/components/common/contexts/personnelContext";
