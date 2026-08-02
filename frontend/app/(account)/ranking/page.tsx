@@ -4,7 +4,10 @@ import PageWrapper from "@/components/common/PageWrapper";
 export default function RankingPage() {
   return (
     <PageWrapper>
-      <Calendar />
+      <div className="grid grid-cols-1 md:grid-cols-[60%_40%]">
+        <Calendar />
+        <div></div>
+      </div>
     </PageWrapper>
   );
 }

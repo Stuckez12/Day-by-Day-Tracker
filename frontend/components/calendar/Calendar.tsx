@@ -21,6 +21,20 @@ export default function Calendar() {
 
   const weekdayCount = 7;
 
+  // Get calendar width
+  useEffect(() => {
+    const element = calendarRef.current;
+    if (!element) return;
+
+    const observer = new ResizeObserver(([entry]) => {
+      setCalendarWidth(entry.contentRect.width);
+    });
+
+    observer.observe(element);
+
+    return () => observer.disconnect();
+  }, []);
+
   // Set calendar data
   useEffect(() => {
     function setCalendarDatesWData(
@@ -98,10 +112,10 @@ export default function Calendar() {
   }, []);
 
   const weekdays = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
-  const calendarItemSize = 40;
+  const calendarItemSize = calendarWidth / weekdayCount;
 
   return (
-    <div className="w-inherit flex flex-column gap-y-2">
+    <div className="w-full flex flex-column gap-y-2" ref={calendarRef}>
       <div className="flex gap-x-2" style={{ width: calendarItemSize * 7 }}>
         <Button style="secondary" size="square">
           <Icon svgPath="/arrows/arrow-back-rounded.svg" alt="Back Arrow" />
