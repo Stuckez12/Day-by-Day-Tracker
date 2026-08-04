@@ -30,11 +30,15 @@ export default function CalendarItem({ data, date }: CalendarItemData) {
   }
 
   return (
-    <div
-      className="w-full h-full flex items-center"
-      style={{ backgroundColor: calendarBGColor }}
-    >
-      <p className="m-0 text-center w-full">{dayData.dayNum}</p>
+    <div className="w-full h-full flex p-[4]">
+      <div
+        className="w-full h-full flex items-center rounded-md hover:border-2 hover:border-[#afafaf] active:border-2 active:border-[#9f9f9f]"
+        style={{ backgroundColor: calendarBGColor }}
+      >
+        <span className="text-center w-full font-bold text-black">
+          {dayData.dayNum}
+        </span>
+      </div>
     </div>
   );
 }

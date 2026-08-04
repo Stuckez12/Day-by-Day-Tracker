@@ -40,3 +40,9 @@ export function getDateValues(date: string): DayMonthStringValues {
 export function getDayCountForMonth(date: string): number {
   return Temporal.PlainDate.from(date).daysInMonth;
 }
+
+export function getDateTextForDay(date: string): string {
+  const dateData = getDateValues(date);
+
+  return `${dateData.dayNum} ${dateData.month} ${dateData.year}`;
+}

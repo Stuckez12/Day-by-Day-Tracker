@@ -9,13 +9,23 @@ import { APICall, MustBeLoggedIn } from "@/lib/queries/base";
 
 const API = new APICall(process.env.BASE_API_URL!);
 
+export async function getRankQuery(
+  date: string,
+): Promise<Result<RankingProp, ValidationErrorProp>> {
+  const token = await getAccessToken();
+  if (!token) return MustBeLoggedIn;
+
+  return await API.get<RankingProp>({
+    url_path: `/v1/ranking?date=${date}`,
+    token: token,
+  });
+}
+
 export async function getRankTodayQuery(): Promise<
   Result<RankingProp, ValidationErrorProp>
 > {
   const token = await getAccessToken();
-  if (!token) {
-    return MustBeLoggedIn;
-  }
+  if (!token) return MustBeLoggedIn;
 
   return await API.get<RankingProp>({
     url_path: "/v1/ranking/today",
@@ -27,9 +37,7 @@ export async function getAllRanksQuery(): Promise<
   Result<RankingProp[], ValidationErrorProp>
 > {
   const token = await getAccessToken();
-  if (!token) {
-    return MustBeLoggedIn;
-  }
+  if (!token) return MustBeLoggedIn;
 
   return await API.get<RankingProp[]>({
     url_path: "/v1/ranking/all",
@@ -42,9 +50,7 @@ export async function getRankingRangeQuery(
   max_date: string,
 ): Promise<Result<RankingProp[], ValidationErrorProp>> {
   const token = await getAccessToken();
-  if (!token) {
-    return MustBeLoggedIn;
-  }
+  if (!token) return MustBeLoggedIn;
 
   const params = new URLSearchParams({
     min_date,
@@ -61,9 +67,7 @@ export async function rankDayQuery(
   data: RankingUIDataProp,
 ): Promise<Result<RankingProp, ValidationErrorProp>> {
   const token = await getAccessToken();
-  if (!token) {
-    return MustBeLoggedIn;
-  }
+  if (!token) return MustBeLoggedIn;
 
   return await API.put<RankingProp>({
     url_path: "/v1/ranking",
@@ -82,9 +86,7 @@ export async function rankTodayNumberQuery({
     ranking: ranking,
   };
   const token = await getAccessToken();
-  if (!token) {
-    return MustBeLoggedIn;
-  }
+  if (!token) return MustBeLoggedIn;
 
   return await API.put<RankingProp>({
     url_path: "/v1/ranking/rank",
@@ -106,9 +108,7 @@ export async function rankTodayNotesQuery({
     text_notes: text_notes,
   };
   const token = await getAccessToken();
-  if (!token) {
-    return MustBeLoggedIn;
-  }
+  if (!token) return MustBeLoggedIn;
 
   return await API.put<RankingProp>({
     url_path: "/v1/ranking/rank/notes",
