@@ -19,7 +19,26 @@ export default function Calendar() {
     CalendarItemData[][]
   >([]);
 
+  const [currentDate, setCurrentDate] = useState(
+    Temporal.Now.plainDateISO().with({ day: 1 }),
+  );
+
   const weekdayCount = 7;
+
+  function changeMonthSelected(monthModifier: number) {
+    console.log(currentDate.toString());
+    setCurrentDate((prev) =>
+      prev.add({
+        months: monthModifier,
+      }),
+    );
+
+    console.log(currentDate.toString());
+  }
+
+  function resetMonthToCurrent() {
+    setCurrentDate(Temporal.Now.plainDateISO().with({ day: 1 }));
+  }
 
   // Get calendar width
   useEffect(() => {
@@ -42,7 +61,7 @@ export default function Calendar() {
       startDate: string,
       rowCount: number,
     ) {
-      let currentDate = Temporal.PlainDate.from(startDate);
+      let currentDateTemp = Temporal.PlainDate.from(startDate);
       const calendarData = [];
 
       data.reverse();
@@ -51,8 +70,8 @@ export default function Calendar() {
         const rowData = [];
 
         for (let item = 0; item < weekdayCount; item++) {
-          const checkingDate = currentDate;
-          currentDate = currentDate.add({ days: 1 });
+          const checkingDate = currentDateTemp;
+          currentDateTemp = currentDateTemp.add({ days: 1 });
 
           if (data.length <= 0) {
             rowData.push({ data: null, date: checkingDate.toString() });
@@ -74,7 +93,7 @@ export default function Calendar() {
     }
 
     async function setCalendarData() {
-      const monthSelected = Temporal.PlainDate.from("2026-08-01");
+      const monthSelected = currentDate;
 
       const monthFirstDayData = getDateValues(monthSelected.toString());
       const monthDayCount = getDayCountForMonth(monthSelected.toString());
@@ -109,60 +128,75 @@ export default function Calendar() {
     }
 
     setCalendarData();
-  }, []);
+  }, [currentDate]);
 
   const weekdays = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
   const calendarItemSize = calendarWidth / weekdayCount;
 
+  const displayData = getDateValues(currentDate.toString());
+  const monthDisplay = `${displayData.month} ${displayData.year}`;
+
   return (
     <div className="w-full flex flex-column gap-y-2" ref={calendarRef}>
       <div className="flex gap-x-2" style={{ width: calendarItemSize * 7 }}>
-        <Button style="secondary" size="square">
+        <Button
+          style="secondary"
+          size="square"
+          onClick={() => changeMonthSelected(-1)}
+        >
           <Icon svgPath="/arrows/arrow-back-rounded.svg" alt="Back Arrow" />
         </Button>
-        <Button style="secondary" size="sharp">
-          August
+        <Button style="secondary" size="sharp" onClick={resetMonthToCurrent}>
+          {monthDisplay}
         </Button>
-        <Button style="secondary" size="square">
+        <Button
+          style="secondary"
+          size="square"
+          onClick={() => changeMonthSelected(1)}
+        >
           <Icon
             svgPath="/arrows/arrow-forward-rounded.svg"
             alt="Forward Arrow"
           />
         </Button>
       </div>
-      <div className="flex flex-column">
+      <div className="flex flex-column hidden md:block">
         <GridRow
           width={calendarItemSize * 7}
           height={calendarItemSize / 2}
           key={"Calendar Index"}
+          classes="rounded-md bg-[#d9d9d9]"
+          styles={{ margin: "4px" }}
         >
           {weekdays.map((day, _) => (
             <GridItem
               width={calendarItemSize}
-              height={calendarItemSize}
+              height={calendarItemSize / 2}
               key={day}
             >
               <CalendarHeader header={day} />
             </GridItem>
           ))}
         </GridRow>
-        {calendarDatesData.map((row, i) => (
-          <GridRow
-            width={calendarItemSize * 7}
-            height={calendarItemSize}
-            key={i}
-          >
-            {row.map((item, j) => (
-              <GridItem
-                width={calendarItemSize}
-                height={calendarItemSize}
-                key={j + i * 7}
-              >
-                <CalendarItem data={item.data} date={item.date} />
-              </GridItem>
-            ))}
-          </GridRow>
-        ))}
+        <div className="hidden md:block">
+          {calendarDatesData.map((row, i) => (
+            <GridRow
+              width={calendarItemSize * 7}
+              height={calendarItemSize}
+              key={i}
+            >
+              {row.map((item, j) => (
+                <GridItem
+                  width={calendarItemSize}
+                  height={calendarItemSize}
+                  key={j + i * 7}
+                >
+                  <CalendarItem data={item.data} date={item.date} />
+                </GridItem>
+              ))}
+            </GridRow>
+          ))}
+        </div>
       </div>
     </div>
   );

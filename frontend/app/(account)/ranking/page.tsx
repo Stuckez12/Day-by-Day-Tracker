@@ -14,7 +14,7 @@ import { useEffect, useState } from "react";
 export default function RankingPage() {
   const [errors, setErrors] = useState<string[]>([]);
   const [form, setForm] = useState<RankingUIDataProp>({
-    day: "",
+    day: Temporal.Now.plainDateISO().toString(),
     ranking: undefined,
     text_events: "",
     text_notes: "",
@@ -27,7 +27,6 @@ export default function RankingPage() {
       );
 
       if (response.ok) {
-        console.log(response.data);
         setForm(response.data);
       } else {
         console.log("Error occured");
@@ -49,6 +48,11 @@ export default function RankingPage() {
         <Calendar />
         <form>
           <h1>{getDateTextForDay(form.day)}</h1>
+          <TextAreaInput
+            name="ranking"
+            value={form.ranking?.toString()}
+            onChange={onChange}
+          />
           <TextAreaInput
             name="text_events"
             value={form.text_events}
