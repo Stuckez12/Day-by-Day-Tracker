@@ -42,7 +42,11 @@ export function getDayCountForMonth(date: string): number {
 }
 
 export function getDateTextForDay(date: string): string {
-  const dateData = getDateValues(date);
+  try {
+    const dateData = getDateValues(date);
 
-  return `${dateData.dayNum} ${dateData.month} ${dateData.year}`;
+    return `${dateData.dayNum} ${dateData.month} ${dateData.year}`;
+  } catch {
+    return "";
+  }
 }

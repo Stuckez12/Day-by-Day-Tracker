@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useContext, useEffect, useRef, useState } from "react";
 import GridItem from "@/components/layouts/grid/GridItem";
 import GridRow from "@/components/layouts/grid/GridRow";
 import { getDateValues, getDayCountForMonth } from "@/lib/common/datetime";
@@ -11,7 +11,6 @@ import { CalendarItemData } from "@/lib/interfaces/calendar";
 import CalendarHeader from "./CalendarHeader";
 import Button from "@/components/common/buttons/Button";
 import Icon from "@/components/common/Icon";
-
 export default function Calendar() {
   const calendarRef = useRef<HTMLDivElement>(null);
   const [calendarWidth, setCalendarWidth] = useState(0);

@@ -2,9 +2,25 @@
 
 import { getDateValues } from "@/lib/common/datetime";
 import { CalendarItemData } from "@/lib/interfaces/calendar";
+import { CalendarContext } from "@/components/calendar/CalendarContext";
+import { useContext } from "react";
+import { getRankQuery } from "@/lib/queries/ranking";
 
 export default function CalendarItem({ data, date }: CalendarItemData) {
   const dayData = getDateValues(date);
+
+  const { setRanking } = useContext(CalendarContext);
+
+  async function selectDay() {
+    const response = await getRankQuery(date);
+
+    if (response.ok) {
+      setRanking(response.data);
+    } else {
+      console.log("Error fetching data");
+      console.log(response.error);
+    }
+  }
 
   // Worst to best
   const rankingColourRange = [
@@ -34,6 +50,7 @@ export default function CalendarItem({ data, date }: CalendarItemData) {
       <div
         className="w-full h-full flex items-center rounded-md hover:border-2 hover:border-[#afafaf] active:border-2 active:border-[#9f9f9f]"
         style={{ backgroundColor: calendarBGColor }}
+        onClick={selectDay}
       >
         <span className="text-center w-full font-bold text-black">
           {dayData.dayNum}
