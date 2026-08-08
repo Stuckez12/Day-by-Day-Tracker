@@ -1,4 +1,3 @@
-import logging
 from datetime import date
 from typing import Annotated
 
@@ -18,7 +17,7 @@ from src.schemas import (
 api = APIRouter(prefix="/ranking", tags=["Ranking"])
 
 
-@api.get("/", status_code=status.HTTP_200_OK)
+@api.get("/", response_model=RankingSchema, status_code=status.HTTP_200_OK)
 def get_ranking(
     service: RankingServiceDep,
     personnel_service: PersonalServiceDep,
@@ -30,7 +29,7 @@ def get_ranking(
     return service.fetch_date(personnel_id, date)
 
 
-@api.get("/all", status_code=status.HTTP_200_OK)
+@api.get("/all", response_model=list[RankingSchema], status_code=status.HTTP_200_OK)
 def get_all_rankings(
     service: RankingServiceDep,
     personnel_id: CurrentPersonnelID,
@@ -38,7 +37,7 @@ def get_all_rankings(
     return service.get_all_personnel_rankings(personnel_id)
 
 
-@api.get("/range", status_code=status.HTTP_200_OK)
+@api.get("/range", response_model=list[RankingSchema], status_code=status.HTTP_200_OK)
 def get_ranking_range(
     service: RankingServiceDep,
     personnel_id: CurrentPersonnelID,
@@ -47,7 +46,7 @@ def get_ranking_range(
     return service.get_ranking_range(personnel_id, date_range)
 
 
-@api.get("/today", status_code=status.HTTP_200_OK)
+@api.get("/today", response_model=RankingSchema, status_code=status.HTTP_200_OK)
 def get_todays_ranking(
     service: RankingServiceDep,
     personnel_id: CurrentPersonnelID,
@@ -65,7 +64,6 @@ def rank_a_day(
     service: RankingServiceDep,
     personnel_id: CurrentPersonnelID,
 ):
-    logging.info("YAAAAAHHHHHH")
     rank_data = service.fetch_date(personnel_id, request.day)
 
     return service.rank_a_day(rank_data, request)

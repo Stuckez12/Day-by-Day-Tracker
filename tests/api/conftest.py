@@ -13,6 +13,7 @@ from sqlalchemy.orm import Session
 from celery import current_app as current_celery_app
 from src.common import get_db
 from src.common.password_hash import pwd_hash
+from src.common.security import create_access_token
 from src.enums import TaskStatus
 from src.main import fastapi_app
 from src.models import PersonalModel, RankerModel, TaskModel
@@ -41,7 +42,7 @@ def initialise_database():
     command.downgrade(alembic_cfg, "base")
 
 
-@pytest.fixture(scope="function")
+@pytest.fixture(scope="session")
 def test_session() -> Generator[Session, None, None]:
     db_gen = get_db()
     db = next(db_gen)
@@ -80,27 +81,49 @@ def celery_worker(celery_app):
 ################################################################################
 
 
-@pytest.fixture(scope="function")
-def test_client():
-    yield TestClient(fastapi_app, base_url="http://test_client/api/v1")
+@pytest.fixture(scope="session")
+def test_app():
+    yield TestClient(fastapi_app, base_url="http://testserver/api/v1")
 
 
-@pytest.fixture(scope="function")
-def test_client_user(test_personnel: PersonalModel):
-    client = TestClient(fastapi_app, base_url="http://test_client_user/api/v1")
-    response = client.post(
-        "/auth/login",
-        json={"email": test_personnel.email, "password": VALID_PASSWORD},
-    )
-    assert response.status_code == 200
-
-    client.headers.update(
-        {"Authorization": f"Bearer {response.json()['access_token']}"}
+@pytest.fixture
+def test_client_user(test_app: TestClient, test_personnel: PersonalModel):
+    test_app.headers.update(
+        {"Authorization": f"Bearer {create_access_token(test_personnel.id)}"}
     )
 
-    yield client
+    yield test_app
 
-    client.headers.pop("Authorization", None)
+    test_app.headers.pop("Authorization", None)
+
+
+@pytest.fixture(scope="session")
+def test_session_personnel(test_session: Session):
+    model = PersonalModel(
+        email="session@email.com",
+        password=pwd_hash.hash(VALID_PASSWORD),
+        first_name="Session",
+        last_name="User",
+    )
+
+    test_session.add(model)
+    test_session.commit()
+
+    yield model
+
+    test_session.delete(model)
+    test_session.commit()
+
+
+@pytest.fixture
+def test_client_user_session(
+    test_app: TestClient, test_session_personnel: PersonalModel
+):
+    test_app.headers.update(
+        {"Authorization": f"Bearer {create_access_token(test_session_personnel.id)}"}
+    )
+    yield test_app
+    test_app.headers.pop("Authorization", None)
 
 
 ################################################################################
@@ -189,10 +212,10 @@ def test_personnel_3(test_session: Session):
 
 @pytest.fixture(scope="function")
 def test_ranker(
-    test_session: Session, test_date_today: date, test_personnel: PersonalModel
+    test_session: Session, test_date_today: date, test_session_personnel: PersonalModel
 ):
     model = RankerModel(
-        personal_id=test_personnel.id,
+        personal_id=test_session_personnel.id,
         day=test_date_today,
         ranking=5,
     )
@@ -207,9 +230,9 @@ def test_ranker(
 
 
 @pytest.fixture(scope="function")
-def test_ranker_set_date(test_session: Session, test_personnel: PersonalModel):
+def test_ranker_set_date(test_session: Session, test_session_personnel: PersonalModel):
     model = RankerModel(
-        personal_id=test_personnel.id,
+        personal_id=test_session_personnel.id,
         day=date(2000, 1, 1),
         ranking=10,
     )
@@ -225,10 +248,10 @@ def test_ranker_set_date(test_session: Session, test_personnel: PersonalModel):
 
 @pytest.fixture(scope="function")
 def test_ranker_none(
-    test_session: Session, test_date_today: date, test_personnel: PersonalModel
+    test_session: Session, test_date_today: date, test_session_personnel: PersonalModel
 ):
     model = RankerModel(
-        personal_id=test_personnel.id,
+        personal_id=test_session_personnel.id,
         day=test_date_today,
         ranking=None,
     )

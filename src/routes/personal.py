@@ -42,7 +42,7 @@ def get_all_personnel(service: PersonalServiceDep):
     return service.get_all()
 
 
-@api.delete("/", status_code=status.HTTP_200_OK)
+@api.delete("/", status_code=status.HTTP_200_OK, response_model=None)
 def delete_personnel(
     service: PersonalServiceDep,
     personnel_id: UUID = Query(title="Personal ID"),

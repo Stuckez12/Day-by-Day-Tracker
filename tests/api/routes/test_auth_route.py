@@ -16,7 +16,7 @@ from src.settings import app_config
 
 class TestAuthRoute:
     def test_register_personnel_success(
-        self, test_session: Session, test_client_user: TestClient
+        self, test_session: Session, test_app: TestClient
     ):
         request_data = {
             "email": "test@email.now",
@@ -25,7 +25,7 @@ class TestAuthRoute:
             "last_name": "User",
         }
 
-        result = test_client_user.post(
+        result = test_app.post(
             "/auth/register",
             json=request_data,
         )
@@ -50,7 +50,7 @@ class TestAuthRoute:
     )
     def test_register_personnel_empty_data(
         self,
-        test_client_user: TestClient,
+        test_app: TestClient,
         empty_param_name: str,
         expected_response: str,
     ):
@@ -62,7 +62,7 @@ class TestAuthRoute:
         }
         data[empty_param_name] = ""
 
-        result = test_client_user.post(
+        result = test_app.post(
             "/auth/register",
             json=data,
         )
@@ -73,12 +73,14 @@ class TestAuthRoute:
         assert data["detail"][0]["msg"] == expected_response
 
     def test_register_personnel_email_already_in_use(
-        self, test_client_user: TestClient, test_personnel: PersonalModel
+        self,
+        test_client_user_session: TestClient,
+        test_session_personnel: PersonalModel,
     ):
-        result = test_client_user.post(
+        result = test_client_user_session.post(
             "/auth/register",
             json={
-                "email": test_personnel.email,
+                "email": test_session_personnel.email,
                 "password": "Password1.",
                 "first_name": "Test",
                 "last_name": "User",
@@ -92,11 +94,11 @@ class TestAuthRoute:
     def test_register_personnel_password_hashing_fails(
         self,
         mocker: MockerFixture,
-        test_client_user: TestClient,
+        test_client_user_session: TestClient,
     ):
         mocker.patch.object(pwd_hash, "hash", side_effect=ValueError("Forced Error"))
 
-        result = test_client_user.post(
+        result = test_client_user_session.post(
             "/auth/register",
             json={
                 "email": "test@email.now",
@@ -110,11 +112,15 @@ class TestAuthRoute:
         data = result.json()
         assert data["detail"] == "Unable to hash password. Please try again"
 
-    def test_log_in(self, test_client_user: TestClient, test_personnel: PersonalModel):
-        result = test_client_user.post(
+    def test_log_in(
+        self,
+        test_app: TestClient,
+        test_session_personnel: PersonalModel,
+    ):
+        result = test_app.post(
             "/auth/login",
             json={
-                "email": test_personnel.email,
+                "email": test_session_personnel.email,
                 "password": VALID_PASSWORD,
             },
         )
@@ -130,12 +136,12 @@ class TestAuthRoute:
         )
         assert SlimPersonnelSchema.model_validate(
             data.get("personnel")
-        ) == SlimPersonnelSchema.model_validate(test_personnel), (
+        ) == SlimPersonnelSchema.model_validate(test_session_personnel), (
             "Mismatched schema returned"
         )
 
-    def test_log_in_user_does_not_exist(self, test_client_user: TestClient):
-        result = test_client_user.post(
+    def test_log_in_user_does_not_exist(self, test_app: TestClient):
+        result = test_app.post(
             "/auth/login",
             json={
                 "email": "invalid@email.com",
@@ -148,9 +154,9 @@ class TestAuthRoute:
         assert data["detail"] == "Invalid email or password"
 
     def test_log_in_invalid_password(
-        self, test_client_user: TestClient, test_personnel: PersonalModel
+        self, test_app: TestClient, test_personnel: PersonalModel
     ):
-        result = test_client_user.post(
+        result = test_app.post(
             "/auth/login",
             json={
                 "email": test_personnel.email,

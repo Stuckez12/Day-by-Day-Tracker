@@ -53,6 +53,7 @@ class TestRankerService:
 
     def test_insert_new_ranked_date_invalid_personnel_id(
         self,
+        test_session: Session,
         test_ranking_service: RankingService,
         test_date_today: date,
     ):
@@ -60,6 +61,8 @@ class TestRankerService:
 
         with pytest.raises(IntegrityError):
             test_ranking_service.insert_new_date(invalid_personnel_id, test_date_today)
+
+        test_session.rollback()
 
     def test_fetch_date_date_exists(
         self,
@@ -93,4 +96,5 @@ class TestRankerService:
         rank_instance = test_ranking_service.get_by_id(test_ranker.id)
 
         assert ranked.ranking == 10
+        assert rank_instance
         assert rank_instance.ranking == 10
