@@ -12,7 +12,7 @@ export default function DevUI() {
       <br />
       <Button>Button</Button>
       <br />
-      <Button variant="secondary" size="square">
+      <Button style="secondary" size="square">
         <Icon svgPath="/arrows/arrow-forward-rounded.svg" alt="Forward Arrow" />
       </Button>
     </PageWrapper>
