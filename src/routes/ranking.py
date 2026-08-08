@@ -1,11 +1,13 @@
 import logging
 from datetime import date
+from typing import Annotated
 
-from fastapi import APIRouter, HTTPException, Query, status
+from fastapi import APIRouter, Depends, HTTPException, Query, status
 from sqlalchemy.exc import NoResultFound
 
 from src.common import CurrentPersonnelID, PersonalServiceDep, RankingServiceDep
 from src.schemas import (
+    DateRangeRequest,
     RankingADayRequest,
     RankingNotesRequest,
     RankingRequest,
@@ -34,6 +36,15 @@ def get_all_rankings(
     personnel_id: CurrentPersonnelID,
 ):
     return service.get_all_personnel_rankings(personnel_id)
+
+
+@api.get("/range", status_code=status.HTTP_200_OK)
+def get_ranking_range(
+    service: RankingServiceDep,
+    personnel_id: CurrentPersonnelID,
+    date_range: Annotated[DateRangeRequest, Depends()],
+):
+    return service.get_ranking_range(personnel_id, date_range)
 
 
 @api.get("/today", status_code=status.HTTP_200_OK)

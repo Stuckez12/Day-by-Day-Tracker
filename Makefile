@@ -83,6 +83,7 @@ tests:
 
 ftests:
 	@cd frontend && npm test
+	@cd frontend && npm run build
 
 
 checks:

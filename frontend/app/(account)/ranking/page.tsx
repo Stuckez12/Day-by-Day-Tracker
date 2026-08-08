@@ -1,11 +1,15 @@
-import RankDay from "@/components/ranking/RankDay";
-import RankTable from "@/components/ranking/RankTable";
+"use client";
+
+import CalendarProvider from "@/components/calendar/CalendarProvider";
+import PageWrapper from "@/components/common/PageWrapper";
+import EditCalendarDataForm from "@/components/forms/multiblock/EditCalendarDataForm";
 
 export default function RankingPage() {
   return (
-    <div>
-      <RankDay />
-      <RankTable />
-    </div>
+    <PageWrapper>
+      <CalendarProvider>
+        <EditCalendarDataForm />
+      </CalendarProvider>
+    </PageWrapper>
   );
 }

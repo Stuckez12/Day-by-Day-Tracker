@@ -12,25 +12,28 @@
   "dependencies": {
     "@js-temporal/polyfill": "^0.5.1",
     "bootstrap": "^5.3.8",
+    "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "js-cookie": "^3.0.8",
     "neverthrow": "^8.2.0",
-    "next": "16.2.6",
+    "next": "^16.2.12",
     "next-auth": "^4.24.14",
+    "postcss": "^8.5.23",
     "react": "19.2.4",
     "react-dom": "19.2.4",
-    "sass": "^1.100.0"
+    "sass": "^1.100.0",
+    "tailwind-merge": "^3.6.0"
   },
   "devDependencies": {
     "@svgr/webpack": "^8.1.0",
-    "@tailwindcss/postcss": "^4",
+    "@tailwindcss/postcss": "^4.3.3",
     "@types/js-cookie": "^3.0.6",
     "@types/node": "^20.19.43",
     "@types/react": "^19",
     "@types/react-dom": "^19",
     "eslint": "^9",
     "eslint-config-next": "16.2.6",
-    "tailwindcss": "^4",
+    "tailwindcss": "^4.3.3",
     "typescript": "^5",
     "vitest": "^4.1.10"
   }

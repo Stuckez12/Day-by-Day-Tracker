@@ -5,7 +5,12 @@ from sqlalchemy.exc import NoResultFound
 from sqlalchemy.orm import Session
 
 from src.models import RankerModel
-from src.schemas import RankingADayRequest, RankingNotesRequest, RankingSchema
+from src.schemas import (
+    DateRangeRequest,
+    RankingADayRequest,
+    RankingNotesRequest,
+    RankingSchema,
+)
 from src.services.base import BaseDBService
 
 
@@ -27,6 +32,18 @@ class RankingService(BaseDBService[RankerModel]):
         return (
             self.db.query(RankerModel)
             .filter(RankerModel.personal_id == personnel_id)
+            .order_by(RankerModel.day.desc())
+            .all()
+        )
+
+    def get_ranking_range(self, personnel_id: uuid.UUID, range: DateRangeRequest):
+        return (
+            self.db.query(RankerModel)
+            .filter(
+                RankerModel.personal_id == personnel_id,
+                RankerModel.day >= range.min_date,
+                RankerModel.day <= range.max_date,
+            )
             .order_by(RankerModel.day.desc())
             .all()
         )

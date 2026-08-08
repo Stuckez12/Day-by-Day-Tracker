@@ -60,8 +60,8 @@ services:
     build:
       context: ./frontend
       dockerfile: Dockerfile
-    #   target: dev
-    # command: [ "npm", "run", "dev" ]
+      target: dev
+    command: [ "npm", "run", "dev" ]
     expose:
       - "3000"
     networks:
@@ -76,11 +76,11 @@ services:
       - ./frontend/next.config.ts:/app/next.config.ts
       # - ./frontend/:/app/
     environment:
-      # WATCHPACK_POLLING: "true"
-      # CHOKIDAR_USEPOLLING: "true"
-      # CHOKIDAR_INTERVAL: "20"
-      # NODE_ENV: development
-      NODE_ENV: production
+      WATCHPACK_POLLING: "true"
+      CHOKIDAR_USEPOLLING: "true"
+      CHOKIDAR_INTERVAL: "20"
+      NODE_ENV: development
+      # NODE_ENV: production
       BASE_API_URL: ${BASE_API_URL}
       NEXTAUTH_SECRET: ${NEXTAUTH_SECRET}
       NEXTAUTH_URL: ${NEXTAUTH_URL:-http://192.168.18.128}
