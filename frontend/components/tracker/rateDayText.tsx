@@ -60,11 +60,13 @@ export default function RateDayText() {
         name="text_events"
         value={form.text_events}
         onChange={onChange}
+        placeholder="Insert any events that happened today..."
       />
       <TextAreaInput
         name="text_notes"
         value={form.text_notes}
         onChange={onChange}
+        placeholder="Insert anything notable that happened today..."
       />
       <ListErrors errors={errors} />
       <SubmitButton label="Submit" />

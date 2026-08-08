@@ -3,6 +3,7 @@ interface TextAreaInputProps {
   value?: string;
   onChange: React.ChangeEventHandler<HTMLTextAreaElement>;
   autoComplete?: string;
+  placeholder?: string;
 }
 
 export default function TextAreaInput({
@@ -10,6 +11,7 @@ export default function TextAreaInput({
   value,
   onChange,
   autoComplete,
+  placeholder = "Insert any event that happened today...",
 }: TextAreaInputProps) {
   let auto_complete = "off";
 
@@ -29,7 +31,7 @@ export default function TextAreaInput({
         name={name}
         value={final_value}
         onChange={onChange}
-        placeholder="Insert any event that happened today..."
+        placeholder={placeholder}
         autoComplete={auto_complete}
       />
     </div>

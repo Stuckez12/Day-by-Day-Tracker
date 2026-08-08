@@ -1,5 +1,7 @@
 "use client";
 
+import { Temporal } from "@js-temporal/polyfill";
+
 import { CalendarContext } from "@/components/calendar/CalendarContext";
 import { RankingUIDataProp } from "@/lib/interfaces/ranking";
 import { getRankQuery } from "@/lib/queries/ranking";

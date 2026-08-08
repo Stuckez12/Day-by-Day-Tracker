@@ -1,6 +1,8 @@
 "use client";
 
-import { useContext, useEffect, useRef, useState } from "react";
+import { Temporal } from "@js-temporal/polyfill";
+
+import { useEffect, useRef, useState } from "react";
 import GridItem from "@/components/layouts/grid/GridItem";
 import GridRow from "@/components/layouts/grid/GridRow";
 import { getDateValues, getDayCountForMonth } from "@/lib/common/datetime";
@@ -159,7 +161,7 @@ export default function Calendar() {
           />
         </Button>
       </div>
-      <div className="flex flex-column hidden md:block">
+      <div className="flex flex-column">
         <GridRow
           width={calendarItemSize * 7}
           height={calendarItemSize / 2}
@@ -177,25 +179,23 @@ export default function Calendar() {
             </GridItem>
           ))}
         </GridRow>
-        <div className="hidden md:block">
-          {calendarDatesData.map((row, i) => (
-            <GridRow
-              width={calendarItemSize * 7}
-              height={calendarItemSize}
-              key={i}
-            >
-              {row.map((item, j) => (
-                <GridItem
-                  width={calendarItemSize}
-                  height={calendarItemSize}
-                  key={j + i * 7}
-                >
-                  <CalendarItem data={item.data} date={item.date} />
-                </GridItem>
-              ))}
-            </GridRow>
-          ))}
-        </div>
+        {calendarDatesData.map((row, i) => (
+          <GridRow
+            width={calendarItemSize * 7}
+            height={calendarItemSize}
+            key={i}
+          >
+            {row.map((item, j) => (
+              <GridItem
+                width={calendarItemSize}
+                height={calendarItemSize}
+                key={j + i * 7}
+              >
+                <CalendarItem data={item.data} date={item.date} />
+              </GridItem>
+            ))}
+          </GridRow>
+        ))}
       </div>
     </div>
   );
