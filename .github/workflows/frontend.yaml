@@ -35,3 +35,7 @@ jobs:
       - name: Run tests
         working-directory: frontend
         run: npm test
+
+      - name: Is Buildable
+        working-directory: frontend
+        run: npm run build
