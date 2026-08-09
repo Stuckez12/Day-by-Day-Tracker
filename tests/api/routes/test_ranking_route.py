@@ -148,7 +148,7 @@ class TestRankingRoute:
         assert result.status_code == status.HTTP_202_ACCEPTED
 
         data = result.json()
-        assert RankingSchema(**data)
+        assert RankingSchema.model_validate(data)
         assert data["personal_id"] == str(test_session_personnel.id)
         assert data["day"] == test_date_today.strftime("%Y-%m-%d")
         assert data["ranking"] == 10
@@ -167,10 +167,33 @@ class TestRankingRoute:
         assert result.status_code == status.HTTP_202_ACCEPTED
 
         data = result.json()
-        assert RankingSchema(**data)
+        assert RankingSchema.model_validate(data)
         assert data["personal_id"] == str(test_session_personnel.id)
         assert data["day"] == test_date_today.strftime("%Y-%m-%d")
         assert data["ranking"] == 10
+
+    def test_rank_a_day_rejected_over_two_weeks_old(
+        self,
+        test_session: Session,
+        test_client_user_session: TestClient,
+        test_date_today: date,
+        test_session_personnel: PersonalModel,
+        test_ranker_none: RankerModel,
+    ):
+        test_ranker_none.day = test_date_today - timedelta(days=30)
+        test_session.commit()
+
+        json_data = {"day": test_ranker_none.day.strftime("%Y-%m-%d"), "ranking": 10}
+        result = test_client_user_session.put(
+            "/ranking",
+            json=json_data,
+        )
+        assert result.status_code == status.HTTP_403_FORBIDDEN
+
+        data = result.json()
+        assert (
+            data["detail"] == "You cannot modify a ranked day more than two weeks old"
+        )
 
     def test_rank_day_day_not_in_database(
         self,

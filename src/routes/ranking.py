@@ -79,6 +79,7 @@ def rank_today(
     service: RankingServiceDep,
     personnel_id: CurrentPersonnelID,
 ):
+    request.day = date.today()
     rank_data = service.fetch_date(personnel_id, request.day)
 
     return service.rank_today(rank_data, request.ranking)

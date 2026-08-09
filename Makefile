@@ -38,7 +38,6 @@ reset:
 	$(MAKE) build-no-cache
 	$(MAKE) start
 
-
 lint:
 	@uv run ruff format src --check
 	@uv run ruff check ./src
@@ -81,16 +80,12 @@ tests:
 	@docker compose -f docker-compose.dev.yaml exec api sh -c "pytest -vv -q -s $(TEST_PATH)"
 	@docker compose -f docker-compose.dev.yaml exec db psql -U postgres -c "DROP DATABASE test_dbdt;"
 
-ftests:
-	@cd frontend && npm test
-	@cd frontend && npm run build
-
-
 checks:
 	@$(MAKE) flint
 	@$(MAKE) ftests
 	@$(MAKE) lint
 	@$(MAKE) tests
+	@$(MAKE) fbuild
 
 
 ################################################################################
@@ -100,6 +95,12 @@ checks:
 
 flint:
 	@cd frontend && npm run lint
+
+ftests:
+	@cd frontend && npm test
+
+fbuild:
+	@cd frontend && npm run build
 
 
 ################################################################################
