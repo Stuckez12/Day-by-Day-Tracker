@@ -1,8 +1,7 @@
 import uuid
 from datetime import datetime
 
-from celery.result import AsyncResult
-from fastapi import APIRouter, Depends, HTTPException, Query, Request, status
+from fastapi import APIRouter, Depends, HTTPException, Query, status
 from fastapi_pagination import Page, Params
 from fastapi_pagination.ext.sqlalchemy import paginate
 from sqlalchemy.exc import NoResultFound
@@ -10,7 +9,6 @@ from sqlalchemy.exc import NoResultFound
 from src.common import TaskServiceDep
 from src.enums import TaskStatus
 from src.schemas import TaskPaginated, TaskSchema
-from src.tasks import simulate_celery_task
 
 
 api = APIRouter(prefix="/tasks", tags=["Task"])
@@ -43,13 +41,6 @@ def get_tasks_paginated(
     query = service.get_paginated_query(filters)
 
     return paginate(query, params)
-
-
-@api.get("/simulate-task", status_code=status.HTTP_200_OK)
-def run_task_simulation(_: Request):
-    task: AsyncResult = simulate_celery_task.delay()
-
-    return task.get()
 
 
 @api.get("/{task_id}", status_code=status.HTTP_200_OK, response_model=TaskSchema)

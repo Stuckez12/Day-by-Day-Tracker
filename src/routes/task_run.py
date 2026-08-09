@@ -1,10 +1,17 @@
 from celery.result import AsyncResult
 from fastapi import APIRouter, Request, status
 
-from src.tasks import database_backup
+from src.tasks import database_backup, simulate_celery_task
 
 
 api = APIRouter(prefix="/execute/task", tags=["Execute Task"])
+
+
+@api.get("/simulate", status_code=status.HTTP_200_OK)
+def run_task_simulation(_: Request):
+    task: AsyncResult = simulate_celery_task.delay()
+
+    return task.get()
 
 
 @api.get("/database-backup", status_code=status.HTTP_200_OK)

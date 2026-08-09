@@ -8,8 +8,8 @@ from src.models import TaskModel
 from src.schemas import TaskSchema
 
 
-class TestTaskRoute:
-    def test_get_task_paginated_via_task_id(
+class TestGetPaginatedTasksRoute:
+    def test_success_via_task_id(
         self,
         test_client_user_session: TestClient,
         test_task_1: TaskModel,
@@ -27,7 +27,7 @@ class TestTaskRoute:
             test_task_1
         )
 
-    def test_get_task_paginated_via_name(
+    def test_success_via_name(
         self,
         test_client_user_session: TestClient,
         test_task_1: TaskModel,
@@ -46,7 +46,7 @@ class TestTaskRoute:
             test_task_3
         )
 
-    def test_get_task_paginated_via_task_status(
+    def test_success_via_task_status(
         self,
         test_client_user_session: TestClient,
         test_task_1: TaskModel,
@@ -64,7 +64,7 @@ class TestTaskRoute:
             test_task_2
         )
 
-    def test_get_task_paginated_via_min_retries(
+    def test_success_via_min_retries(
         self,
         test_client_user_session: TestClient,
         test_task_1: TaskModel,
@@ -83,7 +83,7 @@ class TestTaskRoute:
             test_task_3
         )
 
-    def test_get_task_paginated_via_max_retries(
+    def test_success_via_max_retries(
         self,
         test_client_user_session: TestClient,
         test_task_1: TaskModel,
@@ -102,7 +102,7 @@ class TestTaskRoute:
             test_task_3
         )
 
-    def test_get_task_paginated_via_started_at(
+    def test_success_via_started_at(
         self,
         test_client_user_session: TestClient,
         test_task_1: TaskModel,
@@ -123,7 +123,7 @@ class TestTaskRoute:
             test_task_3
         )
 
-    def test_get_task_paginated_via_ended_at(
+    def test_success_via_ended_at(
         self,
         test_client_user_session: TestClient,
         test_task_1: TaskModel,
@@ -141,7 +141,7 @@ class TestTaskRoute:
             test_task_2
         )
 
-    def test_get_task_paginated_via_duration(
+    def test_success_via_duration(
         self,
         test_client_user_session: TestClient,
         test_task_1: TaskModel,
@@ -160,18 +160,14 @@ class TestTaskRoute:
             test_task_3
         )
 
-    def test_get_task_paginated_min_retries_too_small(
-        self, test_client_user_session: TestClient
-    ):
+    def test_min_retries_too_small(self, test_client_user_session: TestClient):
         result = test_client_user_session.get("/tasks/paginated?min_retries=-1")
         assert result.status_code == status.HTTP_400_BAD_REQUEST
 
         data = result.json()
         assert data["detail"] == "Minimum retries must be a positive number"
 
-    def test_get_task_paginated_retry_range_backwards(
-        self, test_client_user_session: TestClient
-    ):
+    def test_retry_range_backwards(self, test_client_user_session: TestClient):
         result = test_client_user_session.get(
             "/tasks/paginated?min_retries=5&max_retries=1"
         )
@@ -180,18 +176,14 @@ class TestTaskRoute:
         data = result.json()
         assert data["detail"] == "Minimum retries is larger than maximum retries"
 
-    def test_get_task_paginated_duration_too_small(
-        self, test_client_user_session: TestClient
-    ):
+    def test_duration_too_small(self, test_client_user_session: TestClient):
         result = test_client_user_session.get("/tasks/paginated?duration=-1")
         assert result.status_code == status.HTTP_400_BAD_REQUEST
 
         data = result.json()
         assert data["detail"] == "Task duration must be a positive number"
 
-    def test_get_task_paginated_started_ended_range_backwards(
-        self, test_client_user_session: TestClient
-    ):
+    def test_start_end_range_backwards(self, test_client_user_session: TestClient):
         result = test_client_user_session.get(
             f"/tasks/paginated?started_at={datetime.now() + timedelta(minutes=6)}&ended_at={datetime.now()}"
         )
@@ -200,7 +192,9 @@ class TestTaskRoute:
         data = result.json()
         assert data["detail"] == "Started at time is larger than ended at time"
 
-    def test_get_task(
+
+class TestGetTaskRoute:
+    def test_success(
         self,
         test_client_user_session: TestClient,
         test_task_1: TaskModel,
@@ -212,7 +206,7 @@ class TestTaskRoute:
         assert TaskSchema.model_validate(data)
         assert TaskSchema.model_validate(data) == TaskSchema.model_validate(test_task_1)
 
-    def test_get_task_not_exist(
+    def test_not_found(
         self,
         test_client_user_session: TestClient,
         test_task_1: TaskModel,
@@ -223,7 +217,9 @@ class TestTaskRoute:
         data = result.json()
         assert data["detail"] == "Task does not exist"
 
-    def test_get_task_status(
+
+class TestGetTaskStatusRoute:
+    def test_success(
         self, test_client_user_session: TestClient, test_task_2: TaskModel
     ):
         mock_task = MagicMock()
@@ -243,7 +239,7 @@ class TestTaskRoute:
             "info": {"result": "done"},
         }
 
-    def test_get_task_status_task_not_exist(
+    def test_not_found(
         self, test_client_user_session: TestClient, test_task_2: TaskModel
     ):
         result = test_client_user_session.get(f"/tasks/{test_task_2.id}/status")
@@ -252,7 +248,7 @@ class TestTaskRoute:
         data = result.json()
         assert data["detail"] == "Task does not exist"
 
-    def test_get_task_status_is_pending(
+    def test_is_pending(
         self, test_client_user_session: TestClient, test_task_1: TaskModel
     ):
         result = test_client_user_session.get(f"/tasks/{test_task_1.task_id}/status")
@@ -261,7 +257,7 @@ class TestTaskRoute:
         data = result.json()
         assert data["detail"] == "Task is waiting to be processed"
 
-    def test_get_task_status_is_finished(
+    def test_is_finished(
         self, test_client_user_session: TestClient, test_task_3: TaskModel
     ):
         result = test_client_user_session.get(f"/tasks/{test_task_3.task_id}/status")

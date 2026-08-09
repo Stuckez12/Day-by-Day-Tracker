@@ -9,10 +9,8 @@ from src.services import AuthService
 from tests.api.constants import VALID_PASSWORD
 
 
-class TestAuthService:
-    def test_register_personnel(
-        self, test_session: Session, test_auth_service: AuthService
-    ):
+class TestRegisterAuthService:
+    def test_success(self, test_session: Session, test_auth_service: AuthService):
         data = CreatePersonnelRequest(
             email="email@email.com",
             password="Password1.",
@@ -32,7 +30,7 @@ class TestAuthService:
             test_session.delete(personnel)
             test_session.commit()
 
-    def test_register_personnel_email_already_in_use(
+    def test_email_already_in_use(
         self, test_auth_service: AuthService, test_personnel: PersonalModel
     ):
         data = CreatePersonnelRequest(
@@ -45,7 +43,7 @@ class TestAuthService:
         with pytest.raises(ValueError, match="Email already in use"):
             test_auth_service.register(data)
 
-    def test_register_personnel_password_hashing_fails(
+    def test_password_hashing_fails(
         self, mocker: MockerFixture, test_auth_service: AuthService
     ):
         mocker.patch.object(pwd_hash, "hash", side_effect=ValueError("Forced Error"))
@@ -62,7 +60,9 @@ class TestAuthService:
         ):
             test_auth_service.register(data)
 
-    def test_log_in_personnel(
+
+class TestLogInAuthService:
+    def test_success(
         self, test_auth_service: AuthService, test_personnel: PersonalModel
     ):
         data = LogInRequest(
@@ -73,7 +73,7 @@ class TestAuthService:
         result = test_auth_service.log_in(data)
         assert result == test_personnel
 
-    def test_log_in_personnel_invalid_email(self, test_auth_service: AuthService):
+    def test_invalid_email(self, test_auth_service: AuthService):
         data = LogInRequest(
             email="invalid@email.com",
             password=VALID_PASSWORD,
@@ -82,7 +82,7 @@ class TestAuthService:
         with pytest.raises(ValueError, match="Invalid email or password"):
             test_auth_service.log_in(data)
 
-    def test_log_in_personnel_invalid_password(
+    def test_invalid_password(
         self, test_auth_service: AuthService, test_personnel: PersonalModel
     ):
         data = LogInRequest(

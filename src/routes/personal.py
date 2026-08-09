@@ -19,14 +19,12 @@ api = APIRouter(prefix="/personal", tags=["Personal"])
 @api.get("", status_code=status.HTTP_200_OK, response_model=PersonnelSchema)
 def get_personnel(service: PersonalServiceDep, personnel_id: UUID):
     try:
-        personnel = service.get_by_id(personnel_id)
+        return service.get_by_id(personnel_id)
 
     except NoResultFound:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND, detail="Personnel does not exist"
         )
-
-    return personnel
 
 
 @api.get("/me", status_code=status.HTTP_200_OK, response_model=PersonnelSchema)

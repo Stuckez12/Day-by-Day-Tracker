@@ -9,8 +9,8 @@ from src.models import PersonalModel
 from src.schemas import PersonnelSchema, SlimPersonnelSchema
 
 
-class TestPersonalRoute:
-    def test_get_personnel_success(
+class TestGetPersonnelRoute:
+    def test_success(
         self,
         test_client_user_session: TestClient,
         test_session_personnel: PersonalModel,
@@ -25,7 +25,7 @@ class TestPersonalRoute:
             test_session_personnel
         )
 
-    def test_get_personnel_invalid_id(self, test_client_user_session: TestClient):
+    def test_invalid_id(self, test_client_user_session: TestClient):
         result = test_client_user_session.get(
             f"/personal?personnel_id={INVALID_PERSONNEL_ID}"
         )
@@ -34,7 +34,9 @@ class TestPersonalRoute:
         data = result.json()
         assert data["detail"] == "Personnel does not exist"
 
-    def test_get_personnel_self_success(
+
+class TestGetPersonnelSelfRoute:
+    def test_success(
         self,
         test_client_user_session: TestClient,
         test_session_personnel: PersonalModel,
@@ -47,14 +49,16 @@ class TestPersonalRoute:
             test_session_personnel
         )
 
-    def test_get_personnel_self_no_cookies(
+    def test_no_cookies(
         self,
         test_app: TestClient,
     ):
         result = test_app.get("/personal/me")
         assert result.status_code == status.HTTP_401_UNAUTHORIZED
 
-    def test_get_all_personnel_success(
+
+class TestGetAllPersonnelRoute:
+    def test_success(
         self,
         test_client_user_session: TestClient,
         test_personnel: PersonalModel,
@@ -68,7 +72,9 @@ class TestPersonalRoute:
         assert len(data) == 4
         assert all(SlimPersonnelSchema.model_validate(personnel) for personnel in data)
 
-    def test_update_personnel_details_update_all_values(
+
+class TestUpdatePersonnelDetailsRoute:
+    def test_update_all_values(
         self,
         test_session: Session,
         test_client_user: TestClient,
@@ -100,7 +106,7 @@ class TestPersonalRoute:
         assert personnel.first_name == "Updated"
         assert personnel.last_name == "Updated"
 
-    def test_update_personnel_details_update_first_name(
+    def test_update_first_name(
         self,
         test_session: Session,
         test_client_user: TestClient,
@@ -131,7 +137,7 @@ class TestPersonalRoute:
         assert personnel.first_name == "Updated"
         assert personnel.last_name == test_personnel.last_name
 
-    def test_update_personnel_details_update_last_name(
+    def test_update_last_name(
         self,
         test_session: Session,
         test_client_user: TestClient,
@@ -162,7 +168,7 @@ class TestPersonalRoute:
         assert personnel.first_name == test_personnel.first_name
         assert personnel.last_name == "Updated"
 
-    def test_update_personnel_details_update_nothing(
+    def test_update_nothing(
         self,
         test_session: Session,
         test_client_user: TestClient,
@@ -190,9 +196,7 @@ class TestPersonalRoute:
         assert personnel.first_name == test_personnel.first_name
         assert personnel.last_name == test_personnel.last_name
 
-    def test_update_personnel_details_invalid_empty_first_name(
-        self, test_client_user: TestClient
-    ):
+    def test_invalid_empty_first_name(self, test_client_user: TestClient):
         result = test_client_user.put(
             "/personal/me/details",
             json={"first_name": ""},
@@ -202,9 +206,7 @@ class TestPersonalRoute:
         data = result.json()
         assert data["detail"][0]["msg"] == "Value error, first_name must not be empty"
 
-    def test_update_personnel_details_invalid_empty_last_name(
-        self, test_client_user: TestClient
-    ):
+    def test_invalid_empty_last_name(self, test_client_user: TestClient):
         result = test_client_user.put(
             "/personal/me/details",
             json={"last_name": ""},
@@ -214,7 +216,9 @@ class TestPersonalRoute:
         data = result.json()
         assert data["detail"][0]["msg"] == "Value error, last_name must not be empty"
 
-    def test_update_personnel_email(
+
+class TestUpdatePersonnelEmailRoute:
+    def test_success(
         self,
         test_client_user: TestClient,
     ):
@@ -227,7 +231,9 @@ class TestPersonalRoute:
         data = result.json()
         assert data["email"] == "new@email.com"
 
-    def test_update_personnel_password(
+
+class TestUpdatePersonnelPasswordRoute:
+    def test_success(
         self,
         test_client_user: TestClient,
         test_personnel: PersonalModel,
@@ -247,7 +253,7 @@ class TestPersonalRoute:
         assert data["last_name"] == test_personnel.last_name
         assert data["email"] == test_personnel.email
 
-    def test_update_personnel_password_incorrect_current_password(
+    def test_incorrect_current_password(
         self,
         test_client_user: TestClient,
     ):
@@ -264,7 +270,7 @@ class TestPersonalRoute:
         assert "detail" in data
         assert data["detail"] == "Current password incorrect"
 
-    def test_update_personnel_password_password_hashing_fails(
+    def test_password_hashing_fails(
         self,
         mocker: MockerFixture,
         test_client_user: TestClient,
@@ -284,7 +290,9 @@ class TestPersonalRoute:
         assert "detail" in data
         assert data["detail"] == "Unable to hash password. Please try again"
 
-    def test_delete_personnel_success(
+
+class TestDeletePersonnelRoute:
+    def test_success(
         self,
         test_session: Session,
         test_client_user_session: TestClient,
@@ -306,9 +314,7 @@ class TestPersonalRoute:
 
         assert personnel is None
 
-    def test_delete_personnel_does_not_exist(
-        self, test_client_user_session: TestClient
-    ):
+    def test_invalid_id(self, test_client_user_session: TestClient):
         result = test_client_user_session.delete(
             f"/personal?personnel_id={INVALID_PERSONNEL_ID}"
         )
