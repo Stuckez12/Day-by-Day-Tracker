@@ -19,8 +19,6 @@ class TestTaskRoute:
         result = test_client_user_session.get(
             f"/tasks/paginated?task_id={test_task_1.task_id}"
         )
-        print(result)
-        print(type(result))
         assert result.status_code == status.HTTP_200_OK, result.json()
 
         data = result.json()
