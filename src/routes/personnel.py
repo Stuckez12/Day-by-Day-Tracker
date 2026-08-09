@@ -3,7 +3,7 @@ from uuid import UUID
 from fastapi import APIRouter, HTTPException, Query, status
 from sqlalchemy.exc import NoResultFound
 
-from src.common import CurrentPersonnelID, PersonnelServiceDep
+from src.common import CurrentPersonnel, PersonnelServiceDep
 from src.schemas import (
     PersonnelSchema,
     SlimPersonnelSchema,
@@ -28,11 +28,8 @@ def get_personnel(service: PersonnelServiceDep, personnel_id: UUID):
 
 
 @api.get("/me", status_code=status.HTTP_200_OK, response_model=PersonnelSchema)
-def get_personnel_self(
-    service: PersonnelServiceDep,
-    personnel_id: CurrentPersonnelID,
-):
-    return service.personnel_exists(personnel_id)
+def get_personnel_self(personnel: CurrentPersonnel):
+    return personnel
 
 
 @api.get(
@@ -60,10 +57,8 @@ def delete_personnel(
 def update_personnel_details(
     request: UpdatePersonnelDetailsRequest,
     service: PersonnelServiceDep,
-    personnel_id: CurrentPersonnelID,
+    personnel: CurrentPersonnel,
 ):
-    personnel = service.personnel_exists(personnel_id)
-
     return service.update_personnel_details(personnel, request)
 
 
@@ -73,10 +68,8 @@ def update_personnel_details(
 def update_personnel_email(
     request: UpdatePersonnelEmailRequest,
     service: PersonnelServiceDep,
-    personnel_id: CurrentPersonnelID,
+    personnel: CurrentPersonnel,
 ):
-    personnel = service.personnel_exists(personnel_id)
-
     return service.update_personnel_email(personnel, request)
 
 
@@ -86,8 +79,6 @@ def update_personnel_email(
 def update_personnel_password(
     request: UpdatePersonnelPasswordRequest,
     service: PersonnelServiceDep,
-    personnel_id: CurrentPersonnelID,
+    personnel: CurrentPersonnel,
 ):
-    personnel = service.personnel_exists(personnel_id)
-
     return service.update_personnel_password(personnel, request)

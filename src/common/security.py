@@ -6,7 +6,10 @@ import jwt
 from fastapi import Depends, HTTPException, status
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from jwt.exceptions import InvalidTokenError
+from sqlalchemy.exc import NoResultFound
 
+from src.common.dependencies import PersonnelServiceDep
+from src.models.personnel import PersonnelModel
 from src.settings import app_config
 
 
@@ -21,15 +24,24 @@ def create_access_token(personnel_id: UUID) -> str:
 
 
 def get_current_personnel_id(
+    personnel_service: PersonnelServiceDep,
     credentials: HTTPAuthorizationCredentials = Depends(bearer_scheme),
-) -> UUID:
+) -> PersonnelModel:
     try:
         payload = jwt.decode(
             credentials.credentials,
             app_config.JWT_SECRET,
             algorithms=["HS256"],
         )
-        return UUID(payload["sub"])
+        personnel_id = payload["sub"]
+
+        return personnel_service.get_by_id(personnel_id)
+
+    except NoResultFound:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Unable to find personnel. Please log in again",
+        )
 
     except (InvalidTokenError, KeyError, ValueError):
         raise HTTPException(
@@ -38,4 +50,4 @@ def get_current_personnel_id(
         )
 
 
-CurrentPersonnelID = Annotated[UUID, Depends(get_current_personnel_id)]
+CurrentPersonnel = Annotated[PersonnelModel, Depends(get_current_personnel_id)]
