@@ -12,19 +12,23 @@ from src.schemas import PersonnelSchema, SlimPersonnelSchema
 class TestPersonalRoute:
     def test_get_personnel_success(
         self,
-        test_client_user: TestClient,
-        test_personnel: PersonalModel,
+        test_client_user_session: TestClient,
+        test_session_personnel: PersonalModel,
     ):
-        result = test_client_user.get(f"/personal?personnel_id={test_personnel.id}")
+        result = test_client_user_session.get(
+            f"/personal?personnel_id={test_session_personnel.id}"
+        )
         assert result.status_code == status.HTTP_200_OK
 
         data = result.json()
         assert PersonnelSchema.model_validate(data) == PersonnelSchema.model_validate(
-            test_personnel
+            test_session_personnel
         )
 
-    def test_get_personnel_invalid_id(self, test_client_user: TestClient):
-        result = test_client_user.get(f"/personal?personnel_id={INVALID_PERSONNEL_ID}")
+    def test_get_personnel_invalid_id(self, test_client_user_session: TestClient):
+        result = test_client_user_session.get(
+            f"/personal?personnel_id={INVALID_PERSONNEL_ID}"
+        )
         assert result.status_code == status.HTTP_404_NOT_FOUND
 
         data = result.json()
@@ -32,39 +36,37 @@ class TestPersonalRoute:
 
     def test_get_personnel_self_success(
         self,
-        test_client_user: TestClient,
-        test_personnel: PersonalModel,
+        test_client_user_session: TestClient,
+        test_session_personnel: PersonalModel,
     ):
-        result = test_client_user.get("/personal/me")
+        result = test_client_user_session.get("/personal/me")
         assert result.status_code == status.HTTP_200_OK
 
         data = result.json()
         assert PersonnelSchema.model_validate(data) == PersonnelSchema.model_validate(
-            test_personnel
+            test_session_personnel
         )
 
     def test_get_personnel_self_no_cookies(
         self,
-        test_client: TestClient,
+        test_app: TestClient,
     ):
-        result = test_client.get("/personal/me")
+        result = test_app.get("/personal/me")
         assert result.status_code == status.HTTP_401_UNAUTHORIZED
 
     def test_get_all_personnel_success(
         self,
-        test_client_user: TestClient,
+        test_client_user_session: TestClient,
         test_personnel: PersonalModel,
         test_personnel_2: PersonalModel,
         test_personnel_3: PersonalModel,
     ):
-        result = test_client_user.get("/personal/all")
+        result = test_client_user_session.get("/personal/all")
         assert result.status_code == status.HTTP_200_OK
 
         data = result.json()
-        assert len(data) == 3
-        assert SlimPersonnelSchema.model_validate(data[0])
-        assert SlimPersonnelSchema.model_validate(data[1])
-        assert SlimPersonnelSchema.model_validate(data[2])
+        assert len(data) == 4
+        assert all(SlimPersonnelSchema.model_validate(personnel) for personnel in data)
 
     def test_update_personnel_details_update_all_values(
         self,
@@ -262,7 +264,7 @@ class TestPersonalRoute:
         assert "detail" in data
         assert data["detail"] == "Current password incorrect"
 
-    def test_update_personnel_password__password_hashing_fails(
+    def test_update_personnel_password_password_hashing_fails(
         self,
         mocker: MockerFixture,
         test_client_user: TestClient,
@@ -285,10 +287,12 @@ class TestPersonalRoute:
     def test_delete_personnel_success(
         self,
         test_session: Session,
-        test_client_user: TestClient,
+        test_client_user_session: TestClient,
         test_personnel: PersonalModel,
     ):
-        result = test_client_user.delete(f"/personal?personnel_id={test_personnel.id}")
+        result = test_client_user_session.delete(
+            f"/personal?personnel_id={test_personnel.id}"
+        )
         assert result.status_code == status.HTTP_200_OK
 
         data = result.json()
@@ -302,8 +306,10 @@ class TestPersonalRoute:
 
         assert personnel is None
 
-    def test_delete_personnel_does_not_exist(self, test_client_user: TestClient):
-        result = test_client_user.delete(
+    def test_delete_personnel_does_not_exist(
+        self, test_client_user_session: TestClient
+    ):
+        result = test_client_user_session.delete(
             f"/personal?personnel_id={INVALID_PERSONNEL_ID}"
         )
         assert result.status_code == status.HTTP_404_NOT_FOUND
