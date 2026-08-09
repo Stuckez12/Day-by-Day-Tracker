@@ -137,7 +137,7 @@ def test_auth_service(test_session: Session):
 
 
 @pytest.fixture(scope="function")
-def test_personal_service(test_session: Session):
+def test_personnel_service(test_session: Session):
     yield PersonnelService(db=test_session)
 
 
@@ -215,7 +215,7 @@ def test_ranker(
     test_session: Session, test_date_today: date, test_session_personnel: PersonnelModel
 ):
     model = RankerModel(
-        personal_id=test_session_personnel.id,
+        personnel_id=test_session_personnel.id,
         day=test_date_today,
         ranking=5,
     )
@@ -232,7 +232,7 @@ def test_ranker(
 @pytest.fixture(scope="function")
 def test_ranker_set_date(test_session: Session, test_session_personnel: PersonnelModel):
     model = RankerModel(
-        personal_id=test_session_personnel.id,
+        personnel_id=test_session_personnel.id,
         day=date(2000, 1, 1),
         ranking=10,
     )
@@ -251,7 +251,7 @@ def test_ranker_none(
     test_session: Session, test_date_today: date, test_session_personnel: PersonnelModel
 ):
     model = RankerModel(
-        personal_id=test_session_personnel.id,
+        personnel_id=test_session_personnel.id,
         day=test_date_today,
         ranking=None,
     )

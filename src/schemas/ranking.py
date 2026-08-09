@@ -7,7 +7,7 @@ from pydantic import BaseModel, model_validator
 
 class RankingSchema(BaseModel):
     id: uuid.UUID
-    personal_id: uuid.UUID
+    personnel_id: uuid.UUID
 
     day: date
     ranking: int | None

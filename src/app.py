@@ -1,3 +1,5 @@
+import logging
+
 from fastapi import FastAPI, Request, status
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
@@ -33,6 +35,8 @@ def create_app():
     app.include_router(api, prefix="/v1")
 
     if is_prod_env:
+        logging.info("Production Environment Detected.")
+        logging.info("Running Setup")
         upgrade_db()
 
     @app.exception_handler(TypeError)

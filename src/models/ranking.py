@@ -15,7 +15,7 @@ if TYPE_CHECKING:
 class RankerModel(BaseModel):
     __tablename__ = "ranker"
 
-    personal_id: Mapped[uuid.UUID] = mapped_column(
+    personnel_id: Mapped[uuid.UUID] = mapped_column(
         ForeignKey("personal.id", ondelete="CASCADE"), nullable=False
     )
     day: Mapped[date] = mapped_column(Date, nullable=False)
@@ -24,9 +24,9 @@ class RankerModel(BaseModel):
     text_events: Mapped[Optional[str]] = mapped_column(String, nullable=True)
     text_notes: Mapped[Optional[str]] = mapped_column(String, nullable=True)
 
-    personal: Mapped["PersonnelModel"] = relationship(back_populates="ranker")
+    personnel: Mapped["PersonnelModel"] = relationship(back_populates="ranker")
 
-    def __init__(self, personal_id: uuid.UUID, day: date, ranking: int | None = None):
-        self.personal_id = personal_id
+    def __init__(self, personnel_id: uuid.UUID, day: date, ranking: int | None = None):
+        self.personnel_id = personnel_id
         self.day = day
         self.ranking = ranking

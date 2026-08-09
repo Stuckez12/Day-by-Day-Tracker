@@ -120,7 +120,7 @@ class TestGetTodaysRankRoute:
             assert uuid.UUID(data["id"])
             assert datetime.fromisoformat(data["created_at"])
             assert datetime.fromisoformat(data["updated_at"])
-            assert uuid.UUID(data["personal_id"])
+            assert uuid.UUID(data["personnel_id"])
             assert data["day"] == test_date_today.strftime("%Y-%m-%d")
             assert data["ranking"] is None
 
@@ -159,7 +159,7 @@ class TestRankADayRoute:
 
         data = result.json()
         assert RankingSchema.model_validate(data)
-        assert data["personal_id"] == str(test_session_personnel.id)
+        assert data["personnel_id"] == str(test_session_personnel.id)
         assert data["day"] == test_date_today.strftime("%Y-%m-%d")
         assert data["ranking"] == 10
 
@@ -179,7 +179,7 @@ class TestRankADayRoute:
         data = result.json()
         try:
             assert RankingSchema(**data)
-            assert data["personal_id"] == str(test_session_personnel.id)
+            assert data["personnel_id"] == str(test_session_personnel.id)
             assert data["day"] == test_date_today.strftime("%Y-%m-%d")
             assert data["ranking"] == 10
 
@@ -208,7 +208,7 @@ class TestRankADayRoute:
 
         data = result.json()
         assert RankingSchema.model_validate(data)
-        assert data["personal_id"] == str(test_session_personnel.id)
+        assert data["personnel_id"] == str(test_session_personnel.id)
         assert data["day"] == test_date_today.strftime("%Y-%m-%d")
         assert data["ranking"] == 10
 

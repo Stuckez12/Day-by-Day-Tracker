@@ -14,7 +14,7 @@ def get_auth_service(db: DBSession) -> PersonnelService:
     return AuthService(db)
 
 
-def get_personal_service(db: DBSession) -> PersonnelService:
+def get_personnel_service(db: DBSession) -> PersonnelService:
     return PersonnelService(db)
 
 
@@ -27,6 +27,6 @@ def get_task_service(db: DBSession) -> TaskService:
 
 
 AuthServiceDep = Annotated[AuthService, Depends(get_auth_service)]
-PersonnelServiceDep = Annotated[PersonnelService, Depends(get_personal_service)]
+PersonnelServiceDep = Annotated[PersonnelService, Depends(get_personnel_service)]
 RankingServiceDep = Annotated[RankingService, Depends(get_ranking_service)]
 TaskServiceDep = Annotated[TaskService, Depends(get_task_service)]

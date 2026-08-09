@@ -16,7 +16,7 @@ from tests.api.constants import VALID_PASSWORD
 
 class TestCreatePersonnelPersonnelService:
     def test_success(
-        self, test_session: Session, test_personal_service: PersonnelService
+        self, test_session: Session, test_personnel_service: PersonnelService
     ):
         data = CreatePersonnelRequest(
             email="email@email.com",
@@ -25,7 +25,7 @@ class TestCreatePersonnelPersonnelService:
             last_name="User",
         )
 
-        personnel = test_personal_service.create_personnel(data)
+        personnel = test_personnel_service.create_personnel(data)
 
         try:
             assert personnel.email == data.email
@@ -37,23 +37,23 @@ class TestCreatePersonnelPersonnelService:
             test_session.delete(personnel)
             test_session.commit()
 
-    def test_invalid_pydantic_model(self, test_personal_service: PersonnelService):
+    def test_invalid_pydantic_model(self, test_personnel_service: PersonnelService):
         with pytest.raises(
             TypeError, match="Invalid data format provided for personnel"
         ):
-            test_personal_service.create_personnel(InvalidSchema())  # type: ignore
+            test_personnel_service.create_personnel(InvalidSchema())  # type: ignore
 
 
 class TestUpdatePersonnelDetailsPersonnelService:
     def test_success(
-        self, test_personnel: PersonnelModel, test_personal_service: PersonnelService
+        self, test_personnel: PersonnelModel, test_personnel_service: PersonnelService
     ):
         data = UpdatePersonnelDetailsRequest(
             first_name="Updated",
             last_name="Updated",
         )
 
-        updated_personnel = test_personal_service.update_personnel_details(
+        updated_personnel = test_personnel_service.update_personnel_details(
             test_personnel, data
         )
 
@@ -61,13 +61,13 @@ class TestUpdatePersonnelDetailsPersonnelService:
         assert updated_personnel.last_name == "Updated"
 
     def test_only_update_first_name(
-        self, test_personnel: PersonnelModel, test_personal_service: PersonnelService
+        self, test_personnel: PersonnelModel, test_personnel_service: PersonnelService
     ):
         data = UpdatePersonnelDetailsRequest(
             first_name="Updated",
         )
 
-        updated_personnel = test_personal_service.update_personnel_details(
+        updated_personnel = test_personnel_service.update_personnel_details(
             test_personnel, data
         )
 
@@ -75,13 +75,13 @@ class TestUpdatePersonnelDetailsPersonnelService:
         assert updated_personnel.last_name == test_personnel.last_name
 
     def test_only_update_last_name(
-        self, test_personnel: PersonnelModel, test_personal_service: PersonnelService
+        self, test_personnel: PersonnelModel, test_personnel_service: PersonnelService
     ):
         data = UpdatePersonnelDetailsRequest(
             last_name="Updated",
         )
 
-        updated_personnel = test_personal_service.update_personnel_details(
+        updated_personnel = test_personnel_service.update_personnel_details(
             test_personnel, data
         )
 
@@ -91,13 +91,13 @@ class TestUpdatePersonnelDetailsPersonnelService:
 
 class TestUpdatePersonnelEmailPersonnelService:
     def test_success(
-        self, test_personnel: PersonnelModel, test_personal_service: PersonnelService
+        self, test_personnel: PersonnelModel, test_personnel_service: PersonnelService
     ):
         data = UpdatePersonnelEmailRequest(
             email="updated@email.com",
         )
 
-        updated_email = test_personal_service.update_personnel_email(
+        updated_email = test_personnel_service.update_personnel_email(
             test_personnel, data
         )
         assert updated_email.email == data.email
@@ -105,14 +105,14 @@ class TestUpdatePersonnelEmailPersonnelService:
 
 class TestUpdatePersonnelPasswordPersonnelService:
     def test_success(
-        self, test_personnel: PersonnelModel, test_personal_service: PersonnelService
+        self, test_personnel: PersonnelModel, test_personnel_service: PersonnelService
     ):
         data = UpdatePersonnelPasswordRequest(
             current_password=VALID_PASSWORD,
             new_password="NewPassword123",
         )
 
-        updated_password = test_personal_service.update_personnel_password(
+        updated_password = test_personnel_service.update_personnel_password(
             test_personnel, data
         )
 

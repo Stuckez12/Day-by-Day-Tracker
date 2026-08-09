@@ -14,7 +14,7 @@ class TestGetRankRankerService:
         self, test_ranking_service: RankingService, test_ranker: RankerModel
     ):
         rank = test_ranking_service.get_by_date(
-            test_ranker.personal_id, test_ranker.day
+            test_ranker.personnel_id, test_ranker.day
         )
 
         assert rank == test_ranker
@@ -33,7 +33,7 @@ class TestGetRankRankerService:
         invalid_date = date(1, 1, 1)
 
         with pytest.raises(NoResultFound):
-            test_ranking_service.get_by_date(test_ranker.personal_id, invalid_date)
+            test_ranking_service.get_by_date(test_ranker.personnel_id, invalid_date)
 
 
 class TestInsertRankRankerService:
@@ -46,7 +46,7 @@ class TestInsertRankRankerService:
     ):
         rank = test_ranking_service.insert_new_date(test_personnel.id, test_date_today)
 
-        assert rank.personal_id == test_personnel.id
+        assert rank.personnel_id == test_personnel.id
         assert rank.day == test_date_today
         assert rank.ranking is None
 
@@ -73,7 +73,9 @@ class TestFetchRankRankerService:
         test_ranking_service: RankingService,
         test_ranker: RankerModel,
     ):
-        rank = test_ranking_service.fetch_date(test_ranker.personal_id, test_ranker.day)
+        rank = test_ranking_service.fetch_date(
+            test_ranker.personnel_id, test_ranker.day
+        )
 
         assert rank == test_ranker
 
@@ -86,7 +88,7 @@ class TestFetchRankRankerService:
     ):
         rank = test_ranking_service.fetch_date(test_personnel.id, test_date_today)
 
-        assert rank.personal_id == test_personnel.id
+        assert rank.personnel_id == test_personnel.id
         assert rank.day == test_date_today
         assert rank.ranking is None
 

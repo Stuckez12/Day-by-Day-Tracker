@@ -20,7 +20,7 @@ class PersonnelModel(BaseModel):
     last_name: Mapped[str] = mapped_column(String, nullable=False)
 
     ranker: Mapped["RankerModel"] = relationship(
-        back_populates="personal", cascade="all, delete-orphan"
+        back_populates="personnel", cascade="all, delete-orphan"
     )
 
     def __init__(
