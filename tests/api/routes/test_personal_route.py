@@ -5,18 +5,18 @@ from sqlalchemy.orm import Session
 from tests.api.constants import INVALID_PASSWORD, INVALID_PERSONNEL_ID, VALID_PASSWORD
 
 from src.common.password_hash import pwd_hash
-from src.models import PersonalModel
+from src.models import PersonnelModel
 from src.schemas import PersonnelSchema, SlimPersonnelSchema
 
 
-class TestPersonalRoute:
-    def test_get_personnel_success(
+class TestGetPersonnelRoute:
+    def test_success(
         self,
         test_client_user_session: TestClient,
-        test_session_personnel: PersonalModel,
+        test_session_personnel: PersonnelModel,
     ):
         result = test_client_user_session.get(
-            f"/personal?personnel_id={test_session_personnel.id}"
+            f"/personnel?personnel_id={test_session_personnel.id}"
         )
         assert result.status_code == status.HTTP_200_OK
 
@@ -25,21 +25,23 @@ class TestPersonalRoute:
             test_session_personnel
         )
 
-    def test_get_personnel_invalid_id(self, test_client_user_session: TestClient):
+    def test_invalid_id(self, test_client_user_session: TestClient):
         result = test_client_user_session.get(
-            f"/personal?personnel_id={INVALID_PERSONNEL_ID}"
+            f"/personnel?personnel_id={INVALID_PERSONNEL_ID}"
         )
         assert result.status_code == status.HTTP_404_NOT_FOUND
 
         data = result.json()
         assert data["detail"] == "Personnel does not exist"
 
-    def test_get_personnel_self_success(
+
+class TestGetPersonnelSelfRoute:
+    def test_success(
         self,
         test_client_user_session: TestClient,
-        test_session_personnel: PersonalModel,
+        test_session_personnel: PersonnelModel,
     ):
-        result = test_client_user_session.get("/personal/me")
+        result = test_client_user_session.get("/personnel/me")
         assert result.status_code == status.HTTP_200_OK
 
         data = result.json()
@@ -47,35 +49,39 @@ class TestPersonalRoute:
             test_session_personnel
         )
 
-    def test_get_personnel_self_no_cookies(
+    def test_no_cookies(
         self,
         test_app: TestClient,
     ):
-        result = test_app.get("/personal/me")
+        result = test_app.get("/personnel/me")
         assert result.status_code == status.HTTP_401_UNAUTHORIZED
 
-    def test_get_all_personnel_success(
+
+class TestGetAllPersonnelRoute:
+    def test_success(
         self,
         test_client_user_session: TestClient,
-        test_personnel: PersonalModel,
-        test_personnel_2: PersonalModel,
-        test_personnel_3: PersonalModel,
+        test_personnel: PersonnelModel,
+        test_personnel_2: PersonnelModel,
+        test_personnel_3: PersonnelModel,
     ):
-        result = test_client_user_session.get("/personal/all")
+        result = test_client_user_session.get("/personnel/all")
         assert result.status_code == status.HTTP_200_OK
 
         data = result.json()
         assert len(data) == 4
         assert all(SlimPersonnelSchema.model_validate(personnel) for personnel in data)
 
-    def test_update_personnel_details_update_all_values(
+
+class TestUpdatePersonnelDetailsRoute:
+    def test_update_all_values(
         self,
         test_session: Session,
         test_client_user: TestClient,
-        test_personnel: PersonalModel,
+        test_personnel: PersonnelModel,
     ):
         result = test_client_user.put(
-            "/personal/me/details",
+            "/personnel/me/details",
             json={
                 "first_name": "Updated",
                 "last_name": "Updated",
@@ -89,8 +95,8 @@ class TestPersonalRoute:
         assert data["last_name"] == "Updated"
 
         personnel = (
-            test_session.query(PersonalModel)
-            .filter(PersonalModel.id == test_personnel.id)
+            test_session.query(PersonnelModel)
+            .filter(PersonnelModel.id == test_personnel.id)
             .one()
         )
 
@@ -100,14 +106,14 @@ class TestPersonalRoute:
         assert personnel.first_name == "Updated"
         assert personnel.last_name == "Updated"
 
-    def test_update_personnel_details_update_first_name(
+    def test_update_first_name(
         self,
         test_session: Session,
         test_client_user: TestClient,
-        test_personnel: PersonalModel,
+        test_personnel: PersonnelModel,
     ):
         result = test_client_user.put(
-            "/personal/me/details",
+            "/personnel/me/details",
             json={
                 "first_name": "Updated",
             },
@@ -120,8 +126,8 @@ class TestPersonalRoute:
         assert data["last_name"] == test_personnel.last_name
 
         personnel = (
-            test_session.query(PersonalModel)
-            .filter(PersonalModel.id == test_personnel.id)
+            test_session.query(PersonnelModel)
+            .filter(PersonnelModel.id == test_personnel.id)
             .one()
         )
 
@@ -131,14 +137,14 @@ class TestPersonalRoute:
         assert personnel.first_name == "Updated"
         assert personnel.last_name == test_personnel.last_name
 
-    def test_update_personnel_details_update_last_name(
+    def test_update_last_name(
         self,
         test_session: Session,
         test_client_user: TestClient,
-        test_personnel: PersonalModel,
+        test_personnel: PersonnelModel,
     ):
         result = test_client_user.put(
-            "/personal/me/details",
+            "/personnel/me/details",
             json={
                 "last_name": "Updated",
             },
@@ -151,8 +157,8 @@ class TestPersonalRoute:
         assert data["last_name"] == "Updated"
 
         personnel = (
-            test_session.query(PersonalModel)
-            .filter(PersonalModel.id == test_personnel.id)
+            test_session.query(PersonnelModel)
+            .filter(PersonnelModel.id == test_personnel.id)
             .one()
         )
 
@@ -162,14 +168,14 @@ class TestPersonalRoute:
         assert personnel.first_name == test_personnel.first_name
         assert personnel.last_name == "Updated"
 
-    def test_update_personnel_details_update_nothing(
+    def test_update_nothing(
         self,
         test_session: Session,
         test_client_user: TestClient,
-        test_personnel: PersonalModel,
+        test_personnel: PersonnelModel,
     ):
         result = test_client_user.put(
-            "/personal/me/details",
+            "/personnel/me/details",
             json={},
         )
         assert result.status_code == status.HTTP_202_ACCEPTED
@@ -180,8 +186,8 @@ class TestPersonalRoute:
         assert data["last_name"] == test_personnel.last_name
 
         personnel = (
-            test_session.query(PersonalModel)
-            .filter(PersonalModel.id == test_personnel.id)
+            test_session.query(PersonnelModel)
+            .filter(PersonnelModel.id == test_personnel.id)
             .one()
         )
         test_session.refresh(personnel)
@@ -190,11 +196,9 @@ class TestPersonalRoute:
         assert personnel.first_name == test_personnel.first_name
         assert personnel.last_name == test_personnel.last_name
 
-    def test_update_personnel_details_invalid_empty_first_name(
-        self, test_client_user: TestClient
-    ):
+    def test_invalid_empty_first_name(self, test_client_user: TestClient):
         result = test_client_user.put(
-            "/personal/me/details",
+            "/personnel/me/details",
             json={"first_name": ""},
         )
         assert result.status_code == status.HTTP_422_UNPROCESSABLE_CONTENT
@@ -202,11 +206,9 @@ class TestPersonalRoute:
         data = result.json()
         assert data["detail"][0]["msg"] == "Value error, first_name must not be empty"
 
-    def test_update_personnel_details_invalid_empty_last_name(
-        self, test_client_user: TestClient
-    ):
+    def test_invalid_empty_last_name(self, test_client_user: TestClient):
         result = test_client_user.put(
-            "/personal/me/details",
+            "/personnel/me/details",
             json={"last_name": ""},
         )
         assert result.status_code == status.HTTP_422_UNPROCESSABLE_CONTENT
@@ -214,12 +216,14 @@ class TestPersonalRoute:
         data = result.json()
         assert data["detail"][0]["msg"] == "Value error, last_name must not be empty"
 
-    def test_update_personnel_email(
+
+class TestUpdatePersonnelEmailRoute:
+    def test_success(
         self,
         test_client_user: TestClient,
     ):
         result = test_client_user.put(
-            "/personal/me/email",
+            "/personnel/me/email",
             json={"email": "new@email.com"},
         )
         assert result.status_code == status.HTTP_202_ACCEPTED
@@ -227,13 +231,15 @@ class TestPersonalRoute:
         data = result.json()
         assert data["email"] == "new@email.com"
 
-    def test_update_personnel_password(
+
+class TestUpdatePersonnelPasswordRoute:
+    def test_success(
         self,
         test_client_user: TestClient,
-        test_personnel: PersonalModel,
+        test_personnel: PersonnelModel,
     ):
         result = test_client_user.put(
-            "/personal/me/password",
+            "/personnel/me/password",
             json={
                 "current_password": VALID_PASSWORD,
                 "new_password": "NewPassword123",
@@ -247,12 +253,12 @@ class TestPersonalRoute:
         assert data["last_name"] == test_personnel.last_name
         assert data["email"] == test_personnel.email
 
-    def test_update_personnel_password_incorrect_current_password(
+    def test_incorrect_current_password(
         self,
         test_client_user: TestClient,
     ):
         result = test_client_user.put(
-            "/personal/me/password",
+            "/personnel/me/password",
             json={
                 "current_password": INVALID_PASSWORD,
                 "new_password": "NewPassword123",
@@ -264,7 +270,7 @@ class TestPersonalRoute:
         assert "detail" in data
         assert data["detail"] == "Current password incorrect"
 
-    def test_update_personnel_password_password_hashing_fails(
+    def test_password_hashing_fails(
         self,
         mocker: MockerFixture,
         test_client_user: TestClient,
@@ -272,7 +278,7 @@ class TestPersonalRoute:
         mocker.patch.object(pwd_hash, "hash", side_effect=ValueError("Forced Error"))
 
         result = test_client_user.put(
-            "/personal/me/password",
+            "/personnel/me/password",
             json={
                 "current_password": VALID_PASSWORD,
                 "new_password": "NewPassword123",
@@ -284,14 +290,16 @@ class TestPersonalRoute:
         assert "detail" in data
         assert data["detail"] == "Unable to hash password. Please try again"
 
-    def test_delete_personnel_success(
+
+class TestDeletePersonnelRoute:
+    def test_success(
         self,
         test_session: Session,
         test_client_user_session: TestClient,
-        test_personnel: PersonalModel,
+        test_personnel: PersonnelModel,
     ):
         result = test_client_user_session.delete(
-            f"/personal?personnel_id={test_personnel.id}"
+            f"/personnel?personnel_id={test_personnel.id}"
         )
         assert result.status_code == status.HTTP_200_OK
 
@@ -299,18 +307,16 @@ class TestPersonalRoute:
         assert data is None
 
         personnel = (
-            test_session.query(PersonalModel)
-            .filter(PersonalModel.id == test_personnel.id)
+            test_session.query(PersonnelModel)
+            .filter(PersonnelModel.id == test_personnel.id)
             .scalar()
         )
 
         assert personnel is None
 
-    def test_delete_personnel_does_not_exist(
-        self, test_client_user_session: TestClient
-    ):
+    def test_invalid_id(self, test_client_user_session: TestClient):
         result = test_client_user_session.delete(
-            f"/personal?personnel_id={INVALID_PERSONNEL_ID}"
+            f"/personnel?personnel_id={INVALID_PERSONNEL_ID}"
         )
         assert result.status_code == status.HTTP_404_NOT_FOUND
 

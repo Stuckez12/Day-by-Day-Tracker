@@ -1,25 +1,25 @@
 from fastapi import Response
+from sqlalchemy.exc import NoResultFound
 from sqlalchemy.orm import Session
 
 from src.common.password_hash import pwd_hash
-from src.models import PersonalModel
-from src.schemas import CreatePersonnelRequest, LogInRequest, SlimPersonnelSchema
-from src.services.personal import PersonalService
+from src.models import PersonnelModel
+from src.schemas import CreatePersonnelRequest, LogInRequest
+from src.services.personnel import PersonnelService
 
 
-class AuthService(PersonalService):
+class AuthService(PersonnelService):
     def __init__(self, db: Session) -> None:
         super().__init__(db=db)
 
-    def register(self, data: CreatePersonnelRequest) -> PersonalModel:
-        exists = (
-            self.db.query(PersonalModel)
-            .filter(PersonalModel.email == data.email)
-            .first()
-        )
+    def register(self, data: CreatePersonnelRequest) -> PersonnelModel:
+        try:
+            self.get_by_email(data.email)
 
-        if exists:
             raise ValueError("Email already in use")
+
+        except NoResultFound:
+            pass
 
         try:
             data.password = pwd_hash.hash(data.password)
@@ -29,27 +29,26 @@ class AuthService(PersonalService):
 
         return self.create_personnel(data)
 
-    def log_in(self, data: LogInRequest) -> SlimPersonnelSchema:
-        failed_login_message = "Invalid email or password"
+    def log_in(self, data: LogInRequest) -> PersonnelModel:
+        try:
+            personnel = (
+                self.db.query(PersonnelModel)
+                .filter(PersonnelModel.email == data.email)
+                .one()
+            )
 
-        personnel = (
-            self.db.query(PersonalModel)
-            .filter(PersonalModel.email == data.email)
-            .first()
-        )
-
-        if not personnel:
-            raise ValueError(failed_login_message)
+        except NoResultFound:
+            raise ValueError("Invalid email or password")
 
         confirm_password = pwd_hash.verify(data.password, personnel.password)
 
         if not confirm_password:
-            raise ValueError(failed_login_message)
+            raise ValueError("Invalid email or password")
 
-        return SlimPersonnelSchema.model_validate(personnel)
+        return personnel
 
     def set_login_cookies(
-        self, response: Response, personnel: PersonalModel
+        self, response: Response, personnel: PersonnelModel
     ) -> Response:
         response.set_cookie(
             "personnel_id",

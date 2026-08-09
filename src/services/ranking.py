@@ -23,7 +23,7 @@ class RankingService(BaseDBService[RankerModel]):
         return (
             self.db.query(RankerModel)
             .filter(
-                RankerModel.personal_id == personnel_id,
+                RankerModel.personnel_id == personnel_id,
                 RankerModel.day == date,
             )
             .one()
@@ -32,7 +32,7 @@ class RankingService(BaseDBService[RankerModel]):
     def get_all_personnel_rankings(self, personnel_id: uuid.UUID):
         return (
             self.db.query(RankerModel)
-            .filter(RankerModel.personal_id == personnel_id)
+            .filter(RankerModel.personnel_id == personnel_id)
             .order_by(RankerModel.day.desc())
             .all()
         )
@@ -41,7 +41,7 @@ class RankingService(BaseDBService[RankerModel]):
         return (
             self.db.query(RankerModel)
             .filter(
-                RankerModel.personal_id == personnel_id,
+                RankerModel.personnel_id == personnel_id,
                 RankerModel.day >= range.min_date,
                 RankerModel.day <= range.max_date,
             )
@@ -51,7 +51,7 @@ class RankingService(BaseDBService[RankerModel]):
 
     def insert_new_date(self, personnel_id: uuid.UUID, date: date) -> RankerModel:
         row = RankerModel(
-            personal_id=personnel_id,
+            personnel_id=personnel_id,
             day=date,
             ranking=None,
         )

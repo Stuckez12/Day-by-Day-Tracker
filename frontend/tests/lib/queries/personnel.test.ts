@@ -22,14 +22,14 @@ describe("getPersonnelQuery", () => {
     const token = APIFixture.mockToken();
     APIFixture.mockGet(
       {
-        url_path: "/v1/personal/me",
+        url_path: "/v1/personnel/me",
       },
       { ok: true, data: {} },
     );
     await getPersonnelQuery();
 
     expect(APIFixture.mockAPIGet).toHaveBeenCalledWith({
-      url_path: "/v1/personal/me",
+      url_path: "/v1/personnel/me",
       token: token,
     });
   });
@@ -37,7 +37,7 @@ describe("getPersonnelQuery", () => {
   it("fails with no token", async () => {
     APIFixture.mockGet(
       {
-        url_path: "/v1/personal/me",
+        url_path: "/v1/personnel/me",
       },
       { ok: true, data: {} },
     );
@@ -55,14 +55,14 @@ describe("updatePersonnelInfoQuery", () => {
     const token = APIFixture.mockToken();
     APIFixture.mockPut(
       {
-        url_path: "/v1/personal/me/details",
+        url_path: "/v1/personnel/me/details",
       },
       { ok: true, data: {} },
     );
     await updatePersonnelInfoQuery(data);
 
     expect(APIFixture.mockAPIPut).toHaveBeenCalledWith({
-      url_path: "/v1/personal/me/details",
+      url_path: "/v1/personnel/me/details",
       token: token,
       body: data,
     });
@@ -75,7 +75,7 @@ describe("updatePersonnelInfoQuery", () => {
     } as UpdatePersonnelInfo;
     APIFixture.mockPut(
       {
-        url_path: "/v1/personal/me/details",
+        url_path: "/v1/personnel/me/details",
       },
       { ok: true, data: {} },
     );
@@ -92,14 +92,14 @@ describe("updatePersonnelEmailQuery", () => {
     const token = APIFixture.mockToken();
     APIFixture.mockPut(
       {
-        url_path: "/v1/personal/me/email",
+        url_path: "/v1/personnel/me/email",
       },
       { ok: true, data: {} },
     );
     await updatePersonnelEmailQuery(data);
 
     expect(APIFixture.mockAPIPut).toHaveBeenCalledWith({
-      url_path: "/v1/personal/me/email",
+      url_path: "/v1/personnel/me/email",
       token: token,
       body: data,
     });
@@ -111,7 +111,7 @@ describe("updatePersonnelEmailQuery", () => {
     } as UpdatePersonnelEmail;
     APIFixture.mockPut(
       {
-        url_path: "/v1/personal/me/email",
+        url_path: "/v1/personnel/me/email",
       },
       { ok: true, data: {} },
     );
@@ -126,7 +126,7 @@ describe("updatePersonnelEmailQuery", () => {
     const token = APIFixture.mockToken();
     APIFixture.mockPut(
       {
-        url_path: "/v1/personal/me/email",
+        url_path: "/v1/personnel/me/email",
       },
       { ok: true, data: {} },
     );
@@ -148,7 +148,7 @@ describe("updatePersonnelEmailQuery", () => {
     APIFixture.mockToken();
     APIFixture.mockPut(
       {
-        url_path: "/v1/personal/me/email",
+        url_path: "/v1/personnel/me/email",
       },
       { ok: true, data: {} },
     );
@@ -176,14 +176,14 @@ describe("updatePersonnelPasswordQuery", () => {
     const token = APIFixture.mockToken();
     APIFixture.mockPut(
       {
-        url_path: "/v1/personal/me/password",
+        url_path: "/v1/personnel/me/password",
       },
       { ok: true, data: {} },
     );
     await updatePersonnelPasswordQuery(data);
 
     expect(APIFixture.mockAPIPut).toHaveBeenCalledWith({
-      url_path: "/v1/personal/me/password",
+      url_path: "/v1/personnel/me/password",
       token: token,
       body: data,
     });
@@ -197,7 +197,7 @@ describe("updatePersonnelPasswordQuery", () => {
     } as UpdatePersonnelPassword;
     APIFixture.mockPut(
       {
-        url_path: "/v1/personal/me/password",
+        url_path: "/v1/personnel/me/password",
       },
       { ok: true, data: {} },
     );
@@ -215,7 +215,7 @@ describe("updatePersonnelPasswordQuery", () => {
     // } as UpdatePersonnelPassword;
     // APIFixture.mockPut(
     //   {
-    //     url_path: "/v1/personal/me/email",
+    //     url_path: "/v1/personnel/me/email",
     //   },
     //   { ok: true, data: {} },
     // );
@@ -231,7 +231,7 @@ describe("updatePersonnelPasswordQuery", () => {
     APIFixture.mockToken();
     APIFixture.mockPut(
       {
-        url_path: "/v1/personal/me/email",
+        url_path: "/v1/personnel/me/email",
       },
       { ok: true, data: {} },
     );

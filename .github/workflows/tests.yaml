@@ -49,17 +49,34 @@ jobs:
     needs: type-checker
     runs-on: ubuntu-latest
 
+    env:
+      APP_ENV: test
+
+      # Database
+      DATABASE_USERNAME: testing
+      DATABASE_PASSWORD: testing
+      DATABASE_HOST: localhost
+      DATABASE_PORT: 5435
+      DATABASE_DB_NAME: test_dbdt
+
+      # Celery
+      REDIS_URL: redis://localhost:6379
+
+      # Backup file paths
+      EXTERNAL_BACKUP_PATH: ${{ github.workspace }}
+      BACKUP_PATH: /
+
     services:
-      postgres-testing:
+      postgres:
         image: postgres:17
         env:
-          POSTGRES_USER: testing
-          POSTGRES_PASSWORD: testing
-          POSTGRES_DB: test_dbdt
+          POSTGRES_USER: ${{ env.DATABASE_USERNAME }}
+          POSTGRES_PASSWORD: ${{ env.DATABASE_PASSWORD }}
+          POSTGRES_DB: ${{ env.DATABASE_DB_NAME }}
         ports:
           - 5435:5432
         options: >-
-          --health-cmd="pg_isready -U myuser"
+          --health-cmd="pg_isready -U testing"
           --health-interval=5s
           --health-timeout=5s
           --health-retries=10
@@ -92,21 +109,12 @@ jobs:
         run: |
           uv sync
 
+      - name: Alembic Checks
+        run: |
+          uv run alembic upgrade head
+          uv run alembic downgrade base
+          uv run alembic upgrade head
+          uv run alembic check
+
       - name: Tests Execution
         run: uv run pytest -vv
-        env:
-          APP_ENV: test
-
-          # Database
-          DATABASE_USERNAME: testing
-          DATABASE_PASSWORD: testing
-          DATABASE_HOST: localhost
-          DATABASE_PORT: 5435
-          DATABASE_DB_NAME: test_dbdt
-
-          # Celery
-          REDIS_URL: redis://localhost:6379
-
-          # Backup file paths
-          EXTERNAL_BACKUP_PATH: ${{ github.workspace }}
-          BACKUP_PATH: /

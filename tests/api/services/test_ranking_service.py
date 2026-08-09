@@ -5,21 +5,21 @@ import pytest
 from sqlalchemy.exc import IntegrityError, NoResultFound
 from sqlalchemy.orm import Session
 
-from src.models import PersonalModel, RankerModel
+from src.models import PersonnelModel, RankerModel
 from src.services import RankingService
 
 
-class TestRankerService:
-    def test_get_rank_by_date_success(
+class TestGetRankRankerService:
+    def test_success(
         self, test_ranking_service: RankingService, test_ranker: RankerModel
     ):
         rank = test_ranking_service.get_by_date(
-            test_ranker.personal_id, test_ranker.day
+            test_ranker.personnel_id, test_ranker.day
         )
 
         assert rank == test_ranker
 
-    def test_get_rank_by_date_invalid_personnel(
+    def test_invalid_personnel(
         self, test_ranking_service: RankingService, test_ranker: RankerModel
     ):
         invalid_personnel_id = UUID("12345678-1234-5678-1234-567812345678")
@@ -27,31 +27,33 @@ class TestRankerService:
         with pytest.raises(NoResultFound):
             test_ranking_service.get_by_date(invalid_personnel_id, test_ranker.day)
 
-    def test_get_rank_by_date_invalid_date(
+    def test_invalid_date(
         self, test_ranking_service: RankingService, test_ranker: RankerModel
     ):
         invalid_date = date(1, 1, 1)
 
         with pytest.raises(NoResultFound):
-            test_ranking_service.get_by_date(test_ranker.personal_id, invalid_date)
+            test_ranking_service.get_by_date(test_ranker.personnel_id, invalid_date)
 
-    def test_insert_new_ranked_date_success(
+
+class TestInsertRankRankerService:
+    def test_success(
         self,
         test_session: Session,
         test_ranking_service: RankingService,
-        test_personnel: PersonalModel,
+        test_personnel: PersonnelModel,
         test_date_today: date,
     ):
         rank = test_ranking_service.insert_new_date(test_personnel.id, test_date_today)
 
-        assert rank.personal_id == test_personnel.id
+        assert rank.personnel_id == test_personnel.id
         assert rank.day == test_date_today
         assert rank.ranking is None
 
         test_session.delete(rank)
         test_session.commit()
 
-    def test_insert_new_ranked_date_invalid_personnel_id(
+    def test_invalid_personnel_id(
         self,
         test_session: Session,
         test_ranking_service: RankingService,
@@ -64,32 +66,38 @@ class TestRankerService:
 
         test_session.rollback()
 
-    def test_fetch_date_date_exists(
+
+class TestFetchRankRankerService:
+    def test_success(
         self,
         test_ranking_service: RankingService,
         test_ranker: RankerModel,
     ):
-        rank = test_ranking_service.fetch_date(test_ranker.personal_id, test_ranker.day)
+        rank = test_ranking_service.fetch_date(
+            test_ranker.personnel_id, test_ranker.day
+        )
 
         assert rank == test_ranker
 
-    def test_fetch_date_date_does_not_exists(
+    def test_not_found(
         self,
         test_session: Session,
         test_ranking_service: RankingService,
-        test_personnel: PersonalModel,
+        test_personnel: PersonnelModel,
         test_date_today: date,
     ):
         rank = test_ranking_service.fetch_date(test_personnel.id, test_date_today)
 
-        assert rank.personal_id == test_personnel.id
+        assert rank.personnel_id == test_personnel.id
         assert rank.day == test_date_today
         assert rank.ranking is None
 
         test_session.delete(rank)
         test_session.commit()
 
-    def test_rank_today_success(
+
+class TestRankTodayRankerService:
+    def test_success(
         self, test_ranking_service: RankingService, test_ranker: RankerModel
     ):
         ranked = test_ranking_service.rank_today(test_ranker, 10)

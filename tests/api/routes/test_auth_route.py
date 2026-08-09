@@ -9,15 +9,13 @@ from sqlalchemy.orm import Session
 from tests.api.constants import INVALID_PASSWORD, VALID_PASSWORD
 
 from src.common.password_hash import pwd_hash
-from src.models import PersonalModel
-from src.schemas.personal import SlimPersonnelSchema
+from src.models import PersonnelModel
+from src.schemas.personnel import SlimPersonnelSchema
 from src.settings import app_config
 
 
-class TestAuthRoute:
-    def test_register_personnel_success(
-        self, test_session: Session, test_app: TestClient
-    ):
+class TestRegistrationRoute:
+    def test_success(self, test_session: Session, test_app: TestClient):
         request_data = {
             "email": "test@email.now",
             "password": "Password1.",
@@ -36,7 +34,7 @@ class TestAuthRoute:
         assert data["first_name"] == request_data["first_name"]
         assert data["last_name"] == request_data["last_name"]
 
-        test_session.query(PersonalModel).delete()
+        test_session.query(PersonnelModel).delete()
         test_session.commit()
 
     @pytest.mark.parametrize(
@@ -48,7 +46,7 @@ class TestAuthRoute:
             ("last_name", "Value error, last_name must not be empty"),
         ],
     )
-    def test_register_personnel_empty_data(
+    def test_empty_data(
         self,
         test_app: TestClient,
         empty_param_name: str,
@@ -72,10 +70,10 @@ class TestAuthRoute:
 
         assert data["detail"][0]["msg"] == expected_response
 
-    def test_register_personnel_email_already_in_use(
+    def test_email_already_in_use(
         self,
         test_client_user_session: TestClient,
-        test_session_personnel: PersonalModel,
+        test_session_personnel: PersonnelModel,
     ):
         result = test_client_user_session.post(
             "/auth/register",
@@ -91,7 +89,7 @@ class TestAuthRoute:
         data = result.json()
         assert data["detail"] == "Email already in use"
 
-    def test_register_personnel_password_hashing_fails(
+    def test_password_hashing_fails(
         self,
         mocker: MockerFixture,
         test_client_user_session: TestClient,
@@ -112,10 +110,12 @@ class TestAuthRoute:
         data = result.json()
         assert data["detail"] == "Unable to hash password. Please try again"
 
-    def test_log_in(
+
+class TestLogInRoute:
+    def test_success(
         self,
         test_app: TestClient,
-        test_session_personnel: PersonalModel,
+        test_session_personnel: PersonnelModel,
     ):
         result = test_app.post(
             "/auth/login",
@@ -140,7 +140,7 @@ class TestAuthRoute:
             "Mismatched schema returned"
         )
 
-    def test_log_in_user_does_not_exist(self, test_app: TestClient):
+    def test_invalid_email(self, test_app: TestClient, test_personnel: PersonnelModel):
         result = test_app.post(
             "/auth/login",
             json={
@@ -153,8 +153,8 @@ class TestAuthRoute:
         data = result.json()
         assert data["detail"] == "Invalid email or password"
 
-    def test_log_in_invalid_password(
-        self, test_app: TestClient, test_personnel: PersonalModel
+    def test_invalid_password(
+        self, test_app: TestClient, test_personnel: PersonnelModel
     ):
         result = test_app.post(
             "/auth/login",

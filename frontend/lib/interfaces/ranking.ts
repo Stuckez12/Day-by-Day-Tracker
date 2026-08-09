@@ -5,7 +5,7 @@ export interface RankingProp {
   created_at: string;
   updated_at: string;
 
-  personal_id: string;
+  personnel_id: string;
 
   day: string;
   ranking: number;
