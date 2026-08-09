@@ -5,7 +5,7 @@ from sqlalchemy.orm import Session
 from tests.api.constants import INVALID_PASSWORD, INVALID_PERSONNEL_ID, VALID_PASSWORD
 
 from src.common.password_hash import pwd_hash
-from src.models import PersonalModel
+from src.models import PersonnelModel
 from src.schemas import PersonnelSchema, SlimPersonnelSchema
 
 
@@ -13,7 +13,7 @@ class TestGetPersonnelRoute:
     def test_success(
         self,
         test_client_user_session: TestClient,
-        test_session_personnel: PersonalModel,
+        test_session_personnel: PersonnelModel,
     ):
         result = test_client_user_session.get(
             f"/personal?personnel_id={test_session_personnel.id}"
@@ -39,7 +39,7 @@ class TestGetPersonnelSelfRoute:
     def test_success(
         self,
         test_client_user_session: TestClient,
-        test_session_personnel: PersonalModel,
+        test_session_personnel: PersonnelModel,
     ):
         result = test_client_user_session.get("/personal/me")
         assert result.status_code == status.HTTP_200_OK
@@ -61,9 +61,9 @@ class TestGetAllPersonnelRoute:
     def test_success(
         self,
         test_client_user_session: TestClient,
-        test_personnel: PersonalModel,
-        test_personnel_2: PersonalModel,
-        test_personnel_3: PersonalModel,
+        test_personnel: PersonnelModel,
+        test_personnel_2: PersonnelModel,
+        test_personnel_3: PersonnelModel,
     ):
         result = test_client_user_session.get("/personal/all")
         assert result.status_code == status.HTTP_200_OK
@@ -78,7 +78,7 @@ class TestUpdatePersonnelDetailsRoute:
         self,
         test_session: Session,
         test_client_user: TestClient,
-        test_personnel: PersonalModel,
+        test_personnel: PersonnelModel,
     ):
         result = test_client_user.put(
             "/personal/me/details",
@@ -95,8 +95,8 @@ class TestUpdatePersonnelDetailsRoute:
         assert data["last_name"] == "Updated"
 
         personnel = (
-            test_session.query(PersonalModel)
-            .filter(PersonalModel.id == test_personnel.id)
+            test_session.query(PersonnelModel)
+            .filter(PersonnelModel.id == test_personnel.id)
             .one()
         )
 
@@ -110,7 +110,7 @@ class TestUpdatePersonnelDetailsRoute:
         self,
         test_session: Session,
         test_client_user: TestClient,
-        test_personnel: PersonalModel,
+        test_personnel: PersonnelModel,
     ):
         result = test_client_user.put(
             "/personal/me/details",
@@ -126,8 +126,8 @@ class TestUpdatePersonnelDetailsRoute:
         assert data["last_name"] == test_personnel.last_name
 
         personnel = (
-            test_session.query(PersonalModel)
-            .filter(PersonalModel.id == test_personnel.id)
+            test_session.query(PersonnelModel)
+            .filter(PersonnelModel.id == test_personnel.id)
             .one()
         )
 
@@ -141,7 +141,7 @@ class TestUpdatePersonnelDetailsRoute:
         self,
         test_session: Session,
         test_client_user: TestClient,
-        test_personnel: PersonalModel,
+        test_personnel: PersonnelModel,
     ):
         result = test_client_user.put(
             "/personal/me/details",
@@ -157,8 +157,8 @@ class TestUpdatePersonnelDetailsRoute:
         assert data["last_name"] == "Updated"
 
         personnel = (
-            test_session.query(PersonalModel)
-            .filter(PersonalModel.id == test_personnel.id)
+            test_session.query(PersonnelModel)
+            .filter(PersonnelModel.id == test_personnel.id)
             .one()
         )
 
@@ -172,7 +172,7 @@ class TestUpdatePersonnelDetailsRoute:
         self,
         test_session: Session,
         test_client_user: TestClient,
-        test_personnel: PersonalModel,
+        test_personnel: PersonnelModel,
     ):
         result = test_client_user.put(
             "/personal/me/details",
@@ -186,8 +186,8 @@ class TestUpdatePersonnelDetailsRoute:
         assert data["last_name"] == test_personnel.last_name
 
         personnel = (
-            test_session.query(PersonalModel)
-            .filter(PersonalModel.id == test_personnel.id)
+            test_session.query(PersonnelModel)
+            .filter(PersonnelModel.id == test_personnel.id)
             .one()
         )
         test_session.refresh(personnel)
@@ -236,7 +236,7 @@ class TestUpdatePersonnelPasswordRoute:
     def test_success(
         self,
         test_client_user: TestClient,
-        test_personnel: PersonalModel,
+        test_personnel: PersonnelModel,
     ):
         result = test_client_user.put(
             "/personal/me/password",
@@ -296,7 +296,7 @@ class TestDeletePersonnelRoute:
         self,
         test_session: Session,
         test_client_user_session: TestClient,
-        test_personnel: PersonalModel,
+        test_personnel: PersonnelModel,
     ):
         result = test_client_user_session.delete(
             f"/personal?personnel_id={test_personnel.id}"
@@ -307,8 +307,8 @@ class TestDeletePersonnelRoute:
         assert data is None
 
         personnel = (
-            test_session.query(PersonalModel)
-            .filter(PersonalModel.id == test_personnel.id)
+            test_session.query(PersonnelModel)
+            .filter(PersonnelModel.id == test_personnel.id)
             .scalar()
         )
 

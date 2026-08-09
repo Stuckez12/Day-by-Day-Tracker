@@ -4,7 +4,7 @@ from typing import Annotated
 from fastapi import APIRouter, Depends, HTTPException, Query, status
 from sqlalchemy.exc import NoResultFound
 
-from src.common import CurrentPersonnelID, PersonalServiceDep, RankingServiceDep
+from src.common import CurrentPersonnelID, PersonnelServiceDep, RankingServiceDep
 from src.schemas import (
     DateRangeRequest,
     RankingADayRequest,
@@ -20,7 +20,7 @@ api = APIRouter(prefix="/ranking", tags=["Ranking"])
 @api.get("", response_model=RankingSchema, status_code=status.HTTP_200_OK)
 def get_ranking(
     service: RankingServiceDep,
-    personnel_service: PersonalServiceDep,
+    personnel_service: PersonnelServiceDep,
     personnel_id: CurrentPersonnelID,
     date: date = Query(default_factory=date.today, title="Date"),
 ):

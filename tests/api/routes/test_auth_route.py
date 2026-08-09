@@ -9,8 +9,8 @@ from sqlalchemy.orm import Session
 from tests.api.constants import INVALID_PASSWORD, VALID_PASSWORD
 
 from src.common.password_hash import pwd_hash
-from src.models import PersonalModel
-from src.schemas.personal import SlimPersonnelSchema
+from src.models import PersonnelModel
+from src.schemas.personnel import SlimPersonnelSchema
 from src.settings import app_config
 
 
@@ -34,7 +34,7 @@ class TestRegistrationRoute:
         assert data["first_name"] == request_data["first_name"]
         assert data["last_name"] == request_data["last_name"]
 
-        test_session.query(PersonalModel).delete()
+        test_session.query(PersonnelModel).delete()
         test_session.commit()
 
     @pytest.mark.parametrize(
@@ -73,7 +73,7 @@ class TestRegistrationRoute:
     def test_email_already_in_use(
         self,
         test_client_user_session: TestClient,
-        test_session_personnel: PersonalModel,
+        test_session_personnel: PersonnelModel,
     ):
         result = test_client_user_session.post(
             "/auth/register",
@@ -115,7 +115,7 @@ class TestLogInRoute:
     def test_success(
         self,
         test_app: TestClient,
-        test_session_personnel: PersonalModel,
+        test_session_personnel: PersonnelModel,
     ):
         result = test_app.post(
             "/auth/login",
@@ -140,7 +140,7 @@ class TestLogInRoute:
             "Mismatched schema returned"
         )
 
-    def test_invalid_email(self, test_app: TestClient, test_personnel: PersonalModel):
+    def test_invalid_email(self, test_app: TestClient, test_personnel: PersonnelModel):
         result = test_app.post(
             "/auth/login",
             json={
@@ -154,7 +154,7 @@ class TestLogInRoute:
         assert data["detail"] == "Invalid email or password"
 
     def test_invalid_password(
-        self, test_app: TestClient, test_personnel: PersonalModel
+        self, test_app: TestClient, test_personnel: PersonnelModel
     ):
         result = test_app.post(
             "/auth/login",

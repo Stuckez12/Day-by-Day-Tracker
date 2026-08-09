@@ -10,7 +10,7 @@ if TYPE_CHECKING:
     from src.models import RankerModel
 
 
-class PersonalModel(BaseModel):
+class PersonnelModel(BaseModel):
     __tablename__ = "personal"
 
     email: Mapped[str] = mapped_column(String, nullable=False, unique=True)

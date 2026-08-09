@@ -5,7 +5,7 @@ from fastapi import status
 from fastapi.testclient import TestClient
 from sqlalchemy.orm import Session
 
-from src.models import PersonalModel, RankerModel
+from src.models import PersonnelModel, RankerModel
 from src.schemas import RankingSchema
 
 
@@ -148,7 +148,7 @@ class TestRankADayRoute:
         self,
         test_client_user_session: TestClient,
         test_date_today: date,
-        test_session_personnel: PersonalModel,
+        test_session_personnel: PersonnelModel,
         test_ranker_none: RankerModel,
     ):
         result = test_client_user_session.put(
@@ -168,7 +168,7 @@ class TestRankADayRoute:
         test_session: Session,
         test_client_user_session: TestClient,
         test_date_today: date,
-        test_session_personnel: PersonalModel,
+        test_session_personnel: PersonnelModel,
     ):
         result = test_client_user_session.put(
             "/ranking/rank",
@@ -197,7 +197,7 @@ class TestRankADayRoute:
         self,
         test_client_user_session: TestClient,
         test_date_today: date,
-        test_session_personnel: PersonalModel,
+        test_session_personnel: PersonnelModel,
         test_ranker_none: RankerModel,
     ):
         result = test_client_user_session.put(
@@ -217,7 +217,7 @@ class TestRankADayRoute:
         test_session: Session,
         test_client_user_session: TestClient,
         test_date_today: date,
-        test_session_personnel: PersonalModel,
+        test_session_personnel: PersonnelModel,
         test_ranker_none: RankerModel,
     ):
         test_ranker_none.day = test_date_today - timedelta(days=30)

@@ -88,13 +88,5 @@ known-first-party = ["src"]
 [tool.ruff.lint.per-file-ignores]
 "__init__.py" = ["F401"]
 
-[tool.ty]
-# ty checks untyped defs by default, so no equivalent needed for:
-# check_untyped_defs = true
-
-[tool.ty.rules]
-# Equivalent to ignore_missing_imports = true
-unresolved-import = "ignore"
-
 [tool.ty.src]
 exclude = ["src/migrations/**","tests/**"]

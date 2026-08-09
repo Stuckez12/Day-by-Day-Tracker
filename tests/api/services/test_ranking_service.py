@@ -5,7 +5,7 @@ import pytest
 from sqlalchemy.exc import IntegrityError, NoResultFound
 from sqlalchemy.orm import Session
 
-from src.models import PersonalModel, RankerModel
+from src.models import PersonnelModel, RankerModel
 from src.services import RankingService
 
 
@@ -41,7 +41,7 @@ class TestInsertRankRankerService:
         self,
         test_session: Session,
         test_ranking_service: RankingService,
-        test_personnel: PersonalModel,
+        test_personnel: PersonnelModel,
         test_date_today: date,
     ):
         rank = test_ranking_service.insert_new_date(test_personnel.id, test_date_today)
@@ -81,7 +81,7 @@ class TestFetchRankRankerService:
         self,
         test_session: Session,
         test_ranking_service: RankingService,
-        test_personnel: PersonalModel,
+        test_personnel: PersonnelModel,
         test_date_today: date,
     ):
         rank = test_ranking_service.fetch_date(test_personnel.id, test_date_today)

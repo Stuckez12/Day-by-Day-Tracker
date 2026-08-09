@@ -5,7 +5,7 @@ from sqlalchemy.exc import NoResultFound
 from sqlalchemy.orm import Session
 
 from src.common.password_hash import pwd_hash
-from src.models import PersonalModel
+from src.models import PersonnelModel
 from src.schemas import (
     CreatePersonnelRequest,
     UpdatePersonnelDetailsRequest,
@@ -15,16 +15,16 @@ from src.schemas import (
 from src.services.base import BaseDBService
 
 
-class PersonalService(BaseDBService[PersonalModel]):
+class PersonnelService(BaseDBService[PersonnelModel]):
     def __init__(self, db: Session) -> None:
-        super().__init__(db=db, model=PersonalModel)
+        super().__init__(db=db, model=PersonnelModel)
 
     def get_by_email(self, email: str):
-        return self.db.query(PersonalModel).filter(PersonalModel.email == email).one()
+        return self.db.query(PersonnelModel).filter(PersonnelModel.email == email).one()
 
-    def create_personnel(self, data: CreatePersonnelRequest) -> PersonalModel:
+    def create_personnel(self, data: CreatePersonnelRequest) -> PersonnelModel:
         try:
-            personnel = PersonalModel(**data.model_dump())
+            personnel = PersonnelModel(**data.model_dump())
 
         except TypeError:
             raise TypeError("Invalid data format provided for personnel")
@@ -36,8 +36,8 @@ class PersonalService(BaseDBService[PersonalModel]):
         return personnel
 
     def update_personnel_details(
-        self, personnel: PersonalModel, data: UpdatePersonnelDetailsRequest
-    ) -> PersonalModel:
+        self, personnel: PersonnelModel, data: UpdatePersonnelDetailsRequest
+    ) -> PersonnelModel:
         personnel = self.update_data_columns(personnel, data)
         self.db.commit()
         self.db.refresh(personnel)
@@ -45,8 +45,8 @@ class PersonalService(BaseDBService[PersonalModel]):
         return personnel
 
     def update_personnel_email(
-        self, personnel: PersonalModel, data: UpdatePersonnelEmailRequest
-    ) -> PersonalModel:
+        self, personnel: PersonnelModel, data: UpdatePersonnelEmailRequest
+    ) -> PersonnelModel:
         personnel.email = data.email
         self.db.commit()
         self.db.refresh(personnel)
@@ -54,8 +54,8 @@ class PersonalService(BaseDBService[PersonalModel]):
         return personnel
 
     def update_personnel_password(
-        self, personnel: PersonalModel, data: UpdatePersonnelPasswordRequest
-    ) -> PersonalModel:
+        self, personnel: PersonnelModel, data: UpdatePersonnelPasswordRequest
+    ) -> PersonnelModel:
         validated = pwd_hash.verify(data.current_password, personnel.password)
 
         if not validated:
@@ -72,7 +72,7 @@ class PersonalService(BaseDBService[PersonalModel]):
 
         return personnel
 
-    def personnel_exists(self, personnel_id: uuid.UUID) -> PersonalModel:
+    def personnel_exists(self, personnel_id: uuid.UUID) -> PersonnelModel:
         try:
             personnel = self.get_by_id(personnel_id)
 

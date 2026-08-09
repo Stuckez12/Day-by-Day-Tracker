@@ -3,16 +3,16 @@ from sqlalchemy.exc import NoResultFound
 from sqlalchemy.orm import Session
 
 from src.common.password_hash import pwd_hash
-from src.models import PersonalModel
+from src.models import PersonnelModel
 from src.schemas import CreatePersonnelRequest, LogInRequest
-from src.services.personal import PersonalService
+from src.services.personnel import PersonnelService
 
 
-class AuthService(PersonalService):
+class AuthService(PersonnelService):
     def __init__(self, db: Session) -> None:
         super().__init__(db=db)
 
-    def register(self, data: CreatePersonnelRequest) -> PersonalModel:
+    def register(self, data: CreatePersonnelRequest) -> PersonnelModel:
         try:
             self.get_by_email(data.email)
 
@@ -29,11 +29,11 @@ class AuthService(PersonalService):
 
         return self.create_personnel(data)
 
-    def log_in(self, data: LogInRequest) -> PersonalModel:
+    def log_in(self, data: LogInRequest) -> PersonnelModel:
         try:
             personnel = (
-                self.db.query(PersonalModel)
-                .filter(PersonalModel.email == data.email)
+                self.db.query(PersonnelModel)
+                .filter(PersonnelModel.email == data.email)
                 .one()
             )
 
@@ -48,7 +48,7 @@ class AuthService(PersonalService):
         return personnel
 
     def set_login_cookies(
-        self, response: Response, personnel: PersonalModel
+        self, response: Response, personnel: PersonnelModel
     ) -> Response:
         response.set_cookie(
             "personnel_id",

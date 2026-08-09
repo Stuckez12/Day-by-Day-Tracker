@@ -3,7 +3,7 @@ from pytest_mock import MockerFixture
 from sqlalchemy.orm import Session
 
 from src.common.password_hash import pwd_hash
-from src.models import PersonalModel
+from src.models import PersonnelModel
 from src.schemas import CreatePersonnelRequest, LogInRequest
 from src.services import AuthService
 from tests.api.constants import VALID_PASSWORD
@@ -31,7 +31,7 @@ class TestRegisterAuthService:
             test_session.commit()
 
     def test_email_already_in_use(
-        self, test_auth_service: AuthService, test_personnel: PersonalModel
+        self, test_auth_service: AuthService, test_personnel: PersonnelModel
     ):
         data = CreatePersonnelRequest(
             email=test_personnel.email,
@@ -63,7 +63,7 @@ class TestRegisterAuthService:
 
 class TestLogInAuthService:
     def test_success(
-        self, test_auth_service: AuthService, test_personnel: PersonalModel
+        self, test_auth_service: AuthService, test_personnel: PersonnelModel
     ):
         data = LogInRequest(
             email=test_personnel.email,
@@ -83,7 +83,7 @@ class TestLogInAuthService:
             test_auth_service.log_in(data)
 
     def test_invalid_password(
-        self, test_auth_service: AuthService, test_personnel: PersonalModel
+        self, test_auth_service: AuthService, test_personnel: PersonnelModel
     ):
         data = LogInRequest(
             email=test_personnel.email,

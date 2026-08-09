@@ -2,7 +2,7 @@ import pytest
 from sqlalchemy.orm import Session
 
 from src.common.password_hash import pwd_hash
-from src.models import PersonalModel
+from src.models import PersonnelModel
 from src.schemas import (
     CreatePersonnelRequest,
     InvalidSchema,
@@ -10,13 +10,13 @@ from src.schemas import (
     UpdatePersonnelEmailRequest,
     UpdatePersonnelPasswordRequest,
 )
-from src.services import PersonalService
+from src.services import PersonnelService
 from tests.api.constants import VALID_PASSWORD
 
 
 class TestCreatePersonnelPersonnelService:
     def test_success(
-        self, test_session: Session, test_personal_service: PersonalService
+        self, test_session: Session, test_personal_service: PersonnelService
     ):
         data = CreatePersonnelRequest(
             email="email@email.com",
@@ -37,7 +37,7 @@ class TestCreatePersonnelPersonnelService:
             test_session.delete(personnel)
             test_session.commit()
 
-    def test_invalid_pydantic_model(self, test_personal_service: PersonalService):
+    def test_invalid_pydantic_model(self, test_personal_service: PersonnelService):
         with pytest.raises(
             TypeError, match="Invalid data format provided for personnel"
         ):
@@ -46,7 +46,7 @@ class TestCreatePersonnelPersonnelService:
 
 class TestUpdatePersonnelDetailsPersonnelService:
     def test_success(
-        self, test_personnel: PersonalModel, test_personal_service: PersonalService
+        self, test_personnel: PersonnelModel, test_personal_service: PersonnelService
     ):
         data = UpdatePersonnelDetailsRequest(
             first_name="Updated",
@@ -61,7 +61,7 @@ class TestUpdatePersonnelDetailsPersonnelService:
         assert updated_personnel.last_name == "Updated"
 
     def test_only_update_first_name(
-        self, test_personnel: PersonalModel, test_personal_service: PersonalService
+        self, test_personnel: PersonnelModel, test_personal_service: PersonnelService
     ):
         data = UpdatePersonnelDetailsRequest(
             first_name="Updated",
@@ -75,7 +75,7 @@ class TestUpdatePersonnelDetailsPersonnelService:
         assert updated_personnel.last_name == test_personnel.last_name
 
     def test_only_update_last_name(
-        self, test_personnel: PersonalModel, test_personal_service: PersonalService
+        self, test_personnel: PersonnelModel, test_personal_service: PersonnelService
     ):
         data = UpdatePersonnelDetailsRequest(
             last_name="Updated",
@@ -91,7 +91,7 @@ class TestUpdatePersonnelDetailsPersonnelService:
 
 class TestUpdatePersonnelEmailPersonnelService:
     def test_success(
-        self, test_personnel: PersonalModel, test_personal_service: PersonalService
+        self, test_personnel: PersonnelModel, test_personal_service: PersonnelService
     ):
         data = UpdatePersonnelEmailRequest(
             email="updated@email.com",
@@ -105,7 +105,7 @@ class TestUpdatePersonnelEmailPersonnelService:
 
 class TestUpdatePersonnelPasswordPersonnelService:
     def test_success(
-        self, test_personnel: PersonalModel, test_personal_service: PersonalService
+        self, test_personnel: PersonnelModel, test_personal_service: PersonnelService
     ):
         data = UpdatePersonnelPasswordRequest(
             current_password=VALID_PASSWORD,

@@ -9,7 +9,7 @@ from src.models.base import BaseModel
 
 
 if TYPE_CHECKING:
-    from src.models import PersonalModel
+    from src.models import PersonnelModel
 
 
 class RankerModel(BaseModel):
@@ -24,7 +24,7 @@ class RankerModel(BaseModel):
     text_events: Mapped[Optional[str]] = mapped_column(String, nullable=True)
     text_notes: Mapped[Optional[str]] = mapped_column(String, nullable=True)
 
-    personal: Mapped["PersonalModel"] = relationship(back_populates="ranker")
+    personal: Mapped["PersonnelModel"] = relationship(back_populates="ranker")
 
     def __init__(self, personal_id: uuid.UUID, day: date, ranking: int | None = None):
         self.personal_id = personal_id

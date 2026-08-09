@@ -4,18 +4,18 @@ from fastapi import Depends
 from sqlalchemy.orm import Session
 
 from src.common import get_db
-from src.services import AuthService, PersonalService, RankingService, TaskService
+from src.services import AuthService, PersonnelService, RankingService, TaskService
 
 
 DBSession = Annotated[Session, Depends(get_db)]
 
 
-def get_auth_service(db: DBSession) -> PersonalService:
+def get_auth_service(db: DBSession) -> PersonnelService:
     return AuthService(db)
 
 
-def get_personal_service(db: DBSession) -> PersonalService:
-    return PersonalService(db)
+def get_personal_service(db: DBSession) -> PersonnelService:
+    return PersonnelService(db)
 
 
 def get_ranking_service(db: DBSession) -> RankingService:
@@ -27,6 +27,6 @@ def get_task_service(db: DBSession) -> TaskService:
 
 
 AuthServiceDep = Annotated[AuthService, Depends(get_auth_service)]
-PersonalServiceDep = Annotated[PersonalService, Depends(get_personal_service)]
+PersonnelServiceDep = Annotated[PersonnelService, Depends(get_personal_service)]
 RankingServiceDep = Annotated[RankingService, Depends(get_ranking_service)]
 TaskServiceDep = Annotated[TaskService, Depends(get_task_service)]

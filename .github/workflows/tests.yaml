@@ -92,6 +92,13 @@ jobs:
         run: |
           uv sync
 
+      - name: Alembic Checks
+        run: |
+          uv run alembic upgrade head
+          uv run alembic downgrade base
+          uv run alembic upgrade head
+          uv run alembic check
+
       - name: Tests Execution
         run: uv run pytest -vv
         env:

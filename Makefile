@@ -39,7 +39,7 @@ reset:
 	$(MAKE) start
 
 lint:
-	@uv run ruff format src --check
+	@uv run ruff format src
 	@uv run ruff check ./src
 	@uv run ty check ./src
 
@@ -48,6 +48,9 @@ lint:
 # Database
 ################################################################################
 
+
+check-db:
+	@docker compose -f docker-compose.dev.yaml exec api alembic -c /api/alembic.ini check
 
 upgrade-db:
 	@docker compose -f docker-compose.dev.yaml exec api alembic -c /api/alembic.ini upgrade head

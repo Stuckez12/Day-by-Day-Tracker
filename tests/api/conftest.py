@@ -16,8 +16,8 @@ from src.common.password_hash import pwd_hash
 from src.common.security import create_access_token
 from src.enums import TaskStatus
 from src.main import fastapi_app
-from src.models import PersonalModel, RankerModel, TaskModel
-from src.services import AuthService, PersonalService, RankingService, TaskService
+from src.models import PersonnelModel, RankerModel, TaskModel
+from src.services import AuthService, PersonnelService, RankingService, TaskService
 from src.settings import app_config
 from tests.api.constants import VALID_PASSWORD
 
@@ -87,7 +87,7 @@ def test_app():
 
 
 @pytest.fixture
-def test_client_user(test_app: TestClient, test_personnel: PersonalModel):
+def test_client_user(test_app: TestClient, test_personnel: PersonnelModel):
     test_app.headers.update(
         {"Authorization": f"Bearer {create_access_token(test_personnel.id)}"}
     )
@@ -99,7 +99,7 @@ def test_client_user(test_app: TestClient, test_personnel: PersonalModel):
 
 @pytest.fixture(scope="session")
 def test_session_personnel(test_session: Session):
-    model = PersonalModel(
+    model = PersonnelModel(
         email="session@email.com",
         password=pwd_hash.hash(VALID_PASSWORD),
         first_name="Session",
@@ -117,7 +117,7 @@ def test_session_personnel(test_session: Session):
 
 @pytest.fixture
 def test_client_user_session(
-    test_app: TestClient, test_session_personnel: PersonalModel
+    test_app: TestClient, test_session_personnel: PersonnelModel
 ):
     test_app.headers.update(
         {"Authorization": f"Bearer {create_access_token(test_session_personnel.id)}"}
@@ -138,7 +138,7 @@ def test_auth_service(test_session: Session):
 
 @pytest.fixture(scope="function")
 def test_personal_service(test_session: Session):
-    yield PersonalService(db=test_session)
+    yield PersonnelService(db=test_session)
 
 
 @pytest.fixture(scope="function")
@@ -158,7 +158,7 @@ def test_task_service(test_session: Session):
 
 @pytest.fixture(scope="function")
 def test_personnel(test_session: Session):
-    model = PersonalModel(
+    model = PersonnelModel(
         email="email@email.com",
         password=pwd_hash.hash(VALID_PASSWORD),
         first_name="Test",
@@ -176,7 +176,7 @@ def test_personnel(test_session: Session):
 
 @pytest.fixture(scope="function")
 def test_personnel_2(test_session: Session):
-    model = PersonalModel(
+    model = PersonnelModel(
         email="email2@email.com",
         password=pwd_hash.hash(VALID_PASSWORD),
         first_name="Test 2",
@@ -194,7 +194,7 @@ def test_personnel_2(test_session: Session):
 
 @pytest.fixture(scope="function")
 def test_personnel_3(test_session: Session):
-    model = PersonalModel(
+    model = PersonnelModel(
         email="email3@email.com",
         password=pwd_hash.hash(VALID_PASSWORD),
         first_name="Test 3",
@@ -212,7 +212,7 @@ def test_personnel_3(test_session: Session):
 
 @pytest.fixture(scope="function")
 def test_ranker(
-    test_session: Session, test_date_today: date, test_session_personnel: PersonalModel
+    test_session: Session, test_date_today: date, test_session_personnel: PersonnelModel
 ):
     model = RankerModel(
         personal_id=test_session_personnel.id,
@@ -230,7 +230,7 @@ def test_ranker(
 
 
 @pytest.fixture(scope="function")
-def test_ranker_set_date(test_session: Session, test_session_personnel: PersonalModel):
+def test_ranker_set_date(test_session: Session, test_session_personnel: PersonnelModel):
     model = RankerModel(
         personal_id=test_session_personnel.id,
         day=date(2000, 1, 1),
@@ -248,7 +248,7 @@ def test_ranker_set_date(test_session: Session, test_session_personnel: Personal
 
 @pytest.fixture(scope="function")
 def test_ranker_none(
-    test_session: Session, test_date_today: date, test_session_personnel: PersonalModel
+    test_session: Session, test_date_today: date, test_session_personnel: PersonnelModel
 ):
     model = RankerModel(
         personal_id=test_session_personnel.id,
