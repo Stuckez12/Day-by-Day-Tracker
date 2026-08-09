@@ -16,7 +16,7 @@ class TestGetPersonnelRoute:
         test_session_personnel: PersonnelModel,
     ):
         result = test_client_user_session.get(
-            f"/personal?personnel_id={test_session_personnel.id}"
+            f"/personnel?personnel_id={test_session_personnel.id}"
         )
         assert result.status_code == status.HTTP_200_OK
 
@@ -27,7 +27,7 @@ class TestGetPersonnelRoute:
 
     def test_invalid_id(self, test_client_user_session: TestClient):
         result = test_client_user_session.get(
-            f"/personal?personnel_id={INVALID_PERSONNEL_ID}"
+            f"/personnel?personnel_id={INVALID_PERSONNEL_ID}"
         )
         assert result.status_code == status.HTTP_404_NOT_FOUND
 
@@ -41,7 +41,7 @@ class TestGetPersonnelSelfRoute:
         test_client_user_session: TestClient,
         test_session_personnel: PersonnelModel,
     ):
-        result = test_client_user_session.get("/personal/me")
+        result = test_client_user_session.get("/personnel/me")
         assert result.status_code == status.HTTP_200_OK
 
         data = result.json()
@@ -53,7 +53,7 @@ class TestGetPersonnelSelfRoute:
         self,
         test_app: TestClient,
     ):
-        result = test_app.get("/personal/me")
+        result = test_app.get("/personnel/me")
         assert result.status_code == status.HTTP_401_UNAUTHORIZED
 
 
@@ -65,7 +65,7 @@ class TestGetAllPersonnelRoute:
         test_personnel_2: PersonnelModel,
         test_personnel_3: PersonnelModel,
     ):
-        result = test_client_user_session.get("/personal/all")
+        result = test_client_user_session.get("/personnel/all")
         assert result.status_code == status.HTTP_200_OK
 
         data = result.json()
@@ -81,7 +81,7 @@ class TestUpdatePersonnelDetailsRoute:
         test_personnel: PersonnelModel,
     ):
         result = test_client_user.put(
-            "/personal/me/details",
+            "/personnel/me/details",
             json={
                 "first_name": "Updated",
                 "last_name": "Updated",
@@ -113,7 +113,7 @@ class TestUpdatePersonnelDetailsRoute:
         test_personnel: PersonnelModel,
     ):
         result = test_client_user.put(
-            "/personal/me/details",
+            "/personnel/me/details",
             json={
                 "first_name": "Updated",
             },
@@ -144,7 +144,7 @@ class TestUpdatePersonnelDetailsRoute:
         test_personnel: PersonnelModel,
     ):
         result = test_client_user.put(
-            "/personal/me/details",
+            "/personnel/me/details",
             json={
                 "last_name": "Updated",
             },
@@ -175,7 +175,7 @@ class TestUpdatePersonnelDetailsRoute:
         test_personnel: PersonnelModel,
     ):
         result = test_client_user.put(
-            "/personal/me/details",
+            "/personnel/me/details",
             json={},
         )
         assert result.status_code == status.HTTP_202_ACCEPTED
@@ -198,7 +198,7 @@ class TestUpdatePersonnelDetailsRoute:
 
     def test_invalid_empty_first_name(self, test_client_user: TestClient):
         result = test_client_user.put(
-            "/personal/me/details",
+            "/personnel/me/details",
             json={"first_name": ""},
         )
         assert result.status_code == status.HTTP_422_UNPROCESSABLE_CONTENT
@@ -208,7 +208,7 @@ class TestUpdatePersonnelDetailsRoute:
 
     def test_invalid_empty_last_name(self, test_client_user: TestClient):
         result = test_client_user.put(
-            "/personal/me/details",
+            "/personnel/me/details",
             json={"last_name": ""},
         )
         assert result.status_code == status.HTTP_422_UNPROCESSABLE_CONTENT
@@ -223,7 +223,7 @@ class TestUpdatePersonnelEmailRoute:
         test_client_user: TestClient,
     ):
         result = test_client_user.put(
-            "/personal/me/email",
+            "/personnel/me/email",
             json={"email": "new@email.com"},
         )
         assert result.status_code == status.HTTP_202_ACCEPTED
@@ -239,7 +239,7 @@ class TestUpdatePersonnelPasswordRoute:
         test_personnel: PersonnelModel,
     ):
         result = test_client_user.put(
-            "/personal/me/password",
+            "/personnel/me/password",
             json={
                 "current_password": VALID_PASSWORD,
                 "new_password": "NewPassword123",
@@ -258,7 +258,7 @@ class TestUpdatePersonnelPasswordRoute:
         test_client_user: TestClient,
     ):
         result = test_client_user.put(
-            "/personal/me/password",
+            "/personnel/me/password",
             json={
                 "current_password": INVALID_PASSWORD,
                 "new_password": "NewPassword123",
@@ -278,7 +278,7 @@ class TestUpdatePersonnelPasswordRoute:
         mocker.patch.object(pwd_hash, "hash", side_effect=ValueError("Forced Error"))
 
         result = test_client_user.put(
-            "/personal/me/password",
+            "/personnel/me/password",
             json={
                 "current_password": VALID_PASSWORD,
                 "new_password": "NewPassword123",
@@ -299,7 +299,7 @@ class TestDeletePersonnelRoute:
         test_personnel: PersonnelModel,
     ):
         result = test_client_user_session.delete(
-            f"/personal?personnel_id={test_personnel.id}"
+            f"/personnel?personnel_id={test_personnel.id}"
         )
         assert result.status_code == status.HTTP_200_OK
 
@@ -316,7 +316,7 @@ class TestDeletePersonnelRoute:
 
     def test_invalid_id(self, test_client_user_session: TestClient):
         result = test_client_user_session.delete(
-            f"/personal?personnel_id={INVALID_PERSONNEL_ID}"
+            f"/personnel?personnel_id={INVALID_PERSONNEL_ID}"
         )
         assert result.status_code == status.HTTP_404_NOT_FOUND
 

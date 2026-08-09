@@ -21,7 +21,7 @@ export async function getPersonnelQuery() {
   }
 
   return await API.get<PersonnelProp>({
-    url_path: "/v1/personal/me",
+    url_path: "/v1/personnel/me",
     token: token,
   });
 }
@@ -33,7 +33,7 @@ export async function updatePersonnelInfoQuery(form: UpdatePersonnelInfo) {
   }
 
   return await API.put<PersonnelProp>({
-    url_path: "/v1/personal/me/details",
+    url_path: "/v1/personnel/me/details",
     token: token,
     body: form,
   });
@@ -60,7 +60,7 @@ export async function updatePersonnelEmailQuery(
   }
 
   return await API.put<PersonnelProp>({
-    url_path: "/v1/personal/me/email",
+    url_path: "/v1/personnel/me/email",
     token: token,
     body: form,
   });
@@ -97,7 +97,7 @@ export async function updatePersonnelPasswordQuery(
   }
 
   return await API.put<PersonnelProp>({
-    url_path: "/v1/personal/me/password",
+    url_path: "/v1/personnel/me/password",
     token: token,
     body: form,
   });

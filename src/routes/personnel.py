@@ -13,7 +13,7 @@ from src.schemas import (
 )
 
 
-api = APIRouter(prefix="/personal", tags=["Personnel"])
+api = APIRouter(prefix="/personnel", tags=["Personnel"])
 
 
 @api.get("", status_code=status.HTTP_200_OK, response_model=PersonnelSchema)
