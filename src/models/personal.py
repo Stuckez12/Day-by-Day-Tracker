@@ -7,7 +7,7 @@ from src.models.base import BaseModel
 
 
 if TYPE_CHECKING:
-    from src.models import HabitsModel, RankerModel
+    from src.models import RankerModel
 
 
 class PersonalModel(BaseModel):
@@ -19,9 +19,6 @@ class PersonalModel(BaseModel):
     first_name: Mapped[str] = mapped_column(String, nullable=False)
     last_name: Mapped[str] = mapped_column(String, nullable=False)
 
-    habits: Mapped["HabitsModel"] = relationship(
-        back_populates="personal", cascade="all, delete-orphan"
-    )
     ranker: Mapped["RankerModel"] = relationship(
         back_populates="personal", cascade="all, delete-orphan"
     )

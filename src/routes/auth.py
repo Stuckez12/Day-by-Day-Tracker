@@ -22,5 +22,5 @@ def log_in(request: LogInRequest, service: AuthServiceDep):
     return {
         "access_token": create_access_token(personnel.id),
         "token_type": "bearer",
-        "personnel": personnel.model_dump(),
+        "personnel": SlimPersonnelSchema.model_validate(personnel).model_dump(),
     }

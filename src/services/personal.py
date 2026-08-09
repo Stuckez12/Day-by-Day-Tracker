@@ -1,6 +1,7 @@
 import uuid
 
 from fastapi import HTTPException, status
+from sqlalchemy.exc import NoResultFound
 from sqlalchemy.orm import Session
 
 from src.common.password_hash import pwd_hash
@@ -17,6 +18,9 @@ from src.services.base import BaseDBService
 class PersonalService(BaseDBService[PersonalModel]):
     def __init__(self, db: Session) -> None:
         super().__init__(db=db, model=PersonalModel)
+
+    def get_by_email(self, email: str):
+        return self.db.query(PersonalModel).filter(PersonalModel.email == email).one()
 
     def create_personnel(self, data: CreatePersonnelRequest) -> PersonalModel:
         try:
@@ -68,14 +72,11 @@ class PersonalService(BaseDBService[PersonalModel]):
 
         return personnel
 
-    def delete_personnel(self, personnel: PersonalModel) -> None:
-        self.delete(personnel)
-        self.db.commit()
-
     def personnel_exists(self, personnel_id: uuid.UUID) -> PersonalModel:
-        personnel = self.get_by_id(personnel_id)
+        try:
+            personnel = self.get_by_id(personnel_id)
 
-        if personnel is None:
+        except NoResultFound:
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND,
                 detail=f"Personnel {personnel_id} not found",

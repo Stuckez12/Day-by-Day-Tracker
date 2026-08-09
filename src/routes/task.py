@@ -5,6 +5,7 @@ from celery.result import AsyncResult
 from fastapi import APIRouter, Depends, HTTPException, Query, Request, status
 from fastapi_pagination import Page, Params
 from fastapi_pagination.ext.sqlalchemy import paginate
+from sqlalchemy.exc import NoResultFound
 
 from src.common import TaskServiceDep
 from src.enums import TaskStatus
@@ -53,9 +54,10 @@ def run_task_simulation(_: Request):
 
 @api.get("/{task_id}", status_code=status.HTTP_200_OK, response_model=TaskSchema)
 def get_task(service: TaskServiceDep, task_id: uuid.UUID):
-    task = service.get_by_id(task_id)
+    try:
+        task = service.get_by_task_id(task_id)
 
-    if task is None:
+    except NoResultFound:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND, detail="Task does not exist"
         )
@@ -65,9 +67,10 @@ def get_task(service: TaskServiceDep, task_id: uuid.UUID):
 
 @api.get("/{task_id}/status", status_code=status.HTTP_200_OK)
 def get_task_status(service: TaskServiceDep, task_id: uuid.UUID):
-    task = service.get_by_id(task_id)
+    try:
+        task = service.get_by_task_id(task_id)
 
-    if task is None:
+    except NoResultFound:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND, detail="Task does not exist"
         )

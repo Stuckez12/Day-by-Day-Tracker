@@ -15,8 +15,8 @@ class BaseDBService(Generic[Model]):
         self.db: Session = db
         self.model = model
 
-    def get_by_id(self: Self, id: UUID) -> Model | None:
-        return self.db.query(self.model).filter(self.model.id == id).first()
+    def get_by_id(self: Self, id: UUID) -> Model:
+        return self.db.query(self.model).filter(self.model.id == id).one()
 
     def get_paginated(self: Self, page: int, page_size: int) -> list[Model]:
         offset = (page - 1) * page_size
@@ -41,10 +41,10 @@ class BaseDBService(Generic[Model]):
 
     def delete(self: Self, row: Model) -> None:
         self.db.delete(row)
-        self.db.flush()
+        self.db.commit()
 
     def bulk_delete(self: Self, rows: list[Model]) -> None:
         for row in rows:
-            self.delete(row)
+            self.db.delete(row)
 
         self.db.flush()

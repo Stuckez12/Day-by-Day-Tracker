@@ -17,7 +17,7 @@ from src.schemas import (
 api = APIRouter(prefix="/ranking", tags=["Ranking"])
 
 
-@api.get("/", response_model=RankingSchema, status_code=status.HTTP_200_OK)
+@api.get("", response_model=RankingSchema, status_code=status.HTTP_200_OK)
 def get_ranking(
     service: RankingServiceDep,
     personnel_service: PersonalServiceDep,
@@ -55,7 +55,7 @@ def get_todays_ranking(
 
 
 @api.put(
-    "/",
+    "",
     response_model=RankingSchema,
     status_code=status.HTTP_202_ACCEPTED,
 )

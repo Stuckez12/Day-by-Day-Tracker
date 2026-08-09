@@ -22,8 +22,8 @@ class TaskService(BaseDBService[TaskModel]):
 
         return record
 
-    def get_by_id(self, task_id: uuid.UUID) -> TaskModel | None:  # type: ignore
-        return self.db.query(TaskModel).filter(TaskModel.task_id == task_id).first()
+    def get_by_task_id(self, task_id: uuid.UUID) -> TaskModel:
+        return self.db.query(TaskModel).filter(TaskModel.task_id == task_id).one()
 
     def task_progress(self, task_ref: TaskModel):
         if task_ref.status != TaskStatus.RUNNING.value:

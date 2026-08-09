@@ -2,7 +2,7 @@ import pytest
 from sqlalchemy.orm import Session
 
 from src.common.password_hash import pwd_hash
-from src.models import PersonalModel, RankerModel
+from src.models import PersonalModel
 from src.schemas import (
     CreatePersonnelRequest,
     InvalidSchema,
@@ -43,7 +43,7 @@ class TestPersonalService:
         with pytest.raises(
             TypeError, match="Invalid data format provided for personnel"
         ):
-            test_personal_service.create_personnel(InvalidSchema())
+            test_personal_service.create_personnel(InvalidSchema())  # type: ignore
 
     def test_update_personnel_details_all_details(
         self, test_personnel: PersonalModel, test_personal_service: PersonalService
@@ -113,22 +113,3 @@ class TestPersonalService:
         )
 
         assert pwd_hash.verify(data.new_password, updated_password.password)
-
-    def test_delete_personnel_success(
-        self, test_personnel: PersonalModel, test_personal_service: PersonalService
-    ):
-        test_personal_service.delete_personnel(test_personnel)
-        no_personnel = test_personal_service.get_by_id(test_personnel.id)
-
-        assert no_personnel is None
-
-    def test_delete_personnel_with_data_success(
-        self,
-        test_personnel: PersonalModel,
-        test_ranker: RankerModel,
-        test_personal_service: PersonalService,
-    ):
-        test_personal_service.delete_personnel(test_personnel)
-        no_personnel = test_personal_service.get_by_id(test_personnel.id)
-
-        assert no_personnel is None

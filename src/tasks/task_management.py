@@ -9,6 +9,7 @@ from celery.signals import (
     task_retry,
     task_success,
 )
+from sqlalchemy.exc import NoResultFound
 
 from celery import Task
 from src.common import get_db
@@ -18,10 +19,10 @@ from src.services import TaskService
 
 @before_task_publish.connect
 def record_task_to_database(sender: str, headers: dict, **kwargs):
-    try:
-        db_gen = get_db()
-        db = next(db_gen)
+    db_gen = get_db()
+    db = next(db_gen)
 
+    try:
         name = sender.split(".")[-1]
 
         service = TaskService(db)
@@ -38,20 +39,20 @@ def record_task_to_database(sender: str, headers: dict, **kwargs):
 @task_prerun.connect
 def before_task_execution(task_id: str, **kwargs):
     logging.info("Before task execution")
-    try:
-        db_gen = get_db()
-        db = next(db_gen)
+    db_gen = get_db()
+    db = next(db_gen)
 
+    try:
         service = TaskService(db)
         task_record = service.get_by_id(uuid.UUID(task_id))
-
-        if task_record is None:
-            logging.info("DB task record not found. Continuing")
-            return
 
         task_record.started_at = datetime.now(timezone.utc)
         task_record.status = TaskStatus.RUNNING.value
         db.commit()
+
+    except NoResultFound:
+        logging.info("DB task record not found. Continuing")
+        return
 
     finally:
         db_gen.close()
@@ -61,23 +62,24 @@ def before_task_execution(task_id: str, **kwargs):
 
 @task_success.connect
 def finalise_success_task(sender: Task, **kwargs):
-    logging.info("After successful task execution")
     task_id = uuid.UUID(sender.request.id)
 
-    try:
-        db_gen = get_db()
-        db = next(db_gen)
+    logging.info("After successful task execution")
 
+    db_gen = get_db()
+    db = next(db_gen)
+
+    try:
         service = TaskService(db)
         task_record = service.get_by_id(task_id)
-
-        if task_record is None:
-            logging.info("DB task record not found. Continuing")
-            return
 
         task_record.ended_at = datetime.now(timezone.utc)
         task_record.status = TaskStatus.SUCCESS.value
         db.commit()
+
+    except NoResultFound:
+        logging.info("DB task record not found. Continuing")
+        return
 
     finally:
         db_gen.close()
@@ -85,24 +87,25 @@ def finalise_success_task(sender: Task, **kwargs):
 
 @task_failure.connect
 def finalise_failure_task(sender: Task, exception: Exception | None = None, **kwargs):
-    logging.info("After failed task execution")
     task_id = uuid.UUID(sender.request.id)
 
-    try:
-        db_gen = get_db()
-        db = next(db_gen)
+    logging.info("After failed task execution")
 
+    db_gen = get_db()
+    db = next(db_gen)
+
+    try:
         service = TaskService(db)
         task_record = service.get_by_id(task_id)
-
-        if task_record is None:
-            logging.info("DB task record not found. Continuing")
-            return
 
         task_record.ended_at = datetime.now(timezone.utc)
         task_record.status = TaskStatus.FAILED.value
         task_record.error = str(exception)
         db.commit()
+
+    except NoResultFound:
+        logging.info("DB task record not found. Continuing")
+        return
 
     finally:
         db_gen.close()
@@ -112,19 +115,21 @@ def finalise_failure_task(sender: Task, exception: Exception | None = None, **kw
 def log_retry(sender: Task, **kwargs):
     task_id = uuid.UUID(sender.request.id)
 
-    try:
-        db_gen = get_db()
-        db = next(db_gen)
+    logging.info("Recording retry attempt")
 
+    db_gen = get_db()
+    db = next(db_gen)
+
+    try:
         service = TaskService(db)
         task_record = service.get_by_id(task_id)
 
-        if task_record is None:
-            logging.info("DB task record not found. Continuing")
-            return
-
         task_record.retries += 1
         db.commit()
+
+    except NoResultFound:
+        logging.info("DB task record not found. Continuing")
+        return
 
     finally:
         logging.info(f"Task ({task_id}) retrying")

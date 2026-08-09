@@ -1,6 +1,7 @@
 from uuid import UUID
 
 from fastapi import APIRouter, HTTPException, Query, status
+from sqlalchemy.exc import NoResultFound
 
 from src.common import CurrentPersonnelID, PersonalServiceDep
 from src.schemas import (
@@ -15,16 +16,17 @@ from src.schemas import (
 api = APIRouter(prefix="/personal", tags=["Personal"])
 
 
-@api.get("/", status_code=status.HTTP_200_OK, response_model=PersonnelSchema)
+@api.get("", status_code=status.HTTP_200_OK, response_model=PersonnelSchema)
 def get_personnel(service: PersonalServiceDep, personnel_id: UUID):
-    personnel = service.get_by_id(personnel_id)
+    try:
+        personnel = service.get_by_id(personnel_id)
 
-    if personnel:
-        return personnel
+    except NoResultFound:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail="Personnel does not exist"
+        )
 
-    raise HTTPException(
-        status_code=status.HTTP_404_NOT_FOUND, detail="Personnel does not exist"
-    )
+    return personnel
 
 
 @api.get("/me", status_code=status.HTTP_200_OK, response_model=PersonnelSchema)
@@ -42,14 +44,14 @@ def get_all_personnel(service: PersonalServiceDep):
     return service.get_all()
 
 
-@api.delete("/", status_code=status.HTTP_200_OK, response_model=None)
+@api.delete("", status_code=status.HTTP_200_OK, response_model=None)
 def delete_personnel(
     service: PersonalServiceDep,
     personnel_id: UUID = Query(title="Personal ID"),
 ):
     personnel = service.personnel_exists(personnel_id)
 
-    return service.delete_personnel(personnel)
+    return service.delete(personnel)
 
 
 @api.put(

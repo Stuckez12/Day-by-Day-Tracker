@@ -2,8 +2,7 @@ import uuid
 from datetime import date
 from typing import TYPE_CHECKING, Optional
 
-from sqlalchemy import Date, ForeignKey, Integer, String, or_
-from sqlalchemy.ext.hybrid import hybrid_property
+from sqlalchemy import Date, ForeignKey, Integer, String
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from src.models.base import BaseModel
@@ -31,11 +30,3 @@ class RankerModel(BaseModel):
         self.personal_id = personal_id
         self.day = day
         self.ranking = ranking
-
-    @hybrid_property
-    def contains_notes(self) -> bool:
-        return self.text_events is not None or self.text_notes is not None
-
-    @contains_notes.expression
-    def contains_notes(cls):
-        return or_(cls.text_events.isnot(None), cls.text_notes.isnot(None))  # type: ignore
