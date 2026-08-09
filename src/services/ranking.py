@@ -1,6 +1,7 @@
 import uuid
-from datetime import date
+from datetime import date, timedelta
 
+from fastapi import HTTPException, status
 from sqlalchemy.exc import NoResultFound
 from sqlalchemy.orm import Session
 
@@ -68,29 +69,40 @@ class RankingService(BaseDBService[RankerModel]):
         except NoResultFound:
             return self.insert_new_date(personnel_id, date)
 
-    def rank_a_day(self, rank_row: RankerModel, data: RankingADayRequest):
-        rank_row.ranking = data.ranking
-        rank_row.text_events = data.text_events
-        rank_row.text_notes = data.text_notes
+    def can_modify_rank(self, rank: RankerModel):
+        if rank.day + timedelta(days=14) < date.today():
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="You cannot modify a ranked day more than two weeks old",
+            )
+
+    def rank_a_day(self, rank: RankerModel, data: RankingADayRequest):
+        self.can_modify_rank(rank)
+
+        rank.ranking = data.ranking
+        rank.text_events = data.text_events
+        rank.text_notes = data.text_notes
 
         self.db.commit()
-        self.db.refresh(rank_row)
+        self.db.refresh(rank)
 
-        return RankingSchema(**rank_row.to_dict())
+        return RankingSchema(**rank.to_dict())
 
-    def rank_today(self, rank_row: RankerModel, set_rank: int) -> RankingSchema:
-        rank_row.ranking = set_rank
-
-        self.db.commit()
-        self.db.refresh(rank_row)
-
-        return RankingSchema(**rank_row.to_dict())
-
-    def record_day_notes(self, rank_row: RankerModel, notes: RankingNotesRequest):
-        rank_row.text_events = notes.text_events
-        rank_row.text_notes = notes.text_notes
+    def rank_today(self, rank: RankerModel, set_rank: int) -> RankingSchema:
+        rank.ranking = set_rank
 
         self.db.commit()
-        self.db.refresh(rank_row)
+        self.db.refresh(rank)
 
-        return RankingSchema(**rank_row.to_dict())
+        return RankingSchema(**rank.to_dict())
+
+    def record_day_notes(self, rank: RankerModel, notes: RankingNotesRequest):
+        self.can_modify_rank(rank)
+
+        rank.text_events = notes.text_events
+        rank.text_notes = notes.text_notes
+
+        self.db.commit()
+        self.db.refresh(rank)
+
+        return RankingSchema(**rank.to_dict())
