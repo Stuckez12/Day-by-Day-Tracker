@@ -51,6 +51,7 @@ lint:
 
 check-db:
 	@docker compose -f docker-compose.dev.yaml exec api alembic -c /api/alembic.ini check
+	@docker compose -f docker-compose.dev.yaml exec api alembic -c /api/alembic-backup.ini check
 
 upgrade-db:
 	@docker compose -f docker-compose.dev.yaml exec api alembic -c /api/alembic.ini upgrade head
@@ -65,6 +66,20 @@ ifndef MESSAGE
 	$(error 'MESSAGE is not set. Usage: make auto-revision-db MESSAGE="message"')
 endif
 	@docker compose -f docker-compose.dev.yaml exec api alembic -c /api/alembic.ini revision --autogenerate -m "$(MESSAGE)"
+
+upgrade-backup-db:
+	@docker compose -f docker-compose.dev.yaml exec api alembic -c /api/alembic-backup.ini upgrade head
+
+VERSION ?= -1
+downgrade-backup-db:
+	@echo "Downgrading to/by $(VERSION) version"
+	@docker compose -f docker-compose.dev.yaml exec api alembic -c /api/alembic-backup.ini downgrade $(VERSION)
+
+auto-revision-backup-db:
+ifndef MESSAGE
+	$(error 'MESSAGE is not set. Usage: make auto-revision-db MESSAGE="message"')
+endif
+	@docker compose -f docker-compose.dev.yaml exec api alembic -c /api/alembic-backup.ini revision --autogenerate -m "$(MESSAGE)"
 
 
 ################################################################################

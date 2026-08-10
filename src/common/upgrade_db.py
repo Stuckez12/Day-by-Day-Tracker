@@ -6,6 +6,5 @@ def upgrade_db():
     alembic_conf = Config("alembic.ini")
     command.upgrade(alembic_conf, "head")
 
-
-if __name__ == "__main__":
-    upgrade_db()
+    alembic_conf = Config("alembic-backup.ini")
+    command.upgrade(alembic_conf, "head")

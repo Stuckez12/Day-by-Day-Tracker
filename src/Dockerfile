@@ -14,6 +14,7 @@ COPY ./src ./src
 COPY uv.lock .
 COPY pyproject.toml .
 COPY alembic.ini .
+COPY alembic-backup.ini .
 
 RUN uv sync
 

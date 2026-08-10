@@ -11,7 +11,7 @@ services:
     environment:
       POSTGRES_USER: ${DATABASE_USERNAME}
       POSTGRES_PASSWORD: ${DATABASE_PASSWORD}
-      POSTGRES_DB: ${DATABASE_DB_NAME}
+      POSTGRES_DB: ${DATABASE_DB_NAME:-tracker}
     env_file: .env
     attach: false
 
@@ -55,6 +55,8 @@ services:
       - ./tests:/api/tests
       - ./alembic.ini:/api/alembic.ini
       - ${EXTERNAL_BACKUP_PATH}:${BACKUP_PATH}
+    environment:
+      APP_ENV: dev
     env_file: .env
     command: uvicorn src.main:fastapi_app --host 0.0.0.0 --port 8000 --reload --reload-dir src
 
@@ -111,6 +113,8 @@ services:
       - app-network
     volumes:
       - ./src:/api/src
+    environment:
+      APP_ENV: dev
     env_file: .env
     entrypoint: celery -A src.main beat --loglevel=INFO
 
@@ -125,6 +129,8 @@ services:
     volumes:
       - ./src:/api/src
       - ${EXTERNAL_BACKUP_PATH}:${BACKUP_PATH}
+    environment:
+      APP_ENV: dev
     env_file: .env
     entrypoint: celery -A src.main worker -Ofair --concurrency=4 --loglevel=INFO -E
 
