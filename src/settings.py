@@ -12,6 +12,9 @@ class AppConfig(BaseSettings):
         extra="ignore",
     )
 
+    # App Params
+    APP_VERSION: str
+
     # DATABASE
     DATABASE_USERNAME: str
     DATABASE_PASSWORD: str
