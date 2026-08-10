@@ -3,11 +3,12 @@ from typing import Annotated
 from fastapi import Depends
 from sqlalchemy.orm import Session
 
-from src.common import get_db
+from src.common import get_backup_db, get_db
 from src.services import AuthService, PersonnelService, RankingService, TaskService
 
 
 DBSession = Annotated[Session, Depends(get_db)]
+BackupDBSession = Annotated[Session, Depends(get_backup_db)]
 
 
 def get_auth_service(db: DBSession) -> PersonnelService:
