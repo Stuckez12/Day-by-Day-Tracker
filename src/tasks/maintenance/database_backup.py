@@ -1,11 +1,18 @@
+import logging
+import time
+from typing import cast
+
 from celery import Task, shared_task
 from src.common import get_backup_db, get_db
 from src.common.celery import update_task_state
+from src.enums import BackupStatus, BackupTriggerMethod, BackupType
+from src.schemas import BackupCreate, BackupSchema
 from src.services import BackupService
+from src.settings import app_config
 
 
 @shared_task(bind=True)
-def database_backup(self: Task, *args, **kwargs) -> dict:
+def database_backup(self: Task, trigger: str, *args, **kwargs) -> dict:
     db_gen = get_db()
     db = next(db_gen)
 
@@ -14,20 +21,70 @@ def database_backup(self: Task, *args, **kwargs) -> dict:
 
     service = BackupService(db=db, backup_db=backup_db)
 
-    try:
-        update_task_state(
-            self,
-            db,
-            metadata={"stage": "Creating Database Backup"},
-        )
+    logging.info("Starting timer")
+    start = time.perf_counter()
 
+    backup_data = BackupCreate(
+        celery_id=cast(str, self.request.id),
+        trigger_method=BackupTriggerMethod(trigger),
+        status=BackupStatus.RUNNING,
+        backup_type=BackupType.LOGICAL,
+    )
+    backup = service.create(backup_data)
+
+    try:
+        logging.info("State: Creating Backup")
+        update_task_state(self, db, metadata={"stage": "Creating Backup"})
         backup_file = service.create_logical_backup()
 
+        logging.info("State: Verifying Backup")
         update_task_state(self, db, metadata={"stage": "Verifying Backup"})
-
         service.verify_backup_restoration(backup_file)
 
-        return {}
+        logging.info("State: Compiling Backup")
+        update_task_state(self, db, metadata={"stage": "Compiling Backup"})
+        checksum_file = service.generate_checksum_file(backup_file)
+
+        logging.debug("Metadata creation")
+        metadata_schema = service.create_metadata(backup, backup_file, checksum_file)
+        metadata_file = service.create_metadata_file(metadata_schema)
+
+        logging.info("Zipping up all the files")
+        zip_destination = f"{app_config.BACKUP_PATH}/{metadata_schema.created_at.strftime('%Y%m%d%H%M%S')}.zip"
+        service.zip_folder(
+            zip_destination=zip_destination,
+            files=[backup_file, checksum_file, metadata_file],
+        )
+
+        end = time.perf_counter()
+        logging.info("Timer stopped successfully")
+
+        logging.info("State: Finishing")
+        update_task_state(self, db, metadata={"stage": "Finishing"})
+
+        backup.duration = end - start
+        backup.status = BackupStatus.SUCCESS
+
+        db.commit()
+        backup_db.commit()
+
+        return BackupSchema.model_validate(backup).model_dump(mode="json")
+
+    except Exception as e:
+        db.rollback()
+        backup_db.rollback()
+
+        end = time.perf_counter()
+        logging.info("Timer stopped on failure")
+
+        backup.duration = end - start
+        backup.status = BackupStatus.FAILURE
+        backup.error_message = f"{type(e).__name__}: {e}"
+        backup.error_traceback = str(e)
+
+        backup_db.commit()
+
+        return BackupSchema.model_validate(backup).model_dump(mode="json")
 
     finally:
         backup_db_gen.close()

@@ -1,6 +1,7 @@
 from celery.result import AsyncResult
 from fastapi import APIRouter, Request, status
 
+from src.enums import BackupTriggerMethod
 from src.tasks import database_backup, simulate_celery_task
 
 
@@ -16,6 +17,6 @@ def run_task_simulation(_: Request):
 
 @api.get("/database-backup", status_code=status.HTTP_200_OK)
 def execute_task_simulation(_: Request):
-    task: AsyncResult = database_backup.delay()
+    task: AsyncResult = database_backup.delay(trigger=BackupTriggerMethod.MANUAL.value)
 
     return task.get()

@@ -1,5 +1,15 @@
 from src.schemas.auth import LogInRequest
-from src.schemas.backup import BackupSchema
+from src.schemas.backup import (
+    BackupCreate,
+    BackupSchema,
+    Metadata,
+    MetadataChecksum,
+    MetadataData,
+    MetadataDateRange,
+    MetadataFiles,
+    MetadataFileType,
+    MetadataTool,
+)
 from src.schemas.common import DateRangeRequest, DateRequest, InvalidSchema
 from src.schemas.personnel import (
     CreatePersonnelRequest,
