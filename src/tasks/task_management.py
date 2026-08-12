@@ -38,13 +38,13 @@ def record_task_to_database(sender: str, headers: dict, **kwargs):
 
 @task_prerun.connect
 def before_task_execution(task_id: str, **kwargs):
-    logging.info("Before task execution")
+    logging.info(f"Before task execution. Task ID: {task_id}")
     db_gen = get_db()
     db = next(db_gen)
 
     try:
         service = TaskService(db)
-        task_record = service.get_by_id(uuid.UUID(task_id))
+        task_record = service.get_by_task_id(uuid.UUID(task_id))
 
         task_record.started_at = datetime.now(timezone.utc)
         task_record.status = TaskStatus.RUNNING.value
@@ -64,14 +64,14 @@ def before_task_execution(task_id: str, **kwargs):
 def finalise_success_task(sender: Task, **kwargs):
     task_id = uuid.UUID(sender.request.id)
 
-    logging.info("After successful task execution")
+    logging.info(f"After successful task execution. Task ID: {task_id}")
 
     db_gen = get_db()
     db = next(db_gen)
 
     try:
         service = TaskService(db)
-        task_record = service.get_by_id(task_id)
+        task_record = service.get_by_task_id(task_id)
 
         task_record.ended_at = datetime.now(timezone.utc)
         task_record.status = TaskStatus.SUCCESS.value
@@ -96,7 +96,7 @@ def finalise_failure_task(sender: Task, exception: Exception | None = None, **kw
 
     try:
         service = TaskService(db)
-        task_record = service.get_by_id(task_id)
+        task_record = service.get_by_task_id(task_id)
 
         task_record.ended_at = datetime.now(timezone.utc)
         task_record.status = TaskStatus.FAILED.value
@@ -122,7 +122,7 @@ def log_retry(sender: Task, **kwargs):
 
     try:
         service = TaskService(db)
-        task_record = service.get_by_id(task_id)
+        task_record = service.get_by_task_id(task_id)
 
         task_record.retries += 1
         db.commit()

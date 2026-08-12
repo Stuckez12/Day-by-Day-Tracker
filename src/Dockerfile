@@ -15,6 +15,8 @@ RUN apt-get update && apt-get install -y --no-install-recommends curl gnupg \
     && apt-get autoremove -y \
     && rm -rf /var/lib/apt/lists/*
 
+RUN apt-get update && apt-get install -y iputils-ping
+
 RUN pip install uv
 
 COPY ./src ./src

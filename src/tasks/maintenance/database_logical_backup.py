@@ -12,7 +12,7 @@ from src.settings import app_config
 
 
 @shared_task(bind=True)
-def database_backup(self: Task, trigger: str, *args, **kwargs) -> dict:
+def database_logical_backup(self: Task, trigger: str, *args, **kwargs) -> dict:
     db_gen = get_db()
     db = next(db_gen)
 
@@ -50,7 +50,7 @@ def database_backup(self: Task, trigger: str, *args, **kwargs) -> dict:
         metadata_file = service.create_metadata_file(metadata_schema)
 
         logging.info("Zipping up all the files")
-        zip_destination = f"{app_config.BACKUP_PATH}/{metadata_schema.created_at.strftime('%Y%m%d%H%M%S')}.zip"
+        zip_destination = f"{app_config.BACKUP_PATH}/{metadata_schema.created_at.strftime('%Y%m%d%H%M%S')}-tracker-backup.zip"
         service.zip_folder(
             zip_destination=zip_destination,
             files=[backup_file, checksum_file, metadata_file],
@@ -65,7 +65,6 @@ def database_backup(self: Task, trigger: str, *args, **kwargs) -> dict:
         backup.duration = end - start
         backup.status = BackupStatus.SUCCESS
 
-        db.commit()
         backup_db.commit()
 
         return BackupSchema.model_validate(backup).model_dump(mode="json")
