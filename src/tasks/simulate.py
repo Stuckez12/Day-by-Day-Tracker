@@ -1,14 +1,14 @@
 import logging
 import time
 
+import src.common as common
 from celery import Task, shared_task
-from src.common import get_db
 from src.common.celery import update_task_state
 
 
 @shared_task(bind=True)
 def simulate_celery_task(self: Task, *args, **kwargs) -> dict:
-    db_gen = get_db()
+    db_gen = common.get_db()
     db = next(db_gen)
 
     try:

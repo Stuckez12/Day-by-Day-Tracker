@@ -2,16 +2,19 @@ import os
 import uuid
 from datetime import date, datetime, timedelta
 from typing import Generator
+from unittest.mock import patch
 
 import pytest
 from alembic import command
 from alembic.config import Config
 from celery.contrib.testing.worker import start_worker
 from fastapi.testclient import TestClient
+from sqlalchemy import Engine, create_engine
 from sqlalchemy.orm import Session
+from sqlalchemy_utils import create_database, database_exists
 
 from celery import current_app as current_celery_app
-from src.common import get_db
+from src.common import get_backup_db, get_db
 from src.common.password_hash import pwd_hash
 from src.common.security import create_access_token
 from src.enums import TaskStatus
@@ -33,18 +36,62 @@ def check_testing_environment():
 
 
 @pytest.fixture(scope="session", autouse=True)
-def initialise_database():
-    alembic_cfg = Config("alembic.ini")
-    command.upgrade(alembic_cfg, "head")
+def initialise_databases(
+    test_session: Session, test_backup_session: Session
+) -> Generator[None, None, None]:
+    assert isinstance(test_session.bind, Engine)
+    assert isinstance(test_backup_session.bind, Engine)
+
+    if not database_exists(test_session.bind.url):
+        create_database(test_session.bind.url)
+
+    if not database_exists(test_backup_session.bind.url):
+        create_database(test_backup_session.bind.url)
 
     yield
 
+
+@pytest.fixture(scope="session", autouse=True)
+def test_engine(initialise_databases) -> Generator[Engine, None, None]:
+    engine = create_engine(app_config.db_url)
+    alembic_cfg = Config("alembic.ini")
+    alembic_cfg.set_main_option("sqlalchemy.url", app_config.db_url)
+
+    command.upgrade(alembic_cfg, "head")
+
+    yield engine
+
     command.downgrade(alembic_cfg, "base")
+    engine.dispose()
+
+
+@pytest.fixture(scope="session", autouse=True)
+def test_backup_engine(initialise_databases) -> Generator[Engine, None, None]:
+    engine = create_engine(app_config.backup_db_url)
+    alembic_cfg = Config("alembic-backup.ini")
+    alembic_cfg.set_main_option("sqlalchemy.url", app_config.backup_db_url)
+
+    command.upgrade(alembic_cfg, "head")
+
+    yield engine
+
+    command.downgrade(alembic_cfg, "base")
+    engine.dispose()
 
 
 @pytest.fixture(scope="session")
 def test_session() -> Generator[Session, None, None]:
     db_gen = get_db()
+    db = next(db_gen)
+
+    yield db
+
+    db_gen.close()
+
+
+@pytest.fixture(scope="session")
+def test_backup_session() -> Generator[Session, None, None]:
+    db_gen = get_backup_db()
     db = next(db_gen)
 
     yield db
@@ -77,13 +124,49 @@ def celery_worker(celery_app):
 
 
 ################################################################################
+# Celery Tasks
+################################################################################
+
+
+@pytest.fixture
+def mock_task_db(test_session: Session, test_backup_session: Session):
+    def _get_test_db():
+        yield test_session
+
+    def _get_test_backup_db():
+        yield test_backup_session
+
+    with (
+        patch("src.common.get_db", _get_test_db),
+        patch("src.common.get_backup_db", _get_test_backup_db),
+    ):
+        yield
+
+
+################################################################################
 # Clients
 ################################################################################
 
 
 @pytest.fixture(scope="session")
-def test_app():
-    yield TestClient(fastapi_app, base_url="http://testserver/api/v1")
+def test_app(test_session: Session, test_backup_session: Session):
+    def _get_test_db():
+        try:
+            yield test_session
+        finally:
+            pass
+
+    def _get_test_backup_db():
+        try:
+            yield test_backup_session
+        finally:
+            pass
+
+    fastapi_app.dependency_overrides[get_db] = _get_test_db
+    fastapi_app.dependency_overrides[get_backup_db] = _get_test_backup_db
+
+    with TestClient(fastapi_app, base_url="http://testserver/api/v1") as client:
+        yield client
 
 
 @pytest.fixture
@@ -122,7 +205,9 @@ def test_client_user_session(
     test_app.headers.update(
         {"Authorization": f"Bearer {create_access_token(test_session_personnel.id)}"}
     )
+
     yield test_app
+
     test_app.headers.pop("Authorization", None)
 
 

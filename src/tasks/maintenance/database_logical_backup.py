@@ -2,8 +2,8 @@ import logging
 import time
 from typing import cast
 
+import src.common as common
 from celery import Task, shared_task
-from src.common import get_backup_db, get_db
 from src.common.celery import update_task_state
 from src.enums import BackupStatus, BackupTriggerMethod, BackupType
 from src.schemas import BackupCreate, BackupSchema
@@ -13,10 +13,10 @@ from src.settings import app_config
 
 @shared_task(bind=True)
 def database_logical_backup(self: Task, trigger: str, *args, **kwargs) -> dict:
-    db_gen = get_db()
+    db_gen = common.get_db()
     db = next(db_gen)
 
-    backup_db_gen = get_backup_db()
+    backup_db_gen = common.get_backup_db()
     backup_db = next(backup_db_gen)
 
     service = BackupService(db=db, backup_db=backup_db)

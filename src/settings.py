@@ -66,6 +66,10 @@ class TestAppConfig(AppConfig):
     def db_url(self):
         return f"postgresql+psycopg2://{self.DATABASE_USERNAME}:{self.DATABASE_PASSWORD}@{self.DATABASE_HOST}:{self.DATABASE_PORT}/test_dbdt"
 
+    @property
+    def backup_db_url(self):
+        return f"postgresql+psycopg2://{self.DATABASE_USERNAME}:{self.DATABASE_PASSWORD}@{self.DATABASE_HOST}:{self.DATABASE_PORT}/test_dbdt_backup"
+
     # JWT tokens
     JWT_SECRET: str = "test-token"
 

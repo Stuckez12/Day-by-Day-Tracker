@@ -11,15 +11,15 @@ from celery.signals import (
 )
 from sqlalchemy.exc import NoResultFound
 
+import src.common as common
 from celery import Task
-from src.common import get_db
 from src.enums import TaskStatus
 from src.services import TaskService
 
 
 @before_task_publish.connect
 def record_task_to_database(sender: str, headers: dict, **kwargs):
-    db_gen = get_db()
+    db_gen = common.get_db()
     db = next(db_gen)
 
     try:
@@ -39,7 +39,7 @@ def record_task_to_database(sender: str, headers: dict, **kwargs):
 @task_prerun.connect
 def before_task_execution(task_id: str, **kwargs):
     logging.info(f"Before task execution. Task ID: {task_id}")
-    db_gen = get_db()
+    db_gen = common.get_db()
     db = next(db_gen)
 
     try:
@@ -66,7 +66,7 @@ def finalise_success_task(sender: Task, **kwargs):
 
     logging.info(f"After successful task execution. Task ID: {task_id}")
 
-    db_gen = get_db()
+    db_gen = common.get_db()
     db = next(db_gen)
 
     try:
@@ -91,7 +91,7 @@ def finalise_failure_task(sender: Task, exception: Exception | None = None, **kw
 
     logging.info("After failed task execution")
 
-    db_gen = get_db()
+    db_gen = common.get_db()
     db = next(db_gen)
 
     try:
@@ -117,7 +117,7 @@ def log_retry(sender: Task, **kwargs):
 
     logging.info("Recording retry attempt")
 
-    db_gen = get_db()
+    db_gen = common.get_db()
     db = next(db_gen)
 
     try:
