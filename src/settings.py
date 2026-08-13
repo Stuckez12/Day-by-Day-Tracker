@@ -14,7 +14,7 @@ class AppConfig(BaseSettings):
 
     # App Params
     APP_VERSION: str
-    APP_ENV: str
+    APP_ENV: str = "dev"
 
     # DATABASE
     DATABASE_USERNAME: str
@@ -62,6 +62,9 @@ class ProdAppConfig(AppConfig):
 
 
 class TestAppConfig(AppConfig):
+    APP_VERSION: str = "0.0.1"
+    APP_ENV: str = "test"
+
     @property
     def db_url(self):
         return f"postgresql+psycopg2://{self.DATABASE_USERNAME}:{self.DATABASE_PASSWORD}@{self.DATABASE_HOST}:{self.DATABASE_PORT}/test_dbdt"
