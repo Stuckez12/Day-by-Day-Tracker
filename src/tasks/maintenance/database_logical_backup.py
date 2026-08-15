@@ -32,6 +32,8 @@ def database_logical_backup(self: Task, trigger: str, *args, **kwargs) -> dict:
     )
     backup = service.create(backup_data)
 
+    temp_folder_path = service.create_folder(service.temp_file_path)
+
     try:
         logging.info("State: Creating Backup")
         update_task_state(self, db, metadata={"stage": "Creating Backup"})
@@ -57,10 +59,12 @@ def database_logical_backup(self: Task, trigger: str, *args, **kwargs) -> dict:
         )
 
         end = time.perf_counter()
-        logging.info("Timer stopped successfully")
+        logging.info("Timer stopped on success")
 
         logging.info("State: Finishing")
         update_task_state(self, db, metadata={"stage": "Finishing"})
+
+        service.create_metadata_record(metadata_schema, zip_destination)
 
         backup.duration = end - start
         backup.status = BackupStatus.SUCCESS
@@ -86,5 +90,7 @@ def database_logical_backup(self: Task, trigger: str, *args, **kwargs) -> dict:
         return BackupSchema.model_validate(backup).model_dump(mode="json")
 
     finally:
+        service.delete_folder(temp_folder_path)
+
         backup_db_gen.close()
         db_gen.close()

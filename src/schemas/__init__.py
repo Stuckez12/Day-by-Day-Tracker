@@ -10,7 +10,13 @@ from src.schemas.backup import (
     MetadataFileType,
     MetadataTool,
 )
-from src.schemas.common import DateRangeRequest, DateRequest, InvalidSchema
+from src.schemas.common import (
+    DateRangeRequest,
+    DateRequest,
+    DetailSchema,
+    InvalidSchema,
+    TaskIDSchema,
+)
 from src.schemas.personnel import (
     CreatePersonnelRequest,
     PersonnelSchema,

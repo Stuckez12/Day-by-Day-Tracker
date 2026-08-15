@@ -1,18 +1,23 @@
 import hashlib
+import json
+import logging
 import os
+import shutil
 import subprocess
 from datetime import datetime
 from pathlib import Path
 from typing import cast
+from uuid import UUID
 from zipfile import ZIP_DEFLATED, ZipFile
 
+from celery.result import AsyncResult
+from fastapi import HTTPException, UploadFile, status
 from sqlalchemy import func, text
 from sqlalchemy.orm import Session
 from sqlalchemy_utils import drop_database
 
 from src.common.recreate_db import recreate_database
-from src.models import BackupModel
-from src.models.ranking import RankerModel
+from src.models import BackupModel, MetaModel, RankerModel
 from src.schemas import (
     BackupCreate,
     Metadata,
@@ -35,6 +40,39 @@ class BackupService(BaseDBService):
 
         self.backup_db = backup_db
 
+    def get_by_backup_id(self, backup_id: UUID) -> BackupModel:
+        return (
+            self.backup_db.query(BackupModel).filter(BackupModel.id == backup_id).one()
+        )
+
+    def get_by_task_id(self, task_id: UUID) -> BackupModel:
+        return (
+            self.backup_db.query(BackupModel)
+            .filter(BackupModel.celery_id == task_id)
+            .one()
+        )
+
+    def get_all(self) -> list[BackupModel]:
+        return (
+            self.backup_db.query(BackupModel)
+            .order_by(BackupModel.created_at.desc())
+            .all()
+        )
+
+    def create_folder(self, path: str):
+        Path(path).mkdir(parents=True, exist_ok=True)
+
+        return Path(path)
+
+    def delete_folder(self, path: Path):
+        shutil.rmtree(path)
+
+        try:
+            assert str(path) not in os.listdir()
+
+        except AssertionError:
+            logging.error("Folder was not deleted")
+
     def create(self, data: BackupCreate) -> BackupModel:
         backup = BackupModel(**data.model_dump())
 
@@ -48,8 +86,6 @@ class BackupService(BaseDBService):
         date = datetime.now().strftime("%Y-%b-%d")
         backup_file_name = f"{app_config.DATABASE_DB_NAME}-backup-{date}"
         file_path = f"{self.temp_file_path}/{backup_file_name}.dump"
-
-        Path(self.temp_file_path).mkdir(parents=True, exist_ok=True)
 
         command = [
             "pg_dump",
@@ -168,6 +204,11 @@ STDERR: {e.stderr}
             if checksum_value != backup_checksum:
                 raise ValueError("Backup file corrupted. Checksum value does not match")
 
+        metadata.checksum.verified = True
+        metadata.checksum.last_verified = datetime.now()
+
+        return metadata
+
     def create_metadata(
         self, backup_record: BackupModel, backup_file: str, checksum_file: str
     ) -> Metadata:
@@ -219,13 +260,30 @@ STDERR: {e.stderr}
             files=files,
         )
 
+    def create_metadata_record(self, metadata: Metadata, zip_path: str):
+        meta_model = MetaModel(metadata, zip_path)
+
+        self.backup_db.add(meta_model)
+        self.backup_db.commit()
+        self.backup_db.refresh(meta_model)
+
+        return meta_model
+
     def create_metadata_file(self, metadata: Metadata) -> str:
         metadata_file_path = f"{self.temp_file_path}/metadata.json"
 
         with open(metadata_file_path, "w+") as f:
-            f.write(metadata.model_dump_json())
+            f.write(metadata.model_dump_json(exclude={"backup_id"}))
 
         return metadata_file_path
+
+    def get_metadata_from_backup(self) -> Metadata:
+        metadata_path = f"{self.temp_restore_path}/metadata.json"
+
+        with open(metadata_path, "rb") as f:
+            schema = json.load(f)
+
+        return Metadata.model_validate(schema)
 
     def zip_folder(self, zip_destination: str, files: list[str]):
         with ZipFile(zip_destination, "w", compression=ZIP_DEFLATED) as zf:
@@ -233,8 +291,39 @@ STDERR: {e.stderr}
                 path = Path(file)
                 zf.write(path, arcname=path.name)
 
-    def unzip_folder(self, zip_file: str):
+    def unzip_folder(self, zip_file: str) -> str:
         zip_path = Path(f"{app_config.BACKUP_PATH}/{zip_file}")
 
         with ZipFile(zip_path, "r") as zf:
             zf.extractall(self.temp_restore_path)
+
+        return str(zip_path)
+
+    async def upload_backup_file(self, file: UploadFile) -> UUID:
+        from src.tasks import uploaded_backup_record_creation
+
+        file_name = await self.upload_backup(file)
+
+        task: AsyncResult = uploaded_backup_record_creation.s(
+            new_backup_file=file_name
+        ).apply_async()
+
+        return UUID(task.id)
+
+    async def upload_backup(self, file: UploadFile) -> str:
+        if file.filename is None:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="File uploaded does not have a file name attached. Cancelled file upload",
+            )
+
+        path_str = f"{app_config.BACKUP_PATH}/{file.filename}"
+        file_path = Path(path_str)
+
+        logging.info("Uploading file into container's file storage")
+
+        with file_path.open("wb") as f:
+            while chunk := await file.read(65536):
+                f.write(chunk)
+
+        return file.filename

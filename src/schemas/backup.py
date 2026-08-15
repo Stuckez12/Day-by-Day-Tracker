@@ -33,6 +33,8 @@ MetadataFileType = Literal["backup", "checksum"]
 class MetadataChecksum(BaseModel):
     algorithm: str
     file_name: str
+    verified: bool = False
+    last_verified: datetime | None = None
 
 
 class MetadataTool(BaseModel):

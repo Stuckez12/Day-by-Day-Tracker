@@ -51,10 +51,11 @@ class MetaModel(BackupBaseModel):
     )
 
     def __init__(self, metadata_schema: "Metadata", zipped_backup_path: str):
+        self.backup_id = metadata_schema.backup_id
         self.database_alembic_version = metadata_schema.database_alembic_version
         self.algorithm = metadata_schema.checksum.algorithm
-        self.verified = False
-        self.last_verified = None
+        self.verified = metadata_schema.checksum.verified
+        self.last_verified = metadata_schema.checksum.last_verified
         self.tool_used = metadata_schema.tool.name
         self.tool_version = metadata_schema.tool.version
         self.date_range_start = metadata_schema.data.date_range.start

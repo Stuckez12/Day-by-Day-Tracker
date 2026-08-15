@@ -5,3 +5,4 @@ class BackupStatus(Enum):
     RUNNING = "RUNNING"
     SUCCESS = "SUCCESS"
     FAILURE = "FAILURE"
+    UPLOADED = "UPLOADED"
