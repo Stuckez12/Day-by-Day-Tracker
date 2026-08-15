@@ -8,25 +8,6 @@ from src.enums import BackupStatus, BackupTriggerMethod, BackupType
 from src.settings import app_config
 
 
-class BackupSchema(BaseModel):
-    model_config = ConfigDict(from_attributes=True)
-
-    celery_id: UUID
-    trigger_method: BackupTriggerMethod
-    status: BackupStatus
-    backup_type: BackupType
-    duration: float | None = None
-    error_message: str | None = None
-    error_traceback: str | None = None
-
-
-class BackupCreate(BaseModel):
-    celery_id: str
-    trigger_method: BackupTriggerMethod
-    status: BackupStatus
-    backup_type: BackupType
-
-
 MetadataFileType = Literal["backup", "checksum"]
 
 
@@ -58,6 +39,8 @@ class MetadataData(BaseModel):
 
 
 class Metadata(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
     schema_version: int = 1
 
     backup_id: str
@@ -78,3 +61,23 @@ class Metadata(BaseModel):
                 return file
 
         return None
+
+
+class BackupSchema(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
+    id: UUID
+    celery_id: UUID
+    trigger_method: BackupTriggerMethod
+    status: BackupStatus
+    backup_type: BackupType
+    duration: float | None = None
+    error_message: str | None = None
+    error_traceback: str | None = None
+
+
+class BackupCreate(BaseModel):
+    celery_id: str
+    trigger_method: BackupTriggerMethod
+    status: BackupStatus
+    backup_type: BackupType

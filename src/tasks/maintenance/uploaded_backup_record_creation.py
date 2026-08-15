@@ -38,13 +38,14 @@ def uploaded_backup_record_creation(
         update_task_state(self, db, metadata={"stage": "Extracting Backup"})
         zip_path = service.unzip_folder(new_backup_file)
 
-        metadata_schema = service.get_metadata_from_backup()
+        metadata_schema = service.get_metadata_from_backup(backup)
         metadata_schema.backup_id = str(backup.id)
 
         logging.info("State: Validating Backup")
         update_task_state(self, db, metadata={"stage": "Validating Backup"})
-        metadata_schema = service.validate_checksum(metadata_schema)
+        service.validate_checksum(metadata_schema)
 
+        logging.info("State: Creating Backup Record")
         update_task_state(self, db, metadata={"stage": "Creating Backup Record"})
 
         service.create_metadata_record(metadata_schema, zip_path)

@@ -54,7 +54,7 @@ services:
       - ./src:/api/src
       - ./tests:/api/tests
       - ./alembic.ini:/api/alembic.ini
-      - ${EXTERNAL_BACKUP_PATH}:/backups${BACKUP_PATH}
+      - ${EXTERNAL_BACKUP_PATH}:${BACKUP_PATH}
     environment:
       APP_ENV: dev
     env_file: .env

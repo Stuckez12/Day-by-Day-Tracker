@@ -1,9 +1,15 @@
+from pathlib import Path
 from uuid import UUID
 
+from celery.result import AsyncResult
 from fastapi import APIRouter, HTTPException, Query, UploadFile, status
+from fastapi.responses import FileResponse
+from sqlalchemy.exc import NoResultFound
 
 from src.common import BackupServiceDep
-from src.schemas import BackupSchema, DetailSchema, TaskIDSchema
+from src.schemas import BackupSchema, TaskIDSchema
+from src.settings import app_config
+from src.tasks import verify_backup
 
 
 api = APIRouter(prefix="/backups", tags=["Backup"])
@@ -22,10 +28,22 @@ def get_backup(
         )
 
     if backup_id:
-        return service.get_by_backup_id(backup_id)
+        try:
+            return service.get_by_backup_id(backup_id)
+
+        except NoResultFound:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST, detail="Backup does not exist"
+            )
 
     if celery_id:
-        return service.get_by_task_id(celery_id)
+        try:
+            return service.get_by_task_id(celery_id)
+
+        except NoResultFound:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST, detail="Backup does not exist"
+            )
 
 
 @api.get("/all", response_model=list[BackupSchema], status_code=status.HTTP_200_OK)
@@ -45,14 +63,42 @@ async def upload_backup(service: BackupServiceDep, file: UploadFile):
     response_model=list[BackupSchema],
     status_code=status.HTTP_200_OK,
 )
-def download_backup(service: BackupServiceDep):
-    pass
+def download_backup(service: BackupServiceDep, backup_id: UUID):
+    try:
+        backup = service.get_by_backup_id(backup_id)
+
+    except NoResultFound:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST, detail="Backup does not exist"
+        )
+
+    if backup.meta is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Backup does not have the required metadata",
+        )
+
+    return FileResponse(
+        Path(f"{app_config.BACKUP_PATH}{backup.meta.zip_path}"),
+        media_type="application/octet-stream",
+        filename=backup.meta.zip_filename,
+    )
 
 
 @api.patch(
     "/{backup_id}/verify",
-    response_model=DetailSchema,
+    response_model=TaskIDSchema,
     status_code=status.HTTP_200_OK,
 )
-def verify_backup(service: BackupServiceDep):
-    pass
+def verify_backup_route(service: BackupServiceDep, backup_id: UUID):
+    try:
+        backup = service.get_by_backup_id(backup_id)
+
+    except NoResultFound:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST, detail="Backup does not exist"
+        )
+
+    task: AsyncResult = verify_backup.s(backup_id=backup.id).apply_async()
+
+    return TaskIDSchema(task_id=UUID(task.id))

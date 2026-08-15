@@ -13,7 +13,7 @@ from zipfile import ZIP_DEFLATED, ZipFile
 from celery.result import AsyncResult
 from fastapi import HTTPException, UploadFile, status
 from sqlalchemy import func, text
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session, selectinload
 from sqlalchemy_utils import drop_database
 
 from src.common.recreate_db import recreate_database
@@ -42,13 +42,17 @@ class BackupService(BaseDBService):
 
     def get_by_backup_id(self, backup_id: UUID) -> BackupModel:
         return (
-            self.backup_db.query(BackupModel).filter(BackupModel.id == backup_id).one()
+            self.backup_db.query(BackupModel)
+            .filter(BackupModel.id == backup_id)
+            .options(selectinload(BackupModel.meta))
+            .one()
         )
 
     def get_by_task_id(self, task_id: UUID) -> BackupModel:
         return (
             self.backup_db.query(BackupModel)
             .filter(BackupModel.celery_id == task_id)
+            .options(selectinload(BackupModel.meta))
             .one()
         )
 
@@ -204,11 +208,6 @@ STDERR: {e.stderr}
             if checksum_value != backup_checksum:
                 raise ValueError("Backup file corrupted. Checksum value does not match")
 
-        metadata.checksum.verified = True
-        metadata.checksum.last_verified = datetime.now()
-
-        return metadata
-
     def create_metadata(
         self, backup_record: BackupModel, backup_file: str, checksum_file: str
     ) -> Metadata:
@@ -277,13 +276,13 @@ STDERR: {e.stderr}
 
         return metadata_file_path
 
-    def get_metadata_from_backup(self) -> Metadata:
+    def get_metadata_from_backup(self, backup: BackupModel) -> Metadata:
         metadata_path = f"{self.temp_restore_path}/metadata.json"
 
         with open(metadata_path, "rb") as f:
             schema = json.load(f)
 
-        return Metadata.model_validate(schema)
+        return Metadata.model_validate({"backup_id": str(backup.id), **schema})
 
     def zip_folder(self, zip_destination: str, files: list[str]):
         with ZipFile(zip_destination, "w", compression=ZIP_DEFLATED) as zf:
