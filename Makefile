@@ -92,13 +92,10 @@ endif
 .PHONY: tests
 TEST_PATH =
 tests:
-#	In case the tests fail and database wasnt deleted
 	@docker compose -f docker-compose.dev.yaml exec db psql -U postgres -c "DROP DATABASE IF EXISTS test_dbdt;"
+	@docker compose -f docker-compose.dev.yaml exec db psql -U postgres -c "DROP DATABASE IF EXISTS test_dbdt_backup;"
 
-# Test execution
-	@docker compose -f docker-compose.dev.yaml exec db psql -U postgres -c "CREATE DATABASE test_dbdt;"
 	@docker compose -f docker-compose.dev.yaml exec api sh -c "pytest -vv -q -s $(TEST_PATH)"
-	@docker compose -f docker-compose.dev.yaml exec db psql -U postgres -c "DROP DATABASE test_dbdt;"
 
 checks:
 	@$(MAKE) flint

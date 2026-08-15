@@ -10,7 +10,7 @@ from alembic.config import Config
 from celery.contrib.testing.worker import start_worker
 from fastapi.testclient import TestClient
 from sqlalchemy import Engine, create_engine
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session, sessionmaker
 from sqlalchemy_utils import create_database, database_exists
 
 from celery import current_app as current_celery_app
@@ -18,8 +18,19 @@ from src.common import get_backup_db, get_db
 from src.common.password_hash import pwd_hash
 from src.common.security import create_access_token
 from src.enums import TaskStatus
+from src.enums.backup.status import BackupStatus
+from src.enums.backup.trigger_method import BackupTriggerMethod
+from src.enums.backup.type import BackupType
 from src.main import fastapi_app
-from src.models import PersonnelModel, RankerModel, TaskModel
+from src.models import BackupModel, MetaModel, PersonnelModel, RankerModel, TaskModel
+from src.schemas.backup import (
+    Metadata,
+    MetadataChecksum,
+    MetadataData,
+    MetadataDateRange,
+    MetadataFiles,
+    MetadataTool,
+)
 from src.services import AuthService, PersonnelService, RankingService, TaskService
 from src.settings import app_config
 from tests.api.constants import VALID_PASSWORD
@@ -36,27 +47,14 @@ def check_testing_environment():
 
 
 @pytest.fixture(scope="session", autouse=True)
-def initialise_databases(
-    test_session: Session, test_backup_session: Session
-) -> Generator[None, None, None]:
-    assert isinstance(test_session.bind, Engine)
-    assert isinstance(test_backup_session.bind, Engine)
-
-    if not database_exists(test_session.bind.url):
-        create_database(test_session.bind.url)
-
-    if not database_exists(test_backup_session.bind.url):
-        create_database(test_backup_session.bind.url)
-
-    yield
-
-
-@pytest.fixture(scope="session", autouse=True)
-def test_engine(initialise_databases) -> Generator[Engine, None, None]:
+def test_engine() -> Generator[Engine, None, None]:
     engine = create_engine(app_config.db_url)
     alembic_cfg = Config("alembic.ini")
     alembic_cfg.set_main_option("sqlalchemy.url", app_config.db_url)
 
+    if not database_exists(app_config.db_url):
+        create_database(app_config.db_url)
+
     command.upgrade(alembic_cfg, "head")
 
     yield engine
@@ -66,10 +64,13 @@ def test_engine(initialise_databases) -> Generator[Engine, None, None]:
 
 
 @pytest.fixture(scope="session", autouse=True)
-def test_backup_engine(initialise_databases) -> Generator[Engine, None, None]:
+def test_backup_engine() -> Generator[Engine, None, None]:
     engine = create_engine(app_config.backup_db_url)
     alembic_cfg = Config("alembic-backup.ini")
     alembic_cfg.set_main_option("sqlalchemy.url", app_config.backup_db_url)
+
+    if not database_exists(app_config.backup_db_url):
+        create_database(app_config.backup_db_url)
 
     command.upgrade(alembic_cfg, "head")
 
@@ -80,23 +81,33 @@ def test_backup_engine(initialise_databases) -> Generator[Engine, None, None]:
 
 
 @pytest.fixture(scope="session")
-def test_session() -> Generator[Session, None, None]:
-    db_gen = get_db()
-    db = next(db_gen)
+def test_session(test_engine: Engine) -> Generator[Session, None, None]:
+    connection = test_engine.connect()
+    transaction = connection.begin()
+    SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=test_engine)
+    session = SessionLocal()
 
-    yield db
+    yield session
 
-    db_gen.close()
+    session.close()
+    transaction.rollback()
+    connection.close()
 
 
 @pytest.fixture(scope="session")
-def test_backup_session() -> Generator[Session, None, None]:
-    db_gen = get_backup_db()
-    db = next(db_gen)
+def test_backup_session(test_backup_engine: Engine) -> Generator[Session, None, None]:
+    connection = test_backup_engine.connect()
+    transaction = connection.begin()
+    SessionLocal = sessionmaker(
+        autocommit=False, autoflush=False, bind=test_backup_engine
+    )
+    session = SessionLocal()
 
-    yield db
+    yield session
 
-    db_gen.close()
+    session.close()
+    transaction.rollback()
+    connection.close()
 
 
 @pytest.fixture(scope="session")
@@ -209,6 +220,36 @@ def test_client_user_session(
     yield test_app
 
     test_app.headers.pop("Authorization", None)
+
+
+################################################################################
+# Schemas
+################################################################################
+
+
+@pytest.fixture(scope="function")
+def test_metadata_schema(test_backup: BackupModel):
+    yield Metadata(
+        backup_id=str(test_backup.id),
+        backup_type=BackupType.LOGICAL,
+        created_at=datetime.now(),
+        database_alembic_version="qwertyuiop",
+        app_version="1.0.0",
+        checksum=MetadataChecksum(
+            algorithm="SHA256",
+            file_name="test_zip",
+            verified=True,
+            last_verified=datetime.now(),
+        ),
+        tool=MetadataTool(
+            name="pg_dump",
+            version="17.1",
+        ),
+        files=[MetadataFiles(name="test_file_name", type="backup", size_bytes=1)],
+        data=MetadataData(
+            date_range=MetadataDateRange(start=datetime.now(), end=datetime.now())
+        ),
+    )
 
 
 ################################################################################
@@ -414,3 +455,37 @@ def test_task_3(test_session: Session):
 
     test_session.delete(model)
     test_session.commit()
+
+
+@pytest.fixture(scope="function")
+def test_backup(test_backup_session: Session):
+    model = BackupModel(
+        celery_id=uuid.uuid4(),
+        trigger_method=BackupTriggerMethod.MANUAL,
+        status=BackupStatus.SUCCESS,
+        backup_type=BackupType.LOGICAL,
+        duration=10.0,
+        error_message=None,
+        error_traceback=None,
+    )
+
+    test_backup_session.add(model)
+    test_backup_session.commit()
+
+    yield model
+
+    test_backup_session.delete(model)
+    test_backup_session.commit()
+
+
+@pytest.fixture(scope="function")
+def test_metadata(test_backup_session: Session, test_metadata_schema: Metadata):
+    model = MetaModel(metadata_schema=test_metadata_schema, zipped_backup_path="/")
+
+    test_backup_session.add(model)
+    test_backup_session.commit()
+
+    yield model
+
+    test_backup_session.delete(model)
+    test_backup_session.commit()

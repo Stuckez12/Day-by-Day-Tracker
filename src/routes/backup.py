@@ -12,7 +12,7 @@ from src.settings import app_config
 from src.tasks import verify_backup
 
 
-api = APIRouter(prefix="/backups", tags=["Backup"])
+api = APIRouter(prefix="/backup", tags=["Backup"])
 
 
 @api.get("", response_model=BackupSchema, status_code=status.HTTP_200_OK)

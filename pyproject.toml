@@ -47,6 +47,8 @@ omit = [
     "*/__init__.py",
     "src/api.py",
     "src/app.py",
+    "src/common/create_db.py",
+    "src/common/recreate_db.py",
     "src/common/upgrade_db.py",
     "src/main.py",
     "src/migrations/*",
