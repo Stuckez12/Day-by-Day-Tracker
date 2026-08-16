@@ -64,7 +64,6 @@ jobs:
 
       # Backup file paths
       EXTERNAL_BACKUP_PATH: ${{ github.workspace }}
-      BACKUP_PATH: /
 
     services:
       postgres:
