@@ -38,11 +38,13 @@ class TestUploadBackupRecordCreationTask:
 
     def test_unzip_folder_step_fails(
         self,
+        shared_tmp_path: Path,
         mocker: MockerFixture,
         celery_worker: None,
         test_backup_session: Session,
         test_backup_zip: Path,
     ):
+        mocker.patch("src.routes.backup.app_config.BACKUP_PATH", str(shared_tmp_path))
         mocker.patch.object(
             BackupService,
             "unzip_folder",
