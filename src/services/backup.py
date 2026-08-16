@@ -193,6 +193,8 @@ STDERR: {e.stderr}
         backup_file_data = metadata.get_file_type_data("backup")
         checksum_file_data = metadata.get_file_type_data("checksum")
 
+        print(metadata.files)
+
         if backup_file_data is None or checksum_file_data is None:
             raise FileNotFoundError("Backup/checksum file not present in metadata")
 
@@ -206,7 +208,9 @@ STDERR: {e.stderr}
             )
 
             if checksum_value != backup_checksum:
-                raise ValueError("Backup file corrupted. Checksum value does not match")
+                raise ValueError(
+                    f"Backup file corrupted. Checksum value does not match {backup_checksum}"
+                )
 
     def create_metadata(
         self, backup_record: BackupModel, backup_file: str, checksum_file: str

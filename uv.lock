@@ -394,7 +394,6 @@ dependencies = [
     { name = "argon2-cffi" },
     { name = "bcrypt" },
     { name = "celery" },
-    { name = "celery-types" },
     { name = "fastapi" },
     { name = "fastapi-pagination" },
     { name = "httpx" },
@@ -406,12 +405,12 @@ dependencies = [
     { name = "redis" },
     { name = "sqlalchemy" },
     { name = "sqlalchemy-utils" },
-    { name = "types-passlib" },
     { name = "uvicorn" },
 ]
 
 [package.dev-dependencies]
 dev = [
+    { name = "celery-types" },
     { name = "pytest" },
     { name = "pytest-asyncio" },
     { name = "pytest-cov" },
@@ -419,6 +418,7 @@ dev = [
     { name = "pytest-mock" },
     { name = "ruff" },
     { name = "ty" },
+    { name = "types-passlib" },
 ]
 
 [package.metadata]
@@ -427,7 +427,6 @@ requires-dist = [
     { name = "argon2-cffi", specifier = ">=25.1.0" },
     { name = "bcrypt", specifier = ">=5.0.0" },
     { name = "celery", specifier = ">=5.6.3" },
-    { name = "celery-types", specifier = ">=0.26.0" },
     { name = "fastapi", specifier = ">=0.128.0" },
     { name = "fastapi-pagination", specifier = ">=0.15.12" },
     { name = "httpx", specifier = ">=0.28.1" },
@@ -439,12 +438,12 @@ requires-dist = [
     { name = "redis", specifier = ">=7.4.0" },
     { name = "sqlalchemy", specifier = ">=2.0.45" },
     { name = "sqlalchemy-utils", specifier = ">=0.42.1" },
-    { name = "types-passlib", specifier = ">=1.7.7.20260211" },
     { name = "uvicorn", specifier = ">=0.38.0" },
 ]
 
 [package.metadata.requires-dev]
 dev = [
+    { name = "celery-types", specifier = ">=0.26.0" },
     { name = "pytest", specifier = ">=9.0.2" },
     { name = "pytest-asyncio", specifier = ">=1.4.0" },
     { name = "pytest-cov", specifier = ">=7.0.0" },
@@ -452,6 +451,7 @@ dev = [
     { name = "pytest-mock", specifier = ">=3.15.1" },
     { name = "ruff", specifier = ">=0.15.14" },
     { name = "ty", specifier = ">=0.0.39" },
+    { name = "types-passlib", specifier = ">=1.7.7.20260211" },
 ]
 
 [[package]]

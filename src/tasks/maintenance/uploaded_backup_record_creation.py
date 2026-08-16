@@ -47,7 +47,6 @@ def uploaded_backup_record_creation(
 
         logging.info("State: Creating Backup Record")
         update_task_state(self, db, metadata={"stage": "Creating Backup Record"})
-
         service.create_metadata_record(metadata_schema, zip_path)
 
         backup.duration = 0

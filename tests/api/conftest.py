@@ -4,12 +4,14 @@ from datetime import date, datetime, timedelta
 from pathlib import Path
 from typing import Generator
 from unittest.mock import patch
+from zipfile import ZIP_DEFLATED, ZipFile
 
 import pytest
 from alembic import command
 from alembic.config import Config
 from celery.contrib.testing.worker import start_worker
 from fastapi.testclient import TestClient
+from pytest import TempPathFactory
 from pytest_mock import MockerFixture
 from sqlalchemy import Engine, create_engine
 from sqlalchemy.orm import Session, sessionmaker
@@ -134,7 +136,10 @@ def celery_app():
 
 
 @pytest.fixture(scope="session")
-def celery_worker(celery_app):
+def celery_worker(celery_app, shared_tmp_path):
+    celery_app.conf.update(
+        SHARED_STORAGE_PATH=str(shared_tmp_path),
+    )
     with start_worker(celery_app, perform_ping_check=False):
         yield None
 
@@ -146,12 +151,69 @@ def test_temp_backup_path(mocker: MockerFixture, tmp_path: Path):
     yield tmp_path
 
 
+################################################################################
+# Test Files
+################################################################################
+
+
+@pytest.fixture(scope="session")
+def shared_tmp_path(tmp_path_factory: TempPathFactory):
+    return tmp_path_factory.mktemp("shared")
+
+
 @pytest.fixture(scope="function")
 def test_file(tmp_path: Path):
     test_file = tmp_path / "test.txt"
     test_file.write_bytes(b"hello world")
 
     return test_file
+
+
+@pytest.fixture(scope="function")
+def test_backup_zip(shared_tmp_path: Path, test_metadata_schema: Metadata):
+    zip_temp_path = shared_tmp_path / "zip_creation"
+    Path(zip_temp_path).mkdir()
+
+    backup_file = zip_temp_path / "backup.sql"
+    backup_file.write_bytes(b"INSERT INTO help (id) VALUES (1);")
+
+    checksum_file = zip_temp_path / "backup.checksum"
+    checksum_file.write_bytes(
+        b"3c8988be5542abfd6dcbd716f1574dbc779d90feebaa54151934a56eeb98a38a"
+    )
+
+    # Modify metadata to point to newly created test files
+    test_metadata_schema.files = [
+        MetadataFiles(
+            name=backup_file.name, type="backup", size_bytes=backup_file.stat().st_size
+        ),
+        MetadataFiles(
+            name=checksum_file.name,
+            type="checksum",
+            size_bytes=checksum_file.stat().st_size,
+        ),
+    ]
+
+    metadata_file = zip_temp_path / "metadata.json"
+    metadata_file.write_bytes(test_metadata_schema.model_dump_json().encode())
+
+    # Zip
+    files = [backup_file, metadata_file, checksum_file]
+
+    zip_file = shared_tmp_path / "backup.zip"
+
+    with ZipFile(zip_file, "w", compression=ZIP_DEFLATED) as zf:
+        for file in files:
+            path = Path(file)
+            zf.write(path, arcname=path.name)
+
+    yield zip_file.name
+
+    Path(zip_file).unlink()
+    Path(checksum_file).unlink()
+    Path(metadata_file).unlink()
+    Path(backup_file).unlink()
+    Path(zip_temp_path).rmdir()
 
 
 ################################################################################
