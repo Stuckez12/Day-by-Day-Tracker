@@ -119,6 +119,7 @@ class TestDownloadBackupRoute:
         test_backup_w_file: Path,
         test_backup: BackupModel,
     ):
+        print(str(tmp_path))
         mocker.patch("src.routes.backup.app_config.BACKUP_PATH", str(tmp_path))
 
         result = test_client_user_session.get(f"/backup/{test_backup.id}/download")

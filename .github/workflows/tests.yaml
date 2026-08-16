@@ -117,4 +117,4 @@ jobs:
           uv run alembic check
 
       - name: Tests Execution
-        run: uv run pytest -vv
+        run: uv run pytest -vv -s
