@@ -19,13 +19,10 @@ from celery import current_app as current_celery_app
 from src.common import get_backup_db, get_db
 from src.common.password_hash import pwd_hash
 from src.common.security import create_access_token
-from src.enums import TaskStatus
-from src.enums.backup.status import BackupStatus
-from src.enums.backup.trigger_method import BackupTriggerMethod
-from src.enums.backup.type import BackupType
+from src.enums import BackupStatus, BackupTriggerMethod, BackupType, TaskStatus
 from src.main import fastapi_app
 from src.models import BackupModel, MetaModel, PersonnelModel, RankerModel, TaskModel
-from src.schemas.backup import (
+from src.schemas import (
     Metadata,
     MetadataChecksum,
     MetadataData,
@@ -33,7 +30,13 @@ from src.schemas.backup import (
     MetadataFiles,
     MetadataTool,
 )
-from src.services import AuthService, PersonnelService, RankingService, TaskService
+from src.services import (
+    AuthService,
+    BackupService,
+    PersonnelService,
+    RankingService,
+    TaskService,
+)
 from src.settings import app_config
 from tests.api.constants import VALID_PASSWORD
 
@@ -277,6 +280,21 @@ def test_metadata_schema(test_backup: BackupModel):
 @pytest.fixture(scope="function")
 def test_auth_service(test_session: Session):
     yield AuthService(db=test_session)
+
+
+@pytest.fixture(scope="function")
+def test_backup_service(
+    mocker: MockerFixture,
+    tmp_path: Path,
+    test_session: Session,
+    test_backup_session: Session,
+):
+    mocker.patch.object(
+        app_config,
+        "BACKUP_PATH",
+        str(tmp_path),
+    )
+    yield BackupService(db=test_session, backup_db=test_backup_session)
 
 
 @pytest.fixture(scope="function")

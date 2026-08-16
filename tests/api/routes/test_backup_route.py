@@ -119,7 +119,6 @@ class TestDownloadBackupRoute:
         test_backup_w_file: Path,
         test_backup: BackupModel,
     ):
-        print(str(tmp_path))
         mocker.patch("src.routes.backup.app_config.BACKUP_PATH", str(tmp_path))
 
         result = test_client_user_session.get(f"/backup/{test_backup.id}/download")
@@ -152,7 +151,24 @@ class TestDownloadBackupRoute:
 
 
 class TestVerifyBackupRoute:
-    def test_success(self, test_client_user_session: TestClient):
-        result = test_client_user_session.post("/backup/<id>/verify")
+    def test_success(
+        self,
+        mocker: MockerFixture,
+        test_client_user_session: TestClient,
+        test_backup_w_file: Path,
+        test_backup: BackupModel,
+    ):
+        mocker.patch("src.routes.backup.verify_backup.s", uuid.uuid4())
+
+        result = test_client_user_session.get(f"/backup/{test_backup.id}/download")
         assert result.status_code == status.HTTP_200_OK
-        assert False
+
+        file = result.read()
+        assert file == test_backup_w_file.read_bytes()
+
+    def test_not_found(self, test_client_user_session: TestClient):
+        result = test_client_user_session.get(f"/backup/{uuid.uuid4()}/download")
+        assert result.status_code == status.HTTP_404_NOT_FOUND
+
+        data = result.json()
+        assert data["detail"] == "Backup does not exist"
