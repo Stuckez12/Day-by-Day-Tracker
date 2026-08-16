@@ -64,7 +64,6 @@ jobs:
 
       # Backup file paths
       EXTERNAL_BACKUP_PATH: ${{ github.workspace }}
-      BACKUP_PATH: /
 
     services:
       postgres:
@@ -100,6 +99,23 @@ jobs:
         with:
           python-version: "3.13"
 
+      - name: Install PostgreSQL 17 Client
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends curl gnupg
+
+          curl -fsSL https://www.postgresql.org/media/keys/ACCC4CF8.asc \
+            | gpg --dearmor \
+            | sudo tee /usr/share/keyrings/pgdg.gpg > /dev/null
+
+          echo "deb [signed-by=/usr/share/keyrings/pgdg.gpg] https://apt.postgresql.org/pub/repos/apt noble-pgdg main" \
+            | sudo tee /etc/apt/sources.list.d/pgdg.list
+
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends postgresql-client-17
+
+          echo "/usr/lib/postgresql/17/bin" >> "$GITHUB_PATH"
+
       - name: Install uv
         uses: astral-sh/setup-uv@v3
         with:
@@ -117,4 +133,4 @@ jobs:
           uv run alembic check
 
       - name: Tests Execution
-        run: uv run pytest -vv
+        run: uv run pytest -vv -s

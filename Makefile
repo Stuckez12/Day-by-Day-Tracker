@@ -51,9 +51,10 @@ lint:
 
 check-db:
 	@docker compose -f docker-compose.dev.yaml exec api alembic -c /api/alembic.ini check
+	@docker compose -f docker-compose.dev.yaml exec api alembic -c /api/alembic-backup.ini check
 
 upgrade-db:
-	@docker compose -f docker-compose.dev.yaml exec api alembic -c /api/alembic.ini upgrade head
+	@docker compose -f docker-compose.dev.yaml exec api sh -c "alembic -c /api/alembic.ini upgrade head"
 
 VERSION ?= -1
 downgrade-db:
@@ -65,6 +66,22 @@ ifndef MESSAGE
 	$(error 'MESSAGE is not set. Usage: make auto-revision-db MESSAGE="message"')
 endif
 	@docker compose -f docker-compose.dev.yaml exec api alembic -c /api/alembic.ini revision --autogenerate -m "$(MESSAGE)"
+	@docker compose -f docker-compose.dev.yaml exec api chmod -R o+w src/migrations
+
+upgrade-backup-db:
+	@docker compose -f docker-compose.dev.yaml exec api sh -c "alembic -c /api/alembic-backup.ini upgrade head"
+
+VERSION ?= -1
+downgrade-backup-db:
+	@echo "Downgrading to/by $(VERSION) version"
+	@docker compose -f docker-compose.dev.yaml exec api alembic -c /api/alembic-backup.ini downgrade $(VERSION)
+
+auto-revision-backup-db:
+ifndef MESSAGE
+	$(error 'MESSAGE is not set. Usage: make auto-revision-backup-db MESSAGE="message"')
+endif
+	@docker compose -f docker-compose.dev.yaml exec api alembic -c /api/alembic-backup.ini revision --autogenerate -m "$(MESSAGE)"
+	@docker compose -f docker-compose.dev.yaml exec api chmod -R o+w src/migrations
 
 
 ################################################################################
@@ -75,13 +92,10 @@ endif
 .PHONY: tests
 TEST_PATH =
 tests:
-#	In case the tests fail and database wasnt deleted
 	@docker compose -f docker-compose.dev.yaml exec db psql -U postgres -c "DROP DATABASE IF EXISTS test_dbdt;"
+	@docker compose -f docker-compose.dev.yaml exec db psql -U postgres -c "DROP DATABASE IF EXISTS test_dbdt_backup;"
 
-# Test execution
-	@docker compose -f docker-compose.dev.yaml exec db psql -U postgres -c "CREATE DATABASE test_dbdt;"
 	@docker compose -f docker-compose.dev.yaml exec api sh -c "pytest -vv -q -s $(TEST_PATH)"
-	@docker compose -f docker-compose.dev.yaml exec db psql -U postgres -c "DROP DATABASE test_dbdt;"
 
 checks:
 	@$(MAKE) flint

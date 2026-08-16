@@ -24,7 +24,7 @@ def update_task_state(
     service = TaskService(db)
 
     try:
-        task_ref = service.get_by_id(cast(uuid.UUID, task.request.id))
+        task_ref = service.get_by_task_id(cast(uuid.UUID, task.request.id))
 
         if task_ref.status != status.value:
             task_ref.status = status.value

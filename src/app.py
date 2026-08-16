@@ -7,6 +7,7 @@ from fastapi_pagination import add_pagination
 
 from src import __version__ as APP_VERSION
 from src.api import api
+from src.common.create_db import create_db
 from src.common.upgrade_db import upgrade_db
 from src.settings import is_prod_env
 
@@ -34,9 +35,12 @@ def create_app():
 
     app.include_router(api, prefix="/v1")
 
+    create_db()
+
     if is_prod_env:
         logging.info("Production Environment Detected.")
         logging.info("Running Setup")
+
         upgrade_db()
 
     @app.exception_handler(TypeError)

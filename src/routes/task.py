@@ -11,7 +11,7 @@ from src.enums import TaskStatus
 from src.schemas import TaskPaginated, TaskSchema
 
 
-api = APIRouter(prefix="/tasks", tags=["Task"])
+api = APIRouter(prefix="/task", tags=["Task"])
 
 
 @api.get("/paginated", status_code=status.HTTP_200_OK, response_model=Page[TaskSchema])
@@ -43,8 +43,8 @@ def get_tasks_paginated(
     return paginate(query, params)
 
 
-@api.get("/{task_id}", status_code=status.HTTP_200_OK, response_model=TaskSchema)
-def get_task(service: TaskServiceDep, task_id: uuid.UUID):
+@api.get("/", status_code=status.HTTP_200_OK, response_model=TaskSchema)
+def get_task(service: TaskServiceDep, task_id: uuid.UUID = Query(...)):
     try:
         task = service.get_by_task_id(task_id)
 

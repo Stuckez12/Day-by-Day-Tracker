@@ -17,7 +17,7 @@ class TestGetPaginatedTasksRoute:
         test_task_3: TaskModel,
     ):
         result = test_client_user_session.get(
-            f"/tasks/paginated?task_id={test_task_1.task_id}"
+            f"/task/paginated?task_id={test_task_1.task_id}"
         )
         assert result.status_code == status.HTTP_200_OK, result.json()
 
@@ -34,7 +34,7 @@ class TestGetPaginatedTasksRoute:
         test_task_2: TaskModel,
         test_task_3: TaskModel,
     ):
-        result = test_client_user_session.get("/tasks/paginated?name=task2")
+        result = test_client_user_session.get("/task/paginated?name=task2")
         assert result.status_code == status.HTTP_200_OK
 
         data = result.json()
@@ -54,7 +54,7 @@ class TestGetPaginatedTasksRoute:
         test_task_3: TaskModel,
     ):
         result = test_client_user_session.get(
-            f"/tasks/paginated?task_status={test_task_2.status}"
+            f"/task/paginated?task_status={test_task_2.status}"
         )
         assert result.status_code == status.HTTP_200_OK
 
@@ -71,7 +71,7 @@ class TestGetPaginatedTasksRoute:
         test_task_2: TaskModel,
         test_task_3: TaskModel,
     ):
-        result = test_client_user_session.get("/tasks/paginated?min_retries=1")
+        result = test_client_user_session.get("/task/paginated?min_retries=1")
         assert result.status_code == status.HTTP_200_OK
 
         data = result.json()
@@ -90,7 +90,7 @@ class TestGetPaginatedTasksRoute:
         test_task_2: TaskModel,
         test_task_3: TaskModel,
     ):
-        result = test_client_user_session.get("/tasks/paginated?max_retries=1")
+        result = test_client_user_session.get("/task/paginated?max_retries=1")
         assert result.status_code == status.HTTP_200_OK
 
         data = result.json()
@@ -110,7 +110,7 @@ class TestGetPaginatedTasksRoute:
         test_task_3: TaskModel,
     ):
         result = test_client_user_session.get(
-            f"/tasks/paginated?started_at={test_task_3.started_at}"
+            f"/task/paginated?started_at={test_task_3.started_at}"
         )
         assert result.status_code == status.HTTP_200_OK
 
@@ -131,7 +131,7 @@ class TestGetPaginatedTasksRoute:
         test_task_3: TaskModel,
     ):
         result = test_client_user_session.get(
-            f"/tasks/paginated?ended_at={test_task_2.ended_at}"
+            f"/task/paginated?ended_at={test_task_2.ended_at}"
         )
         assert result.status_code == status.HTTP_200_OK
 
@@ -148,7 +148,7 @@ class TestGetPaginatedTasksRoute:
         test_task_2: TaskModel,
         test_task_3: TaskModel,
     ):
-        result = test_client_user_session.get("/tasks/paginated?duration=30")
+        result = test_client_user_session.get("/task/paginated?duration=30")
         assert result.status_code == status.HTTP_200_OK
 
         data = result.json()
@@ -161,7 +161,7 @@ class TestGetPaginatedTasksRoute:
         )
 
     def test_min_retries_too_small(self, test_client_user_session: TestClient):
-        result = test_client_user_session.get("/tasks/paginated?min_retries=-1")
+        result = test_client_user_session.get("/task/paginated?min_retries=-1")
         assert result.status_code == status.HTTP_400_BAD_REQUEST
 
         data = result.json()
@@ -169,7 +169,7 @@ class TestGetPaginatedTasksRoute:
 
     def test_retry_range_backwards(self, test_client_user_session: TestClient):
         result = test_client_user_session.get(
-            "/tasks/paginated?min_retries=5&max_retries=1"
+            "/task/paginated?min_retries=5&max_retries=1"
         )
         assert result.status_code == status.HTTP_400_BAD_REQUEST
 
@@ -177,7 +177,7 @@ class TestGetPaginatedTasksRoute:
         assert data["detail"] == "Minimum retries is larger than maximum retries"
 
     def test_duration_too_small(self, test_client_user_session: TestClient):
-        result = test_client_user_session.get("/tasks/paginated?duration=-1")
+        result = test_client_user_session.get("/task/paginated?duration=-1")
         assert result.status_code == status.HTTP_400_BAD_REQUEST
 
         data = result.json()
@@ -185,7 +185,7 @@ class TestGetPaginatedTasksRoute:
 
     def test_start_end_range_backwards(self, test_client_user_session: TestClient):
         result = test_client_user_session.get(
-            f"/tasks/paginated?started_at={datetime.now() + timedelta(minutes=6)}&ended_at={datetime.now()}"
+            f"/task/paginated?started_at={datetime.now() + timedelta(minutes=6)}&ended_at={datetime.now()}"
         )
         assert result.status_code == status.HTTP_400_BAD_REQUEST
 
@@ -199,7 +199,9 @@ class TestGetTaskRoute:
         test_client_user_session: TestClient,
         test_task_1: TaskModel,
     ):
-        result = test_client_user_session.get(f"/tasks/{test_task_1.task_id}")
+        result = test_client_user_session.get(
+            "/task", params={"task_id": str(test_task_1.task_id)}
+        )
         assert result.status_code == status.HTTP_200_OK
 
         data = result.json()
@@ -211,7 +213,9 @@ class TestGetTaskRoute:
         test_client_user_session: TestClient,
         test_task_1: TaskModel,
     ):
-        result = test_client_user_session.get(f"/tasks/{test_task_1.id}")
+        result = test_client_user_session.get(
+            "/task", params={"task_id": str(test_task_1.id)}
+        )
         assert result.status_code == status.HTTP_404_NOT_FOUND
 
         data = result.json()
@@ -227,9 +231,7 @@ class TestGetTaskStatusRoute:
         mock_task.info = {"result": "done"}
 
         with patch("src.services.task.AsyncResult", return_value=mock_task):
-            result = test_client_user_session.get(
-                f"/tasks/{test_task_2.task_id}/status"
-            )
+            result = test_client_user_session.get(f"/task/{test_task_2.task_id}/status")
 
         assert result.status_code == status.HTTP_200_OK
 
@@ -242,7 +244,7 @@ class TestGetTaskStatusRoute:
     def test_not_found(
         self, test_client_user_session: TestClient, test_task_2: TaskModel
     ):
-        result = test_client_user_session.get(f"/tasks/{test_task_2.id}/status")
+        result = test_client_user_session.get(f"/task/{test_task_2.id}/status")
         assert result.status_code == status.HTTP_404_NOT_FOUND
 
         data = result.json()
@@ -251,7 +253,7 @@ class TestGetTaskStatusRoute:
     def test_is_pending(
         self, test_client_user_session: TestClient, test_task_1: TaskModel
     ):
-        result = test_client_user_session.get(f"/tasks/{test_task_1.task_id}/status")
+        result = test_client_user_session.get(f"/task/{test_task_1.task_id}/status")
         assert result.status_code == status.HTTP_400_BAD_REQUEST
 
         data = result.json()
@@ -260,7 +262,7 @@ class TestGetTaskStatusRoute:
     def test_is_finished(
         self, test_client_user_session: TestClient, test_task_3: TaskModel
     ):
-        result = test_client_user_session.get(f"/tasks/{test_task_3.task_id}/status")
+        result = test_client_user_session.get(f"/task/{test_task_3.task_id}/status")
         assert result.status_code == status.HTTP_400_BAD_REQUEST
 
         data = result.json()

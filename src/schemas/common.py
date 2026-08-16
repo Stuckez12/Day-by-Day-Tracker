@@ -1,4 +1,5 @@
 from datetime import date
+from uuid import UUID
 
 from pydantic import BaseModel, model_validator
 
@@ -23,3 +24,11 @@ class DateRangeRequest(BaseModel):
             raise ValueError("Date range must be valid")
 
         return self
+
+
+class DetailSchema(BaseModel):
+    detail: str
+
+
+class TaskIDSchema(BaseModel):
+    task_id: UUID

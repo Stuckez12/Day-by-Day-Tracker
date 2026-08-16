@@ -10,7 +10,6 @@ dependencies = [
     "argon2-cffi>=25.1.0",
     "bcrypt>=5.0.0",
     "celery>=5.6.3",
-    "celery-types>=0.26.0",
     "fastapi>=0.128.0",
     "fastapi-pagination>=0.15.12",
     "httpx>=0.28.1",
@@ -18,21 +17,24 @@ dependencies = [
     "psycopg2-binary>=2.9.11",
     "pydantic-settings>=2.12.0",
     "pyjwt>=2.13.0",
+    "python-multipart>=0.0.32",
     "redis>=7.4.0",
     "sqlalchemy>=2.0.45",
     "sqlalchemy-utils>=0.42.1",
-    "types-passlib>=1.7.7.20260211",
     "uvicorn>=0.38.0",
 ]
 
 [dependency-groups]
 dev = [
+    "celery-types>=0.26.0",
     "pytest>=9.0.2",
+    "pytest-asyncio>=1.4.0",
     "pytest-cov>=7.0.0",
     "pytest-env>=1.6.0",
     "pytest-mock>=3.15.1",
     "ruff>=0.15.14",
     "ty>=0.0.39",
+    "types-passlib>=1.7.7.20260211",
 ]
 
 [tool.coverage.run]
@@ -46,6 +48,9 @@ omit = [
     "*/__init__.py",
     "src/api.py",
     "src/app.py",
+    "src/common/create_db.py",
+    "src/common/database.py",
+    "src/common/recreate_db.py",
     "src/common/upgrade_db.py",
     "src/main.py",
     "src/migrations/*",
@@ -55,6 +60,7 @@ omit = [
 ]
 
 [tool.pytest.ini_options]
+asyncio_mode="auto"
 addopts = "--cov=src"
 
 filterwarnings = [
