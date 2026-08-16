@@ -193,8 +193,6 @@ STDERR: {e.stderr}
         backup_file_data = metadata.get_file_type_data("backup")
         checksum_file_data = metadata.get_file_type_data("checksum")
 
-        print(metadata.files)
-
         if backup_file_data is None or checksum_file_data is None:
             raise FileNotFoundError("Backup/checksum file not present in metadata")
 

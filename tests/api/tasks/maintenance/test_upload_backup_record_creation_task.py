@@ -29,7 +29,9 @@ class TestUploadBackupRecordCreationTask:
             new_backup_file=str(test_backup_zip)
         )
         backup = BackupSchema.model_validate(task.result)
-        assert backup.status == BackupStatus.UPLOADED, backup.model_dump()
+        assert backup.status == BackupStatus.UPLOADED
+        assert backup.error_message is None
+        assert backup.error_traceback is None
 
         test_backup_session.query(BackupModel).filter(
             BackupModel.celery_id == backup.celery_id

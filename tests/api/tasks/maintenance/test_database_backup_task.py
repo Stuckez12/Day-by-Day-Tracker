@@ -1,4 +1,3 @@
-import subprocess
 from pathlib import Path
 
 import pytest
@@ -21,13 +20,16 @@ class TestDatabaseLogicalBackupTask:
         mocker: MockerFixture,
         celery_worker: None,
         test_backup_session: Session,
+        test_ranker: RankerModel,
     ):
         mocker.patch("src.routes.backup.app_config.BACKUP_PATH", str(tmp_path))
-        mocker.patch.object(subprocess, "run", return_value=None)
         task: AsyncResult = database_logical_backup.delay(
             trigger=BackupTriggerMethod.MANUAL.value
         )
-        assert BackupSchema.model_validate(task.result)
+        backup = BackupSchema.model_validate(task.result)
+        assert backup.status == BackupStatus.SUCCESS, backup.model_dump()
+        assert backup.error_message is None
+        assert backup.error_traceback is None
 
         backup = BackupSchema.model_validate(task.result)
         test_backup_session.query(BackupModel).filter(
