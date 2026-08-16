@@ -1,4 +1,5 @@
 import subprocess
+from pathlib import Path
 
 import pytest
 from celery.result import AsyncResult
@@ -16,8 +17,13 @@ from src.tasks import database_logical_backup
 @pytest.mark.usefixtures("mock_task_db")
 class TestDatabaseLogicalBackupTask:
     def test_success(
-        self, mocker: MockerFixture, celery_worker: None, test_backup_session: Session
+        self,
+        tmp_path: Path,
+        mocker: MockerFixture,
+        celery_worker: None,
+        test_backup_session: Session,
     ):
+        mocker.patch("src.routes.backup.app_config.BACKUP_PATH", str(tmp_path))
         mocker.patch.object(subprocess, "run", return_value=None)
         task: AsyncResult = database_logical_backup.delay(
             trigger=BackupTriggerMethod.MANUAL.value
@@ -31,8 +37,13 @@ class TestDatabaseLogicalBackupTask:
         test_backup_session.commit()
 
     def test_create_backup_step_fails(
-        self, mocker: MockerFixture, celery_worker: None, test_backup_session: Session
+        self,
+        tmp_path: Path,
+        mocker: MockerFixture,
+        celery_worker: None,
+        test_backup_session: Session,
     ):
+        mocker.patch("src.routes.backup.app_config.BACKUP_PATH", str(tmp_path))
         mocker.patch.object(
             BackupService, "create_logical_backup", side_effect=ValueError
         )
@@ -51,8 +62,13 @@ class TestDatabaseLogicalBackupTask:
         test_backup_session.commit()
 
     def test_verification_step_fails(
-        self, mocker: MockerFixture, celery_worker: None, test_backup_session: Session
+        self,
+        tmp_path: Path,
+        mocker: MockerFixture,
+        celery_worker: None,
+        test_backup_session: Session,
     ):
+        mocker.patch("src.routes.backup.app_config.BACKUP_PATH", str(tmp_path))
         mocker.patch.object(
             BackupService, "verify_backup_restoration", side_effect=ValueError
         )
@@ -71,8 +87,13 @@ class TestDatabaseLogicalBackupTask:
         test_backup_session.commit()
 
     def test_checksum_step_fails(
-        self, mocker: MockerFixture, celery_worker: None, test_backup_session: Session
+        self,
+        tmp_path: Path,
+        mocker: MockerFixture,
+        celery_worker: None,
+        test_backup_session: Session,
     ):
+        mocker.patch("src.routes.backup.app_config.BACKUP_PATH", str(tmp_path))
         mocker.patch.object(
             BackupService, "generate_checksum_file", side_effect=ValueError
         )
@@ -91,8 +112,13 @@ class TestDatabaseLogicalBackupTask:
         test_backup_session.commit()
 
     def test_zipping_step_fails(
-        self, mocker: MockerFixture, celery_worker: None, test_backup_session: Session
+        self,
+        tmp_path: Path,
+        mocker: MockerFixture,
+        celery_worker: None,
+        test_backup_session: Session,
     ):
+        mocker.patch("src.routes.backup.app_config.BACKUP_PATH", str(tmp_path))
         mocker.patch.object(BackupService, "zip_folder", side_effect=ValueError)
 
         task: AsyncResult = database_logical_backup.delay(

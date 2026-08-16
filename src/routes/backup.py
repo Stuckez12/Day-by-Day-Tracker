@@ -78,9 +78,6 @@ def download_backup(service: BackupServiceDep, backup_id: UUID):
             detail="Backup does not have the required metadata",
         )
 
-    print(f"{app_config.BACKUP_PATH}{backup.meta.zip_path}")
-    print(Path(f"{app_config.BACKUP_PATH}{backup.meta.zip_path}"))
-
     return FileResponse(
         Path(f"{app_config.BACKUP_PATH}{backup.meta.zip_path}"),
         media_type="application/octet-stream",
