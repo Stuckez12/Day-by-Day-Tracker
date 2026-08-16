@@ -1,4 +1,5 @@
 from pathlib import Path
+from typing import cast
 from uuid import UUID
 
 from celery.result import AsyncResult
@@ -36,14 +37,13 @@ def get_backup(
                 status_code=status.HTTP_400_BAD_REQUEST, detail="Backup does not exist"
             )
 
-    if celery_id:
-        try:
-            return service.get_by_task_id(celery_id)
+    try:
+        return service.get_by_task_id(cast(UUID, celery_id))
 
-        except NoResultFound:
-            raise HTTPException(
-                status_code=status.HTTP_400_BAD_REQUEST, detail="Backup does not exist"
-            )
+    except NoResultFound:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST, detail="Backup does not exist"
+        )
 
 
 @api.get("/all", response_model=list[BackupSchema], status_code=status.HTTP_200_OK)
@@ -69,7 +69,7 @@ def download_backup(service: BackupServiceDep, backup_id: UUID):
 
     except NoResultFound:
         raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST, detail="Backup does not exist"
+            status_code=status.HTTP_404_NOT_FOUND, detail="Backup does not exist"
         )
 
     if backup.meta is None:

@@ -1,6 +1,7 @@
 import os
 import uuid
 from datetime import date, datetime, timedelta
+from pathlib import Path
 from typing import Generator
 from unittest.mock import patch
 
@@ -9,6 +10,7 @@ from alembic import command
 from alembic.config import Config
 from celery.contrib.testing.worker import start_worker
 from fastapi.testclient import TestClient
+from pytest_mock import MockerFixture
 from sqlalchemy import Engine, create_engine
 from sqlalchemy.orm import Session, sessionmaker
 from sqlalchemy_utils import create_database, database_exists
@@ -32,7 +34,7 @@ from src.schemas.backup import (
     MetadataTool,
 )
 from src.services import AuthService, PersonnelService, RankingService, TaskService
-from src.settings import app_config
+from src.settings import AppConfig, app_config
 from tests.api.constants import VALID_PASSWORD
 
 
@@ -132,6 +134,26 @@ def celery_app():
 def celery_worker(celery_app):
     with start_worker(celery_app, perform_ping_check=False):
         yield None
+
+
+@pytest.fixture(scope="function")
+def test_temp_backup_path(mocker: MockerFixture, tmp_path: Path):
+    mocker.patch.object(
+        AppConfig,
+        "BACKUP_PATH",
+        str(tmp_path),
+        create=True,
+    )
+
+    yield tmp_path
+
+
+@pytest.fixture(scope="function")
+def test_file(tmp_path: Path):
+    test_file = tmp_path / "test.txt"
+    test_file.write_bytes(b"hello world")
+
+    return test_file
 
 
 ################################################################################
@@ -476,6 +498,45 @@ def test_backup(test_backup_session: Session):
 
     test_backup_session.delete(model)
     test_backup_session.commit()
+
+
+@pytest.fixture(scope="function")
+def test_backup_2(test_backup_session: Session):
+    model = BackupModel(
+        celery_id=uuid.uuid4(),
+        trigger_method=BackupTriggerMethod.SCHEDULED,
+        status=BackupStatus.SUCCESS,
+        backup_type=BackupType.LOGICAL,
+        duration=10.0,
+        error_message=None,
+        error_traceback=None,
+    )
+
+    test_backup_session.add(model)
+    test_backup_session.commit()
+
+    yield model
+
+    test_backup_session.delete(model)
+    test_backup_session.commit()
+
+
+@pytest.fixture(scope="function")
+def test_backup_w_file(
+    test_temp_backup_path: Path,
+    test_backup_session: Session,
+    test_metadata: MetaModel,
+):
+    test_file = test_temp_backup_path / "test.txt"
+    test_file.write_bytes(b"hello world")
+
+    test_metadata.zip_filename = test_file.name
+    test_metadata.zip_path = f"/{test_file.name}"
+    test_metadata.zip_size_bytes = test_file.stat().st_size
+
+    test_backup_session.commit()
+
+    yield test_file
 
 
 @pytest.fixture(scope="function")
