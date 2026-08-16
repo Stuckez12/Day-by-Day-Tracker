@@ -1,4 +1,5 @@
 import subprocess
+from pathlib import Path
 
 import pytest
 from celery.result import AsyncResult
@@ -16,10 +17,12 @@ from src.tasks import database_logical_backup
 class TestDatabaseLogicalBackupTask:
     def test_success(
         self,
+        tmp_path: Path,
         mocker: MockerFixture,
         celery_worker: None,
         test_backup_session: Session,
     ):
+        mocker.patch("src.routes.backup.app_config.BACKUP_PATH", str(tmp_path))
         mocker.patch.object(subprocess, "run", return_value=None)
         task: AsyncResult = database_logical_backup.delay(
             trigger=BackupTriggerMethod.MANUAL.value
@@ -34,10 +37,12 @@ class TestDatabaseLogicalBackupTask:
 
     def test_create_backup_step_fails(
         self,
+        tmp_path: Path,
         mocker: MockerFixture,
         celery_worker: None,
         test_backup_session: Session,
     ):
+        mocker.patch("src.routes.backup.app_config.BACKUP_PATH", str(tmp_path))
         mocker.patch.object(
             BackupService,
             "create_logical_backup",
@@ -59,10 +64,12 @@ class TestDatabaseLogicalBackupTask:
 
     def test_verification_step_fails(
         self,
+        tmp_path: Path,
         mocker: MockerFixture,
         celery_worker: None,
         test_backup_session: Session,
     ):
+        mocker.patch("src.routes.backup.app_config.BACKUP_PATH", str(tmp_path))
         mocker.patch.object(
             BackupService,
             "verify_backup_restoration",
@@ -84,10 +91,12 @@ class TestDatabaseLogicalBackupTask:
 
     def test_checksum_step_fails(
         self,
+        tmp_path: Path,
         mocker: MockerFixture,
         celery_worker: None,
         test_backup_session: Session,
     ):
+        mocker.patch("src.routes.backup.app_config.BACKUP_PATH", str(tmp_path))
         mocker.patch.object(
             BackupService,
             "generate_checksum_file",
@@ -109,11 +118,13 @@ class TestDatabaseLogicalBackupTask:
 
     def test_zipping_step_fails(
         self,
+        tmp_path: Path,
         mocker: MockerFixture,
         celery_worker: None,
         test_backup_session: Session,
         test_ranker: RankerModel,
     ):
+        mocker.patch("src.routes.backup.app_config.BACKUP_PATH", str(tmp_path))
         mocker.patch.object(
             BackupService, "zip_folder", side_effect=ValueError("zip_folder failed")
         )
