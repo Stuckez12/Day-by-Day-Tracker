@@ -32,13 +32,13 @@ from src.settings import app_config
 
 
 class BackupService(BaseDBService):
-    temp_file_path: str = f"{app_config.BACKUP_PATH}/temp"
-    temp_restore_path: str = f"{app_config.BACKUP_PATH}/restore"
-
     def __init__(self, db: Session, backup_db: Session) -> None:
         super().__init__(db=db, model=BackupModel)
 
         self.backup_db = backup_db
+        backup_path = Path(app_config.BACKUP_PATH)
+        self.temp_file_path = str(backup_path / "temp")
+        self.temp_restore_path = str(backup_path / "restore")
 
     def get_by_backup_id(self, backup_id: UUID) -> BackupModel:
         return (

@@ -34,7 +34,7 @@ from src.schemas.backup import (
     MetadataTool,
 )
 from src.services import AuthService, PersonnelService, RankingService, TaskService
-from src.settings import AppConfig, app_config
+from src.settings import app_config
 from tests.api.constants import VALID_PASSWORD
 
 
@@ -138,12 +138,7 @@ def celery_worker(celery_app):
 
 @pytest.fixture(scope="function")
 def test_temp_backup_path(mocker: MockerFixture, tmp_path: Path):
-    mocker.patch.object(
-        AppConfig,
-        "BACKUP_PATH",
-        str(tmp_path),
-        create=True,
-    )
+    mocker.patch.object(app_config, "BACKUP_PATH", str(tmp_path))
 
     yield tmp_path
 
