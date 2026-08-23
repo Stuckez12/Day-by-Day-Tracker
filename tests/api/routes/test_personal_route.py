@@ -321,4 +321,4 @@ class TestDeletePersonnelRoute:
         assert result.status_code == status.HTTP_404_NOT_FOUND
 
         data = result.json()
-        assert data["detail"] == f"Personnel {INVALID_PERSONNEL_ID} not found"
+        assert data["detail"] == "Personnel does not exist"

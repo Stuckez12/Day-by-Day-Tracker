@@ -1,10 +1,11 @@
 from datetime import date
 from typing import Annotated
 
-from fastapi import APIRouter, Depends, HTTPException, Query, status
+from fastapi import APIRouter, Depends, Query, status
 from sqlalchemy.exc import NoResultFound
 
 from src.common import CurrentPersonnel, RankingServiceDep
+from src.exc import HTTP_EXC_RANKING_NOT_FOUND
 from src.schemas import (
     DateRangeRequest,
     RankingADayRequest,
@@ -96,9 +97,6 @@ def rank_date_notes(
         rank = service.get_by_date(personnel.id, request.day)
 
     except NoResultFound:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="Specified date's rank not found",
-        )
+        raise HTTP_EXC_RANKING_NOT_FOUND
 
     return service.record_day_notes(rank, request)

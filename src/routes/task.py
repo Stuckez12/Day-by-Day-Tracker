@@ -1,13 +1,14 @@
 import uuid
 from datetime import datetime
 
-from fastapi import APIRouter, Depends, HTTPException, Query, status
+from fastapi import APIRouter, Depends, Query, status
 from fastapi_pagination import Page, Params
 from fastapi_pagination.ext.sqlalchemy import paginate
 from sqlalchemy.exc import NoResultFound
 
 from src.common import TaskServiceDep
 from src.enums import TaskStatus
+from src.exc import HTTP_EXC_TASK_NOT_FOUND
 from src.schemas import TaskPaginated, TaskSchema
 
 
@@ -46,14 +47,10 @@ def get_tasks_paginated(
 @api.get("/", status_code=status.HTTP_200_OK, response_model=TaskSchema)
 def get_task(service: TaskServiceDep, task_id: uuid.UUID = Query(...)):
     try:
-        task = service.get_by_task_id(task_id)
+        return service.get_by_task_id(task_id)
 
     except NoResultFound:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND, detail="Task does not exist"
-        )
-
-    return task
+        raise HTTP_EXC_TASK_NOT_FOUND
 
 
 @api.get("/{task_id}/status", status_code=status.HTTP_200_OK)
@@ -61,9 +58,7 @@ def get_task_status(service: TaskServiceDep, task_id: uuid.UUID):
     try:
         task = service.get_by_task_id(task_id)
 
-    except NoResultFound:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND, detail="Task does not exist"
-        )
+        return service.task_progress(task)
 
-    return service.task_progress(task)
+    except NoResultFound:
+        raise HTTP_EXC_TASK_NOT_FOUND

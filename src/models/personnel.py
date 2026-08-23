@@ -1,6 +1,6 @@
 from typing import TYPE_CHECKING
 
-from sqlalchemy import String
+from sqlalchemy import Boolean, String
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from src.models.base import BaseModel
@@ -13,7 +13,7 @@ if TYPE_CHECKING:
 class PersonnelModel(BaseModel):
     __tablename__ = "personal"
 
-    # is_admin: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False)
+    is_admin: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False)
 
     email: Mapped[str] = mapped_column(String, nullable=False, unique=True)
     password: Mapped[str] = mapped_column(String, nullable=False)

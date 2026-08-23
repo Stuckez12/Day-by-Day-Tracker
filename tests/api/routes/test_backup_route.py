@@ -54,7 +54,7 @@ class TestGetBackupRoute:
         result = test_client_user_session.get(
             "/backup", params={"backup_id": str(uuid.uuid4())}
         )
-        assert result.status_code == status.HTTP_400_BAD_REQUEST
+        assert result.status_code == status.HTTP_404_NOT_FOUND
 
         data = result.json()
         assert data["detail"] == "Backup does not exist"
@@ -63,7 +63,7 @@ class TestGetBackupRoute:
         result = test_client_user_session.get(
             "/backup", params={"celery_id": str(uuid.uuid4())}
         )
-        assert result.status_code == status.HTTP_400_BAD_REQUEST
+        assert result.status_code == status.HTTP_404_NOT_FOUND
 
         data = result.json()
         assert data["detail"] == "Backup does not exist"
