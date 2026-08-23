@@ -13,6 +13,8 @@ if TYPE_CHECKING:
 class PersonnelModel(BaseModel):
     __tablename__ = "personal"
 
+    # is_admin: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False)
+
     email: Mapped[str] = mapped_column(String, nullable=False, unique=True)
     password: Mapped[str] = mapped_column(String, nullable=False)
 

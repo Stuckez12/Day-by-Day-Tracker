@@ -16,7 +16,7 @@ from sqlalchemy import func, text
 from sqlalchemy.orm import Session, selectinload
 from sqlalchemy_utils import drop_database
 
-from src.common.recreate_db import recreate_database
+from src.core.recreate_db import recreate_database
 from src.models import BackupModel, MetaModel, RankerModel
 from src.schemas import (
     BackupCreate,

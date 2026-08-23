@@ -8,7 +8,7 @@ from pytest_mock import MockerFixture
 from sqlalchemy.orm import Session
 from tests.api.constants import INVALID_PASSWORD, VALID_PASSWORD
 
-from src.common.password_hash import pwd_hash
+from src.core.password_hash import pwd_hash
 from src.models import PersonnelModel
 from src.schemas.personnel import SlimPersonnelSchema
 from src.settings import app_config
