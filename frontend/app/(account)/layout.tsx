@@ -4,14 +4,13 @@ import { useRouter } from "next/navigation";
 import { useContext, useEffect } from "react";
 import { useSession } from "next-auth/react";
 
-import SideNavBar from "@/components/navigation/SideNavBar";
 import { getPersonnelQuery } from "@/lib/queries/personnel";
 import { getAccessToken } from "@/lib/common/auth/getAccessToken";
 
-// import "bootstrap/dist/css/bootstrap.css";
 import "@/styles/colour_pallets.scss";
-import "@/styles/global.scss";
 import { PartialPersonnelContext } from "@/components/common/contexts/personnelContext";
+import NavBar from "@/components/navigation/NavBar";
+import PageWrapper from "@/components/common/PageWrapper";
 
 export default function AccountGroupLayout({
   children,
@@ -57,5 +56,10 @@ export default function AccountGroupLayout({
     return <></>;
   }
 
-  return <SideNavBar>{children}</SideNavBar>;
+  return (
+    <div className="flex flex-col">
+      <NavBar />
+      <main>{children}</main>
+    </div>
+  );
 }

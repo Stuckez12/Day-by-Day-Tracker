@@ -1,1 +1,16 @@
 @import "tailwindcss";
+
+
+@theme {
+    --color-app-base: #ffffff;
+    --color-app-primary: #003459;
+    --color-app-secondary: #003459;
+    --color-app-action: #007ea7;
+    --color-app-accent: #00a8e8;
+}
+
+@layer components {
+  .app-text {
+    color: #ffffff;
+  }
+}
