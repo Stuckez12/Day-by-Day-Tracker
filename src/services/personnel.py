@@ -1,10 +1,10 @@
 import uuid
 
-from fastapi import HTTPException, status
 from sqlalchemy.exc import NoResultFound
 from sqlalchemy.orm import Session
 
-from src.common.password_hash import pwd_hash
+from src.core.password_hash import pwd_hash
+from src.exc import HTTP_EXC_PERSONNEL_DOES_NOT_EXIST
 from src.models import PersonnelModel
 from src.schemas import (
     CreatePersonnelRequest,
@@ -77,9 +77,6 @@ class PersonnelService(BaseDBService[PersonnelModel]):
             personnel = self.get_by_id(personnel_id)
 
         except NoResultFound:
-            raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND,
-                detail=f"Personnel {personnel_id} not found",
-            )
+            raise HTTP_EXC_PERSONNEL_DOES_NOT_EXIST
 
         return personnel

@@ -1,8 +1,9 @@
 import uuid
 from datetime import date, datetime
 
-from fastapi import HTTPException, status
 from pydantic import BaseModel, model_validator
+
+from src.exc import HTTP_EXC_INVALID_RANK_VALUE, HTTP_EXC_NO_RANK_PROVIDED
 
 
 class RankingSchema(BaseModel):
@@ -28,18 +29,12 @@ class RankingRequest(BaseModel):
         ranking = values.get("ranking")
 
         if ranking is None:
-            raise HTTPException(
-                status_code=status.HTTP_400_BAD_REQUEST,
-                detail="A rank must be provided",
-            )
+            raise HTTP_EXC_NO_RANK_PROVIDED
 
         ranking = int(ranking)
 
         if ranking < 0 or ranking > 10:
-            raise HTTPException(
-                status_code=status.HTTP_400_BAD_REQUEST,
-                detail="Ranking must be between 0 and 10",
-            )
+            raise HTTP_EXC_INVALID_RANK_VALUE
 
         return values
 

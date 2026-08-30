@@ -12,7 +12,7 @@ import sqlalchemy as sa
 from alembic import op
 from sqlalchemy.sql import text
 
-from src.common.password_hash import pwd_hash
+from src.core.password_hash import pwd_hash
 
 
 # revision identifiers, used by Alembic.
