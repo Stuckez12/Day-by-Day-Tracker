@@ -58,9 +58,7 @@ export default function AccountGroupLayout({
 
   return (
     <div className="flex flex-col">
-      <PageWrapper>
-        <NavBar />
-      </PageWrapper>
+      <NavBar />
       <main>{children}</main>
     </div>
   );

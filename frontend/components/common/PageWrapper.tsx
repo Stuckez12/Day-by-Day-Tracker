@@ -1,3 +1,4 @@
+import clsx from "clsx";
 import { ReactNode } from "react";
 
 interface PageWrapperProps {
@@ -6,7 +7,12 @@ interface PageWrapperProps {
 
 export default function PageWrapper({ children }: PageWrapperProps) {
   return (
-    <div className="mx-auto box-border w-full max-w-360 px-2 min-[577px]:px-16!">
+    <div
+      className={clsx(
+        "mx-auto box-border w-full max-w-360 px-4", // Default
+        "min-[577px]:px-16!", // Small Screens
+      )}
+    >
       {children}
     </div>
   );
