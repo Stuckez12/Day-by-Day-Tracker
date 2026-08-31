@@ -18,19 +18,6 @@ jobs:
       - name: Wait Time
         run: sleep 12
 
-      - name: Docker
-        run: |
-          docker logs day-by-day-tracker-api-1
-
-      - name: Upgrade Database
-        run: |
-          docker compose -f docker-compose.prod-test.yaml exec api alembic -c /api/alembic.ini upgrade head
-          docker compose -f docker-compose.prod-test.yaml exec api alembic -c /api/alembic-backup.ini upgrade head
-
-      - name: Docker 2
-        run: |
-          docker logs day-by-day-tracker-api-1
-
       - name: Frontend Check
         run: |
           curl --fail http://localhost:8080/login
