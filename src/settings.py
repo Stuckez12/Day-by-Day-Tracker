@@ -60,6 +60,8 @@ class ProdAppConfig(AppConfig):
         extra="ignore",
     )
 
+    APP_ENV: str = "prod"
+
 
 class TestAppConfig(AppConfig):
     APP_VERSION: str = "0.0.1"
@@ -80,7 +82,7 @@ class TestAppConfig(AppConfig):
     BACKUP_PATH: str = "/"
 
 
-APP_SETTINGS = AppConfig | TestAppConfig
+APP_SETTINGS = AppConfig | TestAppConfig | ProdAppConfig
 ENVS = Literal["dev", "prod", "test"]
 
 
@@ -100,6 +102,6 @@ def get_app_config() -> APP_SETTINGS:
 
 app_config: APP_SETTINGS = get_app_config()
 
-is_dev_env: bool = isinstance(app_config, AppConfig)
-is_prod_env: bool = isinstance(app_config, ProdAppConfig)
-is_test_env: bool = isinstance(app_config, TestAppConfig)
+is_dev_env: bool = app_config.APP_ENV == "dev"
+is_prod_env: bool = app_config.APP_ENV == "prod"
+is_test_env: bool = app_config.APP_ENV == "test"

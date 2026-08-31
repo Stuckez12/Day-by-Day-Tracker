@@ -39,6 +39,8 @@ services:
     networks:
       - app-network
     env_file: .env.example
+    environment:
+      APP_ENV: prod
     restart: unless-stopped
     command: uvicorn src.main:fastapi_app --host 0.0.0.0 --port 8000
 
@@ -86,6 +88,8 @@ services:
     networks:
       - app-network
     env_file: .env.example
+    environment:
+      APP_ENV: prod
     entrypoint: celery -A src.main beat --loglevel=INFO
 
   worker:
@@ -97,6 +101,8 @@ services:
     networks:
       - app-network
     env_file: .env.example
+    environment:
+      APP_ENV: prod
     entrypoint: celery -A src.main worker -Ofair --concurrency=4 --loglevel=INFO -E
 
 

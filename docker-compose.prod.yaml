@@ -50,10 +50,9 @@ services:
       - "8000"
     networks:
       - app-network
+    env_file: .env.prod
     environment:
       APP_ENV: prod
-    env_file:
-      - .env.prod
     command: uvicorn src.main:fastapi_app --host 0.0.0.0 --port 8000
     restart: unless-stopped
 
@@ -89,9 +88,9 @@ services:
       - "8001"
     networks:
       - app-network
+    env_file: .env.prod
     environment:
       APP_ENV: prod
-    env_file: .env.prod
     entrypoint: celery -A src.main beat --loglevel=INFO
     restart: unless-stopped
 
@@ -103,9 +102,9 @@ services:
       - app-network
     volumes:
       - ${EXTERNAL_BACKUP_PATH}:${BACKUP_PATH}
+    env_file: .env.prod
     environment:
       APP_ENV: prod
-    env_file: .env.prod
     entrypoint: celery -A src.main worker -Ofair --concurrency=4 --loglevel=INFO -E
     restart: unless-stopped
 
