@@ -27,7 +27,7 @@ jobs:
           - docker compose -f docker-compose.prod-test.yaml exec api alembic -c /api/alembic.ini upgrade head
           - docker compose -f docker-compose.prod-test.yaml exec api alembic -c /api/alembic-backup.ini upgrade head
 
-      - name: Docker
+      - name: Docker 2
         run: |
           docker logs day-by-day-tracker-api-1
 
