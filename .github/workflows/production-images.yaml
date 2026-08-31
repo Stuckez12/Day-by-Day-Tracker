@@ -23,9 +23,9 @@ jobs:
           docker logs day-by-day-tracker-api-1
 
       - name: Upgrade Database
-        run:
-          - docker compose -f docker-compose.prod-test.yaml exec api alembic -c /api/alembic.ini upgrade head
-          - docker compose -f docker-compose.prod-test.yaml exec api alembic -c /api/alembic-backup.ini upgrade head
+        run: |
+          docker compose -f docker-compose.prod-test.yaml exec api alembic -c /api/alembic.ini upgrade head
+          docker compose -f docker-compose.prod-test.yaml exec api alembic -c /api/alembic-backup.ini upgrade head
 
       - name: Docker 2
         run: |
