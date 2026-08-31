@@ -79,19 +79,6 @@ services:
       - redis-data:/data/
     restart: unless-stopped
 
-  beat-scheduler:
-    build:
-      context: .
-      dockerfile: src/Dockerfile
-    expose:
-      - "8001"
-    networks:
-      - app-network
-    env_file: .env.example
-    environment:
-      APP_ENV: prod
-    entrypoint: celery -A src.main beat --loglevel=INFO
-
   worker:
     build:
       context: .
@@ -103,7 +90,7 @@ services:
     env_file: .env.example
     environment:
       APP_ENV: prod
-    entrypoint: celery -A src.main worker -Ofair --concurrency=4 --loglevel=INFO -E
+    entrypoint: celery -A src.main worker -Ofair --concurrency=4 --loglevel=INFO -E -B
 
 
 networks:
