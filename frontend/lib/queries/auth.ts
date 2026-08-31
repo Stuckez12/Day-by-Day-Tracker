@@ -6,7 +6,7 @@ import { Result, ValidationErrorProp } from "@/lib/interfaces/common";
 import { PersonnelLogin } from "@/lib/interfaces/personnel";
 import { APICall } from "@/lib/queries/base";
 
-const API = new APICall(process.env.BASE_API_URL!);
+const API = new APICall(process.env.NEXTAUTH_URL!);
 
 interface LoginResponse {
   access_token: string;

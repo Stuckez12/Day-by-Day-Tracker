@@ -32,7 +32,7 @@ services:
     image: nginx:alpine
     container_name: nginx
     ports:
-      - "80:80"
+      - "${APP_PORT:-8080}:80"
     volumes:
       - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
       - ./nginx:/etc/nginx/ssl:ro
@@ -78,16 +78,14 @@ services:
       - ./frontend/lib:/app/lib
       - ./frontend/styles:/app/styles
       - ./frontend/next.config.ts:/app/next.config.ts
-      # - ./frontend/:/app/
     environment:
       WATCHPACK_POLLING: "true"
       CHOKIDAR_USEPOLLING: "true"
       CHOKIDAR_INTERVAL: "20"
       NODE_ENV: development
       # NODE_ENV: production
-      BASE_API_URL: ${BASE_API_URL}
+      NEXTAUTH_URL: ${NEXTAUTH_URL}
       NEXTAUTH_SECRET: ${NEXTAUTH_SECRET}
-      NEXTAUTH_URL: ${NEXTAUTH_URL:-http://192.168.18.128}
       API_INTERNAL_URL: http://api:8000
     restart: unless-stopped
 
