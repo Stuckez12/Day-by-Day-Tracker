@@ -3,7 +3,7 @@ import { cva, type VariantProps } from "class-variance-authority";
 import { cn } from "@/lib/common/utils";
 import Icon, { RotateColorEnum } from "../Icon";
 
-const styleVariants = cva("flex items-center justify-center", {
+const styleVariants = cva("relative flex items-center justify-center", {
   variants: {
     style: {
       default:
@@ -37,7 +37,6 @@ export default function Button({
   onClick,
   type = "submit",
   className,
-  ...props
 }: ButtonProp) {
   const is_disabled = disabled || loading;
 
@@ -56,16 +55,17 @@ export default function Button({
       disabled={is_disabled}
       onClick={onClick}
       type={type}
-      {...props}
     >
-      {!loading && children}
+      <span className={cn(loading && "invisible")}>{children}</span>
       {loading && (
-        <Icon
-          svgPath="/loading/loading.svg"
-          alt="Loading Icon"
-          rotate={true}
-          rotateColor={rotateColor}
-        />
+        <span className="absolute inset-0 flex items-center justify-center">
+          <Icon
+            svgPath="/loading/loading.svg"
+            alt="Loading Icon"
+            rotate={true}
+            rotateColor={rotateColor}
+          />
+        </span>
       )}
     </button>
   );

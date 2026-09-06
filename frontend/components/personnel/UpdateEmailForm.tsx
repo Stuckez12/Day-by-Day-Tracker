@@ -28,6 +28,10 @@ export default function UpdateEmailForm() {
     return updateForm(e, form, setForm);
   }
 
+  function sleep(ms: number): Promise<void> {
+    return new Promise((resolve) => setTimeout(resolve, ms));
+  }
+
   async function submitForm(e: React.MouseEvent<HTMLButtonElement>) {
     e.preventDefault();
 
@@ -35,6 +39,7 @@ export default function UpdateEmailForm() {
     setIsLoading(true);
 
     const result = await updatePersonnelEmailQuery(form);
+    await sleep(5000);
 
     if (result.ok) {
       console.log("Email Updated Successfully");

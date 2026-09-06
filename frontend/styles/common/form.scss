@@ -148,6 +148,10 @@
 
   button {
     all: unset;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
     border-top-right-radius: 8px;
     border-bottom-right-radius: 8px;
 
