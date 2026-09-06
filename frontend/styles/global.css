@@ -1,6 +1,16 @@
 @import "tailwindcss";
 
 
+
+h1 {
+  font-size: 40px;
+  font-weight: 500;
+}
+
+
+
+
+
 @theme {
     --color-app-base: #ffffff;
     --color-app-primary: #003459;
