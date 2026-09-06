@@ -138,8 +138,11 @@ export default function Calendar() {
   const monthDisplay = `${displayData.month} ${displayData.year}`;
 
   return (
-    <div className="w-full flex flex-column gap-y-2" ref={calendarRef}>
-      <div className="flex gap-x-2" style={{ width: calendarItemSize * 7 }}>
+    <div className="w-full flex flex-col gap-y-2" ref={calendarRef}>
+      <div
+        className="flex flex-row gap-x-2"
+        style={{ width: calendarItemSize * 7 }}
+      >
         <Button
           style="secondary"
           size="square"
@@ -161,7 +164,7 @@ export default function Calendar() {
           />
         </Button>
       </div>
-      <div className="flex flex-column">
+      <div className="flex flex-col">
         <GridRow
           width={calendarItemSize * 7}
           height={calendarItemSize / 2}

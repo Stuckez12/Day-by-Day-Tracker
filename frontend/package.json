@@ -11,7 +11,6 @@
   },
   "dependencies": {
     "@js-temporal/polyfill": "^0.5.1",
-    "bootstrap": "^5.3.8",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "js-cookie": "^3.0.8",
