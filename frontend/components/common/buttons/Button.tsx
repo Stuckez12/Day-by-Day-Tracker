@@ -14,6 +14,7 @@ const styleVariants = cva("flex items-center justify-center", {
       default: "w-full p-[6] rounded-[12] text-[16px]",
       sharp: "w-full p-[6] rounded-[4] text-[16px]",
       square: "size-[36] p-[6] rounded-[4] text-[16px]",
+      fit: "w-fit p-[6] rounded-[4] text-[16px]",
     },
     icon: {
       default: "",
@@ -36,7 +37,7 @@ export default function Button({
   onClick,
 }: ButtonProp) {
   return (
-    <div
+    <button
       className={cn(
         styleVariants({
           style,
@@ -47,6 +48,6 @@ export default function Button({
       onClick={onClick}
     >
       {children}
-    </div>
+    </button>
   );
 }
