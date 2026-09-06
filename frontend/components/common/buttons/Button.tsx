@@ -9,13 +9,13 @@ const styleVariants = cva("flex items-center justify-center", {
       default:
         "bg-[#007ea7] hover:bg-[#00a1d6] active:bg-[#00a8e8] disabled:bg-[#004d66] text-white",
       secondary:
-        "bg-[#f0f0f0] hover:bg-[#f3f3f3] active:bg-[#f6f6f6] text-black",
+        "bg-[#f0f0f0] hover:bg-[#f3f3f3] active:bg-[#f6f6f6] disabled:bg-[#c7c7c7] text-black",
     },
     size: {
       default: "w-full p-[6] rounded-[12] text-[16px]",
       sharp: "w-full p-[6] rounded-[4] text-[16px]",
       square: "size-[36] p-[6] rounded-[4] text-[16px]",
-      fit: "w-fit p-[6] rounded-[4] text-[16px]",
+      fit: "w-fit px-[12] py-[6] rounded-[4] text-[16px]",
     },
   },
   defaultVariants: { style: "default", size: "default" },

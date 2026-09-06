@@ -1,4 +1,5 @@
 import Image from "next/image";
+import { cn } from "@/lib/common/utils";
 
 export enum RotateColorEnum {
   "DEFAULT",
@@ -22,26 +23,25 @@ export default function Icon({
   rotateColor = RotateColorEnum.DEFAULT,
 }: IconProp) {
   const basePath = "/assets/svg";
-
   if (basePath !== svgPath.slice(0, basePath.length)) {
     svgPath = basePath + svgPath;
   }
 
-  let styles = "";
-  if (rotate) {
-    switch (rotateColor) {
-      case RotateColorEnum.DEFAULT:
-        styles = "animate-spin brightness-0 invert";
-        break;
-      case RotateColorEnum.SECONDARY:
-        styles = "animate-spin brightness-0";
-        break;
-    }
+  let classes: string[] = [];
+
+  if (rotate) classes.push("animate-spin");
+  switch (rotateColor) {
+    case RotateColorEnum.DEFAULT:
+      classes.push("brightness-0 invert");
+      break;
+    case RotateColorEnum.SECONDARY:
+      classes.push("brightness-0");
+      break;
   }
 
   return (
     <Image
-      className={styles}
+      className={cn(classes)}
       src={svgPath}
       alt={alt}
       width={width}
