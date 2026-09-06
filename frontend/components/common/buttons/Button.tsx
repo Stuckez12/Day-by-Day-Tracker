@@ -37,6 +37,7 @@ export default function Button({
   onClick,
   type = "submit",
   className,
+  ...props
 }: ButtonProp) {
   const is_disabled = disabled || loading;
 
@@ -55,6 +56,7 @@ export default function Button({
       disabled={is_disabled}
       onClick={onClick}
       type={type}
+      {...props}
     >
       <span className={cn(loading && "invisible")}>{children}</span>
       {loading && (
