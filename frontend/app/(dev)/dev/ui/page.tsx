@@ -13,11 +13,17 @@ export default function DevUI() {
       <br />
       <Button>Button</Button>
       <br />
+      <Button loading={true}>Button</Button>
+      <br />
       <Button style="secondary" size="fit">
         <Icon svgPath="/arrows/arrow-forward-rounded.svg" alt="Forward Arrow" />
         <span>Hello</span>
       </Button>
       <br />
+      <Button style="secondary" size="fit" loading={true}>
+        <Icon svgPath="/arrows/arrow-forward-rounded.svg" alt="Forward Arrow" />
+        <span>Hello</span>
+      </Button>
       <br />
       <br />
       <br />
