@@ -11,6 +11,7 @@ import { updatePersonnelEmailQuery } from "@/lib/queries/personnel";
 
 export default function UpdateEmailForm() {
   const [errors, setErrors] = useState<string[]>([]);
+  const [isLoading, setIsLoading] = useState<boolean>(false);
   const { partialPersonnel } = useContext(PartialPersonnelContext);
   const [form, setForm] = useState<UpdatePersonnelEmail>({
     email: "",
@@ -31,6 +32,7 @@ export default function UpdateEmailForm() {
     e.preventDefault();
 
     console.log("Form data:", form);
+    setIsLoading(true);
 
     const result = await updatePersonnelEmailQuery(form);
 
@@ -39,6 +41,7 @@ export default function UpdateEmailForm() {
 
       setErrors([]);
       setForm(result.data);
+      setIsLoading(false);
 
       return;
     }
@@ -53,6 +56,7 @@ export default function UpdateEmailForm() {
     }
 
     setErrors(display_errors);
+    setIsLoading(false);
   }
 
   return (
@@ -67,6 +71,7 @@ export default function UpdateEmailForm() {
           onChange={onChange}
           button_label="Update"
           onSubmit={submitForm}
+          isLoading={isLoading}
         />
         <ListErrors errors={errors} />
       </form>

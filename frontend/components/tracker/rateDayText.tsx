@@ -4,7 +4,7 @@ import { useContext, useEffect, useState } from "react";
 
 import ListErrors from "@/components/common/errors/ListErrors";
 import TextAreaInput from "@/components/common/form-inputs/TextAreaInput";
-import SubmitButton from "@/components/common/form-inputs/SubmitButton";
+import Button from "@/components/common/buttons/Button";
 import { RankingTrackerContext } from "@/components/tracker/rateDayContext";
 import { updateForm } from "@/lib/common/updateForm";
 import { RankingTextDataProp } from "@/lib/interfaces/ranking";
@@ -14,6 +14,7 @@ import { rankTodayNotesQuery } from "@/lib/queries/ranking";
 
 export default function RateDayText() {
   const [errors, setErrors] = useState<string[]>([]);
+  const [isLoading, setIsLoading] = useState<boolean>(false);
   const { refreshRanking } = useContext(RankingTrackerContext);
   const [form, setForm] = useState<RankingTextDataProp>({
     text_events: "",
@@ -33,11 +34,14 @@ export default function RateDayText() {
     e.preventDefault();
 
     console.log("Form data:", form);
+    setIsLoading(true);
 
     const result = await rankTodayNotesQuery(form);
 
     if (result.ok) {
       setForm(result.data);
+      setErrors([]);
+      setIsLoading(false);
 
       return;
     }
@@ -52,6 +56,7 @@ export default function RateDayText() {
     }
 
     setErrors(display_errors);
+    setIsLoading(false);
   }
 
   return (
@@ -69,7 +74,7 @@ export default function RateDayText() {
         placeholder="Insert anything notable that happened today..."
       />
       <ListErrors errors={errors} />
-      <SubmitButton label="Submit" />
+      <Button loading={isLoading}>Submit</Button>
     </form>
   );
 }

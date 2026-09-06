@@ -1,14 +1,16 @@
-import { MouseEventHandler } from "react";
+import type { ChangeEventHandler, MouseEventHandler } from "react";
+import Button from "../buttons/Button";
 
 interface TextInputWButtonProps {
   name: string;
   type?: string;
   label: string;
   value: string;
-  onChange: React.ChangeEventHandler<HTMLInputElement>;
+  onChange: ChangeEventHandler<HTMLInputElement>;
   button_label: string;
   onSubmit: MouseEventHandler<HTMLButtonElement>;
   autoComplete?: string;
+  isLoading?: boolean;
 }
 
 export default function TextInputWButton({
@@ -20,18 +22,13 @@ export default function TextInputWButton({
   button_label,
   onSubmit,
   autoComplete,
+  isLoading = false,
 }: TextInputWButtonProps) {
   let auto_complete = "off";
-
-  if (autoComplete != null) {
-    auto_complete = autoComplete;
-  }
+  if (autoComplete != null) auto_complete = autoComplete;
 
   let input_type = "text";
-
-  if (type != null) {
-    input_type = type;
-  }
+  if (type != null) input_type = type;
 
   return (
     <div className="text-input-button">
@@ -44,7 +41,9 @@ export default function TextInputWButton({
         autoComplete={auto_complete}
       />
       <label>{label}</label>
-      <button onClick={onSubmit}>{button_label}</button>
+      <Button onClick={onSubmit} loading={isLoading}>
+        {button_label}
+      </Button>
     </div>
   );
 }

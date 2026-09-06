@@ -27,7 +27,7 @@ export default function Icon({
     svgPath = basePath + svgPath;
   }
 
-  let classes: string[] = [];
+  const classes: string[] = [];
 
   if (rotate) classes.push("animate-spin");
   switch (rotateColor) {

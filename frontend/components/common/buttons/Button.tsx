@@ -1,4 +1,4 @@
-import { ReactNode } from "react";
+import { ReactNode, type ButtonHTMLAttributes } from "react";
 import { cva, type VariantProps } from "class-variance-authority";
 import { cn } from "@/lib/common/utils";
 import Icon, { RotateColorEnum } from "../Icon";
@@ -25,9 +25,8 @@ type StyleVariants = VariantProps<typeof styleVariants>;
 type ButtonProp = {
   children: ReactNode;
   loading?: boolean;
-  disabled?: boolean;
-  onClick?: () => void;
-} & StyleVariants & {};
+} & StyleVariants &
+  Omit<ButtonHTMLAttributes<HTMLButtonElement>, "style">;
 
 export default function Button({
   children,
@@ -36,6 +35,9 @@ export default function Button({
   style = "default",
   size = "default",
   onClick,
+  type = "submit",
+  className,
+  ...props
 }: ButtonProp) {
   const is_disabled = disabled || loading;
 
@@ -49,9 +51,12 @@ export default function Button({
           style,
           size,
         }),
+        className,
       )}
       disabled={is_disabled}
-      onPointerUp={onClick}
+      onClick={onClick}
+      type={type}
+      {...props}
     >
       {!loading && children}
       {loading && (

@@ -7,10 +7,11 @@ import PasswordInput from "@/components/common/form-inputs/PasswordInput";
 import { updateForm } from "@/lib/common/updateForm";
 import { UpdatePersonnelPassword } from "@/lib/interfaces/personnel";
 import { updatePersonnelPasswordQuery } from "@/lib/queries/personnel";
-import SubmitButton from "@/components/common/form-inputs/SubmitButton";
+import Button from "@/components/common/buttons/Button";
 
 export default function UpdatePasswordForm() {
   const [errors, setErrors] = useState<string[]>([]);
+  const [isLoading, setIsLoading] = useState<boolean>(false);
   const [form, setForm] = useState<UpdatePersonnelPassword>({
     current_password: "",
     new_password: "",
@@ -25,6 +26,7 @@ export default function UpdatePasswordForm() {
     e.preventDefault();
 
     console.log("Form data:", form);
+    setIsLoading(true);
 
     const result = await updatePersonnelPasswordQuery(form);
 
@@ -32,6 +34,7 @@ export default function UpdatePasswordForm() {
       console.log("Password Updated Successfully");
 
       setErrors([]);
+      setIsLoading(false);
 
       return;
     }
@@ -46,6 +49,7 @@ export default function UpdatePasswordForm() {
     }
 
     setErrors(display_errors);
+    setIsLoading(false);
   }
 
   return (
@@ -71,7 +75,7 @@ export default function UpdatePasswordForm() {
           onChange={onChange}
         />
         <ListErrors errors={errors} />
-        <SubmitButton label="Submit" />
+        <Button loading={isLoading}>Submit</Button>
       </form>
     </div>
   );
