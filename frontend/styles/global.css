@@ -18,9 +18,3 @@ h1 {
     --color-app-action: #007ea7;
     --color-app-accent: #00a8e8;
 }
-
-@layer components {
-  .app-text {
-    color: #ffffff;
-  }
-}

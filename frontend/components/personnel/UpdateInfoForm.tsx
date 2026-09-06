@@ -4,7 +4,7 @@ import { useContext, useEffect, useState } from "react";
 
 import { PartialPersonnelContext } from "@/components/common/contexts/personnelContext";
 import ListErrors from "@/components/common/errors/ListErrors";
-import SubmitButton from "@/components/common/form-inputs/SubmitButton";
+import Button from "@/components/common/buttons/Button";
 import TextInput from "@/components/common/form-inputs/TextInput";
 import { updateForm } from "@/lib/common/updateForm";
 import { UpdatePersonnelInfo } from "@/lib/interfaces/personnel";
@@ -12,6 +12,7 @@ import { updatePersonnelInfoQuery } from "@/lib/queries/personnel";
 
 export default function UpdateInfoForm() {
   const [errors, setErrors] = useState<string[]>([]);
+  const [isLoading, setIsLoading] = useState<boolean>(false);
   const { partialPersonnel } = useContext(PartialPersonnelContext);
   const [form, setForm] = useState<UpdatePersonnelInfo>({
     first_name: "",
@@ -33,6 +34,7 @@ export default function UpdateInfoForm() {
     e.preventDefault();
 
     console.log("Form data:", form);
+    setIsLoading(true);
 
     const result = await updatePersonnelInfoQuery(form);
 
@@ -41,6 +43,7 @@ export default function UpdateInfoForm() {
 
       setErrors([]);
       setForm(result.data);
+      setIsLoading(false);
 
       return;
     }
@@ -55,6 +58,7 @@ export default function UpdateInfoForm() {
     }
 
     setErrors(display_errors);
+    setIsLoading(false);
   }
 
   return (
@@ -74,7 +78,7 @@ export default function UpdateInfoForm() {
           onChange={onChange}
         />
         <ListErrors errors={errors} />
-        <SubmitButton label="Submit" />
+        <Button loading={isLoading}>Submit</Button>
       </form>
     </div>
   );

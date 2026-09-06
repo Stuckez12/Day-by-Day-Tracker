@@ -3,7 +3,7 @@
 import { useState } from "react";
 
 import ListErrors from "@/components/common/errors/ListErrors";
-import SubmitButton from "@/components/common/form-inputs/SubmitButton";
+import Button from "@/components/common/buttons/Button";
 import TextAreaInput from "@/components/common/form-inputs/TextAreaInput";
 import TextInput from "@/components/common/form-inputs/TextInput";
 import { updateForm } from "@/lib/common/updateForm";
@@ -12,6 +12,7 @@ import { rankDayQuery } from "@/lib/queries/ranking";
 
 function RankDay() {
   const [errors, setErrors] = useState<string[]>([]);
+  const [isLoading, setIsLoading] = useState<boolean>(false);
   const [form, setForm] = useState<RankingUIDataProp>({
     day: "",
     ranking: undefined,
@@ -29,12 +30,14 @@ function RankDay() {
     e.preventDefault();
 
     console.log("Form data:", form);
+    setIsLoading(true);
 
     const result = await rankDayQuery(form);
 
     if (result.ok) {
       setForm(result.data);
       setErrors([]);
+      setIsLoading(false);
       return;
     }
 
@@ -48,6 +51,7 @@ function RankDay() {
     }
 
     setErrors(display_errors);
+    setIsLoading(false);
   }
 
   let ranking = "";
@@ -76,7 +80,7 @@ function RankDay() {
         onChange={onChange}
       />
       <ListErrors errors={errors} />
-      <SubmitButton label="Submit" />
+      <Button loading={isLoading}>Submit</Button>
     </form>
   );
 }

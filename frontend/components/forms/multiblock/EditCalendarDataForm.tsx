@@ -4,7 +4,7 @@ import { Temporal } from "@js-temporal/polyfill";
 
 import Calendar from "@/components/calendar/Calendar";
 import { CalendarContext } from "@/components/calendar/CalendarContext";
-import SubmitButton from "@/components/common/form-inputs/SubmitButton";
+import Button from "@/components/common/buttons/Button";
 import TextAreaInput from "@/components/common/form-inputs/TextAreaInput";
 import { getDateTextForDay } from "@/lib/common/datetime";
 import { updateForm } from "@/lib/common/updateForm";
@@ -14,6 +14,7 @@ import ListErrors from "@/components/common/errors/ListErrors";
 
 export default function EditCalendarDataForm() {
   const [errors, setErrors] = useState<string[]>([]);
+  const [isLoading, setIsLoading] = useState<boolean>(false);
   const { ranking, setRanking } = useContext(CalendarContext);
 
   useEffect(() => {
@@ -33,12 +34,13 @@ export default function EditCalendarDataForm() {
     }
 
     getRank();
-  }, []);
+  }, [setRanking]);
 
   async function submitForm(e: React.SubmitEvent<HTMLFormElement>) {
     e.preventDefault();
 
     console.log("Form data:", ranking);
+    setIsLoading(true);
 
     const result = await rankDayQuery(ranking);
 
@@ -47,6 +49,7 @@ export default function EditCalendarDataForm() {
 
       setErrors([]);
       setRanking(result.data);
+      setIsLoading(false);
 
       return;
     }
@@ -61,6 +64,7 @@ export default function EditCalendarDataForm() {
     }
 
     setErrors(display_errors);
+    setIsLoading(false);
   }
 
   function onChange(
@@ -93,7 +97,7 @@ export default function EditCalendarDataForm() {
           placeholder="Insert anything notable that happened today..."
         />
         <ListErrors errors={errors} />
-        <SubmitButton label="Submit" />
+        <Button loading={isLoading}>Submit</Button>
       </form>
     </div>
   );
