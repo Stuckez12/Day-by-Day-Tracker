@@ -7,7 +7,6 @@ import { useSession } from "next-auth/react";
 import { getPersonnelQuery } from "@/lib/queries/personnel";
 import { getAccessToken } from "@/lib/common/auth/getAccessToken";
 
-import "@/styles/colour_pallets.scss";
 import { PartialPersonnelContext } from "@/components/common/contexts/personnelContext";
 import NavBar from "@/components/navigation/NavBar";
 

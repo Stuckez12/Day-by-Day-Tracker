@@ -1,5 +1,3 @@
-import "@/styles/colour_pallets.scss";
-import "@/styles/common/form.scss";
 import "@/styles/global.css";
 import ClientLayout from "./ClientLayout";
 

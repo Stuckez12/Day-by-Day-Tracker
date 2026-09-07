@@ -9,7 +9,6 @@ import PasswordInput from "@/components/common/form-inputs/PasswordInput";
 import TextInput from "@/components/common/form-inputs/TextInput";
 import { updateForm } from "@/lib/common/updateForm";
 import { PersonnelLogin } from "@/lib/interfaces/personnel";
-import "@/styles/forms/login-form.scss";
 import Button from "../common/buttons/Button";
 
 export default function LoginForm() {
@@ -46,8 +45,12 @@ export default function LoginForm() {
   }
 
   return (
-    <div className="login-form-container">
-      <form className="login-form" method="post" onSubmit={submitForm}>
+    <div className="mx-auto min-h-[calc(100vh-64px)] w-full">
+      <form
+        className="mx-auto mt-32 max-w-md p-8 max-sm:mt-16 max-sm:p-3"
+        method="post"
+        onSubmit={submitForm}
+      >
         <h1>Login</h1>
         <TextInput
           name="email"
