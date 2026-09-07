@@ -10,7 +10,6 @@ import { getAccessToken } from "@/lib/common/auth/getAccessToken";
 import "@/styles/colour_pallets.scss";
 import { PartialPersonnelContext } from "@/components/common/contexts/personnelContext";
 import NavBar from "@/components/navigation/NavBar";
-import PageWrapper from "@/components/common/PageWrapper";
 
 export default function AccountGroupLayout({
   children,
