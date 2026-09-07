@@ -1,4 +1,5 @@
 {
+  "chatgpt.commentCodeLensEnabled": false,
   "editor.inlayHints.enabled": "offUnlessPressed",
   "python.languageServer": "Pylance",
   "ty.disableLanguageServices": true,
