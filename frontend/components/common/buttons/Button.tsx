@@ -7,9 +7,9 @@ const styleVariants = cva("relative flex items-center justify-center", {
   variants: {
     style: {
       default:
-        "bg-[#007ea7] hover:bg-[#00a1d6] active:bg-[#00a8e8] disabled:bg-[#004d66] text-white",
+        "bg-button hover:bg-button-hover active:bg-button-clicked disabled:bg-button-disabled text-inverted-text-color",
       secondary:
-        "bg-[#f0f0f0] hover:bg-[#f3f3f3] active:bg-[#f6f6f6] disabled:bg-[#c7c7c7] text-black",
+        "bg-secondary-button hover:bg-secondary-button-hover active:bg-secondary-button-clicked disabled:bg-secondary-button-disabled text-default-text-color",
     },
     size: {
       default: "w-full p-[6] rounded-[12] text-[16px]",

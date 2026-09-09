@@ -35,7 +35,7 @@ export default function TrackerPage() {
 
   return (
     <PageWrapper>
-      <div className="tracker-container">
+      <div className="mx-auto">
         <RankingTrackerContext.Provider
           value={{ refreshRanking, setRefreshRanking }}
         >

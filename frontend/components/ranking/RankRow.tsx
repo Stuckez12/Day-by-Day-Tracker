@@ -5,7 +5,7 @@ function RatingRow({ rank }: { rank: RankingProp }) {
     rank.text_events !== undefined || rank.text_notes !== undefined;
 
   return (
-    <tr className="table-row table-data-row">
+    <tr className="odd:bg-table-row-color-odd even:bg-table-row-color-even hover:bg-table-row-color-highlight [&>td]:border [&>td]:border-table-border [&>td]:p-2">
       <td>{rank.day}</td>
       <td>{rank.ranking}</td>
       <td>{has_text}</td>

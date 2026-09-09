@@ -172,7 +172,7 @@ export default function Calendar() {
           width={calendarItemSize * 7}
           height={calendarItemSize / 2}
           key={"Calendar Index"}
-          classes="rounded-md bg-[#d9d9d9]"
+          classes="rounded-md bg-calendar-empty"
           styles={{ margin: "4px" }}
         >
           {weekdays.map((day, _) => (

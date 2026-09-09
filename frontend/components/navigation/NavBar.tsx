@@ -3,7 +3,7 @@ import NavBarItem from "./NavBarItem";
 
 export default function NavBar() {
   return (
-    <nav className="bg-app-primary mb-4 py-1">
+    <nav className="bg-secondary mb-4 py-1">
       <PageWrapper>
         <div className="flex flex-row w-full">
           <div className="mr-auto flex flex-row space-x-1">

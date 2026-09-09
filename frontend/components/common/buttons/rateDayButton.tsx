@@ -4,8 +4,6 @@ import { useContext } from "react";
 import { rankTodayNumberQuery } from "@/lib/queries/ranking";
 import { RankingTrackerContext } from "@/components/tracker/rateDayContext";
 
-import "@/styles/tracker/ranking.scss";
-
 interface RateDayButtonProps {
   ranking: number;
   current_rank?: number;
@@ -31,12 +29,17 @@ export default function RateDayButton({
 
   return (
     <div
-      className={clsx("rate-button", {
-        "is-selected": ranking == current_rank,
-      })}
+      className={clsx(
+        "m-1 flex size-16 cursor-pointer items-center justify-center rounded-lg bg-action hover:bg-button-hover active:bg-button-clicked",
+        {
+          "bg-button-clicked": ranking == current_rank,
+        },
+      )}
       onClick={rate_today}
     >
-      <p className="rate-text">{ranking}</p>
+      <p className="m-0 text-center text-2xl text-inverted-text-color">
+        {ranking}
+      </p>
     </div>
   );
 }

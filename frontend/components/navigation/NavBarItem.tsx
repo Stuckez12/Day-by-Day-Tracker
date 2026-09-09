@@ -9,7 +9,7 @@ export default function NavBarItem({ name, urlPath }: NavBarItemProps) {
   return (
     <Link
       href={urlPath}
-      className="items-center px-2.5 py-2 text-lg font-bold no-underline! text-white"
+      className="items-center px-2.5 py-2 text-lg font-bold no-underline! text-inverted-text-color"
     >
       {name}
     </Link>
