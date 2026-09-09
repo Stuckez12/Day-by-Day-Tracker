@@ -30,14 +30,16 @@ export default function RateDayButton({
   return (
     <div
       className={clsx(
-        "m-1 flex size-16 cursor-pointer items-center justify-center rounded-lg bg-[#007ea7] hover:bg-[#00a8e8] active:bg-[#00a8e8]",
+        "m-1 flex size-16 cursor-pointer items-center justify-center rounded-lg bg-action hover:bg-button-hover active:bg-button-clicked",
         {
-          "bg-[#00a8e8]": ranking == current_rank,
+          "bg-button-clicked": ranking == current_rank,
         },
       )}
       onClick={rate_today}
     >
-      <p className="m-0 text-center text-2xl text-white">{ranking}</p>
+      <p className="m-0 text-center text-2xl text-inverted-text-color">
+        {ranking}
+      </p>
     </div>
   );
 }

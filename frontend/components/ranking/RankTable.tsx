@@ -28,7 +28,7 @@ export default function RankTable() {
   return (
     <table className="w-full border-collapse pt-8">
       <thead>
-        <tr className="bg-[#007ea7] text-left text-white [&>th]:border [&>th]:border-[#ddd] [&>th]:p-2 [&>th]:py-3">
+        <tr className="bg-table-row-color-header text-left text-inverted-text-color [&>th]:border [&>th]:border-table-border [&>th]:p-2 [&>th]:py-3">
           <th>Date</th>
           <th>Ranking</th>
           <th>Has Text</th>

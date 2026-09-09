@@ -14,7 +14,7 @@ function Logout() {
 
   return (
     <button
-      className="my-4 w-full rounded-lg bg-[#007ea7] py-1 text-center text-white hover:bg-[#00a1d6] active:bg-[#00a8e8]"
+      className="my-4 w-full rounded-lg bg-button py-1 text-center text-inverted-text-color hover:bg-button-hover active:bg-button-clicked"
       onClick={onSubmit}
     >
       Logout
