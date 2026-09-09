@@ -3,7 +3,7 @@ name: Create New Release
 on:
   pull_request:
     branches:
-      - dev
+      - main
     types: [closed]
 
 jobs:
