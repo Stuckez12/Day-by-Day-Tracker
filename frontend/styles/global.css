@@ -52,6 +52,9 @@ h1 {
   --color-rank-8: var(--rank-8);
   --color-rank-9: var(--rank-9);
   --color-rank-10: var(--rank-10);
+
+  --color-banner-info: var(--banner-info);
+  --color-banner-warning: var(--banner-warning);
 }
 
 [data-theme="base"] {
@@ -101,4 +104,7 @@ h1 {
   --rank-8: #16a34a;
   --rank-9: #15803d;
   --rank-10: #166534;
+
+  --banner-info: #0092e7;
+  --banner-warning: #cf7c00;
 }

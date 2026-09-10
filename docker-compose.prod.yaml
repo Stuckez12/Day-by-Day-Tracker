@@ -68,6 +68,7 @@ services:
       NEXTAUTH_URL: ${NEXTAUTH_URL}
       NEXTAUTH_SECRET: ${NEXTAUTH_SECRET}
       API_INTERNAL_URL: http://api:8000
+      FRONTEND_ENV: ${FRONTEND_ENV:-}
     restart: unless-stopped
 
   redis:
