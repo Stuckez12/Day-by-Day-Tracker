@@ -11,12 +11,13 @@ from uuid import UUID
 from zipfile import ZIP_DEFLATED, ZipFile
 
 from celery.result import AsyncResult
-from fastapi import HTTPException, UploadFile, status
+from fastapi import UploadFile
 from sqlalchemy import func, text
 from sqlalchemy.orm import Session, selectinload
 from sqlalchemy_utils import drop_database
 
-from src.common.recreate_db import recreate_database
+from src.core.recreate_db import recreate_database
+from src.exc import HTTP_EXC_NO_BACKUP_FILENAME
 from src.models import BackupModel, MetaModel, RankerModel
 from src.schemas import (
     BackupCreate,
@@ -313,10 +314,7 @@ STDERR: {e.stderr}
 
     async def upload_backup(self, file: UploadFile) -> str:
         if file.filename is None:
-            raise HTTPException(
-                status_code=status.HTTP_400_BAD_REQUEST,
-                detail="File uploaded does not have a file name attached. Cancelled file upload",
-            )
+            raise HTTP_EXC_NO_BACKUP_FILENAME
 
         path_str = f"{app_config.BACKUP_PATH}/{file.filename}"
         file_path = Path(path_str)

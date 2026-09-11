@@ -1,7 +1,7 @@
 import pytest
 from sqlalchemy.orm import Session
 
-from src.common.password_hash import pwd_hash
+from src.core.password_hash import pwd_hash
 from src.models import PersonnelModel
 from src.schemas import (
     CreatePersonnelRequest,

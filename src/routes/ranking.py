@@ -1,10 +1,11 @@
 from datetime import date
 from typing import Annotated
 
-from fastapi import APIRouter, Depends, HTTPException, Query, status
+from fastapi import APIRouter, Depends, Query, status
 from sqlalchemy.exc import NoResultFound
 
 from src.common import CurrentPersonnel, RankingServiceDep
+from src.exc import HTTP_EXC_RANKING_NOT_FOUND
 from src.schemas import (
     DateRangeRequest,
     RankingADayRequest,
@@ -27,10 +28,7 @@ def get_ranking(
 
 
 @api.get("/all", response_model=list[RankingSchema], status_code=status.HTTP_200_OK)
-def get_all_rankings(
-    service: RankingServiceDep,
-    personnel: CurrentPersonnel,
-):
+def get_all_rankings(service: RankingServiceDep, personnel: CurrentPersonnel):
     return service.get_all_personnel_rankings(personnel.id)
 
 
@@ -44,10 +42,7 @@ def get_ranking_range(
 
 
 @api.get("/today", response_model=RankingSchema, status_code=status.HTTP_200_OK)
-def get_todays_ranking(
-    service: RankingServiceDep,
-    personnel: CurrentPersonnel,
-):
+def get_todays_ranking(service: RankingServiceDep, personnel: CurrentPersonnel):
     return service.fetch_date(personnel.id, date.today())
 
 
@@ -57,24 +52,16 @@ def get_todays_ranking(
     status_code=status.HTTP_202_ACCEPTED,
 )
 def rank_a_day(
-    request: RankingADayRequest,
-    service: RankingServiceDep,
-    personnel: CurrentPersonnel,
+    request: RankingADayRequest, service: RankingServiceDep, personnel: CurrentPersonnel
 ):
     rank_data = service.fetch_date(personnel.id, request.day)
 
     return service.rank_a_day(rank_data, request)
 
 
-@api.put(
-    "/rank",
-    response_model=RankingSchema,
-    status_code=status.HTTP_202_ACCEPTED,
-)
+@api.put("/rank", response_model=RankingSchema, status_code=status.HTTP_202_ACCEPTED)
 def rank_today(
-    request: RankingRequest,
-    service: RankingServiceDep,
-    personnel: CurrentPersonnel,
+    request: RankingRequest, service: RankingServiceDep, personnel: CurrentPersonnel
 ):
     request.day = date.today()
     rank_data = service.fetch_date(personnel.id, request.day)
@@ -83,9 +70,7 @@ def rank_today(
 
 
 @api.put(
-    "/rank/notes",
-    response_model=RankingSchema,
-    status_code=status.HTTP_202_ACCEPTED,
+    "/rank/notes", response_model=RankingSchema, status_code=status.HTTP_202_ACCEPTED
 )
 def rank_date_notes(
     request: RankingNotesRequest,
@@ -96,9 +81,6 @@ def rank_date_notes(
         rank = service.get_by_date(personnel.id, request.day)
 
     except NoResultFound:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="Specified date's rank not found",
-        )
+        raise HTTP_EXC_RANKING_NOT_FOUND
 
     return service.record_day_notes(rank, request)

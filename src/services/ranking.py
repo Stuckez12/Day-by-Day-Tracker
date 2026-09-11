@@ -1,10 +1,10 @@
 import uuid
 from datetime import date, timedelta
 
-from fastapi import HTTPException, status
 from sqlalchemy.exc import NoResultFound
 from sqlalchemy.orm import Session
 
+from src.exc import HTTP_EXC_RANK_OLDER_THAN_TWO_WEEKS
 from src.models import RankerModel
 from src.schemas import (
     DateRangeRequest,
@@ -71,10 +71,7 @@ class RankingService(BaseDBService[RankerModel]):
 
     def can_modify_rank(self, rank: RankerModel):
         if rank.day + timedelta(days=14) < date.today():
-            raise HTTPException(
-                status_code=status.HTTP_403_FORBIDDEN,
-                detail="You cannot modify a ranked day more than two weeks old",
-            )
+            raise HTTP_EXC_RANK_OLDER_THAN_TWO_WEEKS
 
     def rank_a_day(self, rank: RankerModel, data: RankingADayRequest):
         self.can_modify_rank(rank)

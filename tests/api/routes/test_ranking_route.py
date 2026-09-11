@@ -335,4 +335,4 @@ class TestRankNotesRoute:
 
         response = result.json()
         assert "detail" in response
-        assert response["detail"] == "Specified date's rank not found"
+        assert response["detail"] == "Ranked date not found"

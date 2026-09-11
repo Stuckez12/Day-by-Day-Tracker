@@ -3,7 +3,7 @@ from typing import Annotated
 from fastapi import Depends
 from sqlalchemy.orm import Session
 
-from src.common import get_backup_db, get_db
+from src.core import get_backup_db, get_db
 from src.services import (
     AuthService,
     BackupService,

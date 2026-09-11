@@ -18,9 +18,9 @@ from sqlalchemy.orm import Session, sessionmaker
 from sqlalchemy_utils import create_database, database_exists
 
 from celery import current_app as current_celery_app
-from src.common import get_backup_db, get_db
-from src.common.password_hash import pwd_hash
 from src.common.security import create_access_token
+from src.core import get_backup_db, get_db
+from src.core.password_hash import pwd_hash
 from src.enums import BackupStatus, BackupTriggerMethod, BackupType, TaskStatus
 from src.main import fastapi_app
 from src.models import BackupModel, MetaModel, PersonnelModel, RankerModel, TaskModel
@@ -230,8 +230,8 @@ def mock_task_db(test_session: Session, test_backup_session: Session):
         yield test_backup_session
 
     with (
-        patch("src.common.get_db", _get_test_db),
-        patch("src.common.get_backup_db", _get_test_backup_db),
+        patch("src.core.get_db", _get_test_db),
+        patch("src.core.get_backup_db", _get_test_backup_db),
     ):
         yield
 
@@ -291,12 +291,42 @@ def test_session_personnel(test_session: Session):
     test_session.commit()
 
 
+@pytest.fixture(scope="session")
+def test_session_admin(test_session: Session):
+    model = PersonnelModel(
+        email="admin@email.com",
+        password=pwd_hash.hash(VALID_PASSWORD),
+        first_name="Session",
+        last_name="User",
+    )
+    model.is_admin = True
+
+    test_session.add(model)
+    test_session.commit()
+
+    yield model
+
+    test_session.delete(model)
+    test_session.commit()
+
+
 @pytest.fixture
 def test_client_user_session(
     test_app: TestClient, test_session_personnel: PersonnelModel
 ):
     test_app.headers.update(
         {"Authorization": f"Bearer {create_access_token(test_session_personnel.id)}"}
+    )
+
+    yield test_app
+
+    test_app.headers.pop("Authorization", None)
+
+
+@pytest.fixture
+def test_client_admin_session(test_app: TestClient, test_session_admin: PersonnelModel):
+    test_app.headers.update(
+        {"Authorization": f"Bearer {create_access_token(test_session_admin.id)}"}
     )
 
     yield test_app

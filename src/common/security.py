@@ -3,12 +3,13 @@ from typing import Annotated
 from uuid import UUID
 
 import jwt
-from fastapi import Depends, HTTPException, status
+from fastapi import Depends
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from jwt.exceptions import InvalidTokenError
 from sqlalchemy.exc import NoResultFound
 
 from src.common.dependencies import PersonnelServiceDep
+from src.exc import HTTP_EXC_INVALID_TOKEN, HTTP_EXC_PERSONNEL_DOES_NOT_EXIST
 from src.models.personnel import PersonnelModel
 from src.settings import app_config
 
@@ -38,16 +39,10 @@ def get_current_personnel_id(
         return personnel_service.get_by_id(personnel_id)
 
     except NoResultFound:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="Unable to find personnel. Please log in again",
-        )
+        raise HTTP_EXC_PERSONNEL_DOES_NOT_EXIST
 
     except (InvalidTokenError, KeyError, ValueError):
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Invalid or expired access token",
-        )
+        raise HTTP_EXC_INVALID_TOKEN
 
 
 CurrentPersonnel = Annotated[PersonnelModel, Depends(get_current_personnel_id)]

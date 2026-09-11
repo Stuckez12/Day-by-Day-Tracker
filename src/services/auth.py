@@ -1,8 +1,7 @@
-from fastapi import Response
 from sqlalchemy.exc import NoResultFound
 from sqlalchemy.orm import Session
 
-from src.common.password_hash import pwd_hash
+from src.core.password_hash import pwd_hash
 from src.models import PersonnelModel
 from src.schemas import CreatePersonnelRequest, LogInRequest
 from src.services.personnel import PersonnelService
@@ -46,16 +45,3 @@ class AuthService(PersonnelService):
             raise ValueError("Invalid email or password")
 
         return personnel
-
-    def set_login_cookies(
-        self, response: Response, personnel: PersonnelModel
-    ) -> Response:
-        response.set_cookie(
-            "personnel_id",
-            str(personnel.id),
-            httponly=True,
-            path="/",
-            samesite="lax",
-        )
-
-        return response

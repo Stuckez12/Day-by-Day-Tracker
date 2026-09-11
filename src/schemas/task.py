@@ -1,10 +1,15 @@
 import uuid
 from datetime import datetime
 
-from fastapi import HTTPException, status
 from pydantic import BaseModel, ConfigDict, model_validator
 
 from src.enums import TaskStatus
+from src.exc import (
+    HTTP_EXC_INVALID_TASK_DATE_RANGE,
+    HTTP_EXC_INVALID_TASK_DURATION_INPUT,
+    HTTP_EXC_INVALID_TASK_MINIMUM_RETRY_INPUT,
+    HTTP_EXC_INVALID_TASK_RETRY_RANGE,
+)
 
 
 class TaskSchema(BaseModel):
@@ -37,30 +42,18 @@ class TaskPaginated(BaseModel):
     def validate_rank(self):
         if self.min_retries is not None:
             if self.min_retries < 0:
-                raise HTTPException(
-                    status_code=status.HTTP_400_BAD_REQUEST,
-                    detail="Minimum retries must be a positive number",
-                )
+                raise HTTP_EXC_INVALID_TASK_MINIMUM_RETRY_INPUT
 
         if self.min_retries is not None and self.max_retries is not None:
             if self.min_retries > self.max_retries:
-                raise HTTPException(
-                    status_code=status.HTTP_400_BAD_REQUEST,
-                    detail="Minimum retries is larger than maximum retries",
-                )
+                raise HTTP_EXC_INVALID_TASK_RETRY_RANGE
 
         if self.duration is not None:
             if self.duration < 0:
-                raise HTTPException(
-                    status_code=status.HTTP_400_BAD_REQUEST,
-                    detail="Task duration must be a positive number",
-                )
+                raise HTTP_EXC_INVALID_TASK_DURATION_INPUT
 
         if self.started_at is not None and self.ended_at is not None:
             if self.started_at > self.ended_at:
-                raise HTTPException(
-                    status_code=status.HTTP_400_BAD_REQUEST,
-                    detail="Started at time is larger than ended at time",
-                )
+                raise HTTP_EXC_INVALID_TASK_DATE_RANGE
 
         return self

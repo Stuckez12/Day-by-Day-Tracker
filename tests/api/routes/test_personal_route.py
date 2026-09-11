@@ -1,10 +1,13 @@
+import uuid
+
 from fastapi import status
 from fastapi.testclient import TestClient
 from pytest_mock import MockerFixture
 from sqlalchemy.orm import Session
 from tests.api.constants import INVALID_PASSWORD, INVALID_PERSONNEL_ID, VALID_PASSWORD
 
-from src.common.password_hash import pwd_hash
+from src.core.password_hash import pwd_hash
+from src.exc import HTTP_EXC_NOT_AN_ADMIN
 from src.models import PersonnelModel
 from src.schemas import PersonnelSchema, SlimPersonnelSchema
 
@@ -12,10 +15,10 @@ from src.schemas import PersonnelSchema, SlimPersonnelSchema
 class TestGetPersonnelRoute:
     def test_success(
         self,
-        test_client_user_session: TestClient,
+        test_client_admin_session: TestClient,
         test_session_personnel: PersonnelModel,
     ):
-        result = test_client_user_session.get(
+        result = test_client_admin_session.get(
             f"/personnel?personnel_id={test_session_personnel.id}"
         )
         assert result.status_code == status.HTTP_200_OK
@@ -25,8 +28,16 @@ class TestGetPersonnelRoute:
             test_session_personnel
         )
 
-    def test_invalid_id(self, test_client_user_session: TestClient):
-        result = test_client_user_session.get(
+    def test_non_admin_restricted(self, test_client_user_session: TestClient):
+        result = test_client_user_session.get(f"/personnel?personnel_id={uuid.uuid4()}")
+        assert result.status_code == HTTP_EXC_NOT_AN_ADMIN.status_code
+
+        data = result.json()
+        assert "detail" in data
+        assert data["detail"] == HTTP_EXC_NOT_AN_ADMIN.detail
+
+    def test_invalid_id(self, test_client_admin_session: TestClient):
+        result = test_client_admin_session.get(
             f"/personnel?personnel_id={INVALID_PERSONNEL_ID}"
         )
         assert result.status_code == status.HTTP_404_NOT_FOUND
@@ -60,17 +71,26 @@ class TestGetPersonnelSelfRoute:
 class TestGetAllPersonnelRoute:
     def test_success(
         self,
-        test_client_user_session: TestClient,
+        test_client_admin_session: TestClient,
+        test_session_personnel: PersonnelModel,
         test_personnel: PersonnelModel,
         test_personnel_2: PersonnelModel,
         test_personnel_3: PersonnelModel,
     ):
-        result = test_client_user_session.get("/personnel/all")
+        result = test_client_admin_session.get("/personnel/all")
         assert result.status_code == status.HTTP_200_OK
 
         data = result.json()
-        assert len(data) == 4
+        assert len(data) == 5
         assert all(SlimPersonnelSchema.model_validate(personnel) for personnel in data)
+
+    def test_non_admin_restricted(self, test_client_user_session: TestClient):
+        result = test_client_user_session.get("/personnel/all")
+        assert result.status_code == HTTP_EXC_NOT_AN_ADMIN.status_code
+
+        data = result.json()
+        assert "detail" in data
+        assert data["detail"] == HTTP_EXC_NOT_AN_ADMIN.detail
 
 
 class TestUpdatePersonnelDetailsRoute:
@@ -295,10 +315,10 @@ class TestDeletePersonnelRoute:
     def test_success(
         self,
         test_session: Session,
-        test_client_user_session: TestClient,
+        test_client_admin_session: TestClient,
         test_personnel: PersonnelModel,
     ):
-        result = test_client_user_session.delete(
+        result = test_client_admin_session.delete(
             f"/personnel?personnel_id={test_personnel.id}"
         )
         assert result.status_code == status.HTTP_200_OK
@@ -314,11 +334,21 @@ class TestDeletePersonnelRoute:
 
         assert personnel is None
 
-    def test_invalid_id(self, test_client_user_session: TestClient):
+    def test_non_admin_restricted(self, test_client_user_session: TestClient):
         result = test_client_user_session.delete(
+            f"/personnel?personnel_id={uuid.uuid4()}"
+        )
+        assert result.status_code == HTTP_EXC_NOT_AN_ADMIN.status_code
+
+        data = result.json()
+        assert "detail" in data
+        assert data["detail"] == HTTP_EXC_NOT_AN_ADMIN.detail
+
+    def test_invalid_id(self, test_client_admin_session: TestClient):
+        result = test_client_admin_session.delete(
             f"/personnel?personnel_id={INVALID_PERSONNEL_ID}"
         )
         assert result.status_code == status.HTTP_404_NOT_FOUND
 
         data = result.json()
-        assert data["detail"] == f"Personnel {INVALID_PERSONNEL_ID} not found"
+        assert data["detail"] == "Personnel does not exist"

@@ -2,7 +2,7 @@ import logging
 from datetime import datetime
 from uuid import UUID
 
-import src.common as common
+import src.core as core
 from celery import Task, shared_task
 from src.common.celery import update_task_state
 from src.enums.backup.status import BackupStatus
@@ -12,10 +12,10 @@ from src.services import BackupService
 
 @shared_task(bind=True)
 def verify_backup(self: Task, backup_id: UUID, *args, **kwargs) -> dict:
-    db_gen = common.get_db()
+    db_gen = core.get_db()
     db = next(db_gen)
 
-    backup_db_gen = common.get_backup_db()
+    backup_db_gen = core.get_backup_db()
     backup_db = next(backup_db_gen)
 
     service = BackupService(db=db, backup_db=backup_db)

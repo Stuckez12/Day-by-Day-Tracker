@@ -3,10 +3,11 @@ from io import BytesIO
 from pathlib import Path
 
 import pytest
-from fastapi import HTTPException, UploadFile
+from fastapi import UploadFile
 from pytest_mock import MockerFixture
 from sqlalchemy.exc import NoResultFound
 
+from src.exc import HTTP_EXC_NO_BACKUP_FILENAME
 from src.models import BackupModel
 from src.schemas.backup import Metadata
 from src.services import BackupService
@@ -127,7 +128,6 @@ class TestUploadBackupService:
             upload = UploadFile(file=f)
 
         with pytest.raises(
-            HTTPException,
-            match="File uploaded does not have a file name attached. Cancelled file upload",
+            type(HTTP_EXC_NO_BACKUP_FILENAME), match=HTTP_EXC_NO_BACKUP_FILENAME.detail
         ):
             await test_backup_service.upload_backup(upload)
