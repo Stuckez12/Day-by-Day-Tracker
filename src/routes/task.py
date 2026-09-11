@@ -7,12 +7,17 @@ from fastapi_pagination.ext.sqlalchemy import paginate
 from sqlalchemy.exc import NoResultFound
 
 from src.common import TaskServiceDep
+from src.core.permission_validator import PermissionValidator
 from src.enums import TaskStatus
 from src.exc import HTTP_EXC_TASK_NOT_FOUND
 from src.schemas import TaskPaginated, TaskSchema
 
 
-api = APIRouter(prefix="/task", tags=["Task"])
+api = APIRouter(
+    prefix="/task",
+    tags=["Task"],
+    dependencies=[Depends(PermissionValidator(admin_route=True))],
+)
 
 
 @api.get("/paginated", status_code=status.HTTP_200_OK, response_model=Page[TaskSchema])

@@ -3,11 +3,12 @@ from typing import cast
 from uuid import UUID
 
 from celery.result import AsyncResult
-from fastapi import APIRouter, Query, UploadFile, status
+from fastapi import APIRouter, Depends, Query, UploadFile, status
 from fastapi.responses import FileResponse
 from sqlalchemy.exc import NoResultFound
 
 from src.common import BackupServiceDep
+from src.core.permission_validator import PermissionValidator
 from src.exc import (
     HTTP_EXC_BACKUP_NOT_FOUND,
     HTTP_EXC_NO_BACKUP_METADATA,
@@ -18,7 +19,11 @@ from src.settings import app_config
 from src.tasks import verify_backup
 
 
-api = APIRouter(prefix="/backup", tags=["Backup"])
+api = APIRouter(
+    prefix="/backup",
+    tags=["Backup"],
+    dependencies=[Depends(PermissionValidator(admin_route=True))],
+)
 
 
 @api.get("", response_model=BackupSchema, status_code=status.HTTP_200_OK)

@@ -1,9 +1,10 @@
 from uuid import UUID
 
-from fastapi import APIRouter, Query, status
+from fastapi import APIRouter, Depends, Query, status
 from sqlalchemy.exc import NoResultFound
 
 from src.common import CurrentPersonnel, PersonnelServiceDep
+from src.core.permission_validator import PermissionValidator
 from src.exc import HTTP_EXC_PERSONNEL_DOES_NOT_EXIST
 from src.schemas import (
     PersonnelSchema,
@@ -17,7 +18,12 @@ from src.schemas import (
 api = APIRouter(prefix="/personnel", tags=["Personnel"])
 
 
-@api.get("", status_code=status.HTTP_200_OK, response_model=PersonnelSchema)
+@api.get(
+    "",
+    status_code=status.HTTP_200_OK,
+    response_model=PersonnelSchema,
+    dependencies=[Depends(PermissionValidator(admin_route=True))],
+)
 def get_personnel(service: PersonnelServiceDep, personnel_id: UUID):
     try:
         return service.get_by_id(personnel_id)
@@ -32,13 +38,21 @@ def get_personnel_self(personnel: CurrentPersonnel):
 
 
 @api.get(
-    "/all", status_code=status.HTTP_200_OK, response_model=list[SlimPersonnelSchema]
+    "/all",
+    status_code=status.HTTP_200_OK,
+    response_model=list[SlimPersonnelSchema],
+    dependencies=[Depends(PermissionValidator(admin_route=True))],
 )
 def get_all_personnel(service: PersonnelServiceDep):
     return service.get_all()
 
 
-@api.delete("", status_code=status.HTTP_200_OK, response_model=None)
+@api.delete(
+    "",
+    status_code=status.HTTP_200_OK,
+    response_model=None,
+    dependencies=[Depends(PermissionValidator(admin_route=True))],
+)
 def delete_personnel(
     service: PersonnelServiceDep,
     personnel_id: UUID = Query(title="Personnel ID"),

@@ -1,14 +1,19 @@
 from uuid import UUID
 
 from celery.result import AsyncResult
-from fastapi import APIRouter, Request, status
+from fastapi import APIRouter, Depends, Request, status
 
 import src.tasks.task_management  # noqa
+from src.core.permission_validator import PermissionValidator
 from src.enums import BackupTriggerMethod
 from src.tasks import database_logical_backup, simulate_celery_task, verify_backup
 
 
-api = APIRouter(prefix="/execute/task", tags=["Execute Task"])
+api = APIRouter(
+    prefix="/execute/task",
+    tags=["Execute Task"],
+    dependencies=[Depends(PermissionValidator(admin_route=True))],
+)
 
 
 @api.get("/simulate", status_code=status.HTTP_200_OK)
