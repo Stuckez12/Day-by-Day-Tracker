@@ -8,10 +8,14 @@ export default function AccountGroupLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  let banner = "";
+  if (process.env.NODE_ENV == "development")
+    banner = "Application is in development mode";
+  else if (process.env.IS_TEST_PROD)
+    banner = "Application is deployed only as a showcase";
+
   return (
-    <ClientAccountLayout
-      nav={<NavBar frontendEnv={process.env.FRONTEND_ENV ?? ""} />}
-    >
+    <ClientAccountLayout nav={<NavBar pageBanner={banner} />}>
       {children}
     </ClientAccountLayout>
   );

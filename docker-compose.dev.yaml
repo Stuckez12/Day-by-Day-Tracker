@@ -65,7 +65,7 @@ services:
       context: ./frontend
       dockerfile: Dockerfile
       target: dev
-    command: [ "npm", "run", "dev" ]
+    command: ["npm", "run", "dev"]
     expose:
       - "3000"
     networks:
@@ -87,7 +87,7 @@ services:
       NEXTAUTH_URL: ${NEXTAUTH_URL}
       NEXTAUTH_SECRET: ${NEXTAUTH_SECRET}
       API_INTERNAL_URL: http://api:8000
-      FRONTEND_ENV: ${FRONTEND_ENV:-}
+      IS_TEST_PROD: false
     restart: unless-stopped
 
   redis:

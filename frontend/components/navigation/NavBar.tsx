@@ -3,10 +3,10 @@ import PageWrapper from "../common/PageWrapper";
 import NavBarItem from "./NavBarItem";
 
 interface NavBarProps {
-  frontendEnv?: string;
+  pageBanner?: string;
 }
 
-export default function NavBar({ frontendEnv = "" }: NavBarProps) {
+export default function NavBar({ pageBanner = "" }: NavBarProps) {
   return (
     <div className="mb-4">
       <nav className="bg-secondary py-1">
@@ -22,10 +22,7 @@ export default function NavBar({ frontendEnv = "" }: NavBarProps) {
           </div>
         </PageWrapper>
       </nav>
-      <PageBanner
-        message={frontendEnv ? "Environment: " + frontendEnv : "Test"}
-        type="INFO"
-      />
+      <PageBanner message={pageBanner ? pageBanner : ""} type="INFO" />
     </div>
   );
 }

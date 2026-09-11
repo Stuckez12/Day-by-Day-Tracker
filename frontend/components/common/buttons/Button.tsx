@@ -10,6 +10,7 @@ const styleVariants = cva("relative flex items-center justify-center", {
         "bg-button hover:bg-button-hover active:bg-button-clicked disabled:bg-button-disabled text-inverted-text-color",
       secondary:
         "bg-secondary-button hover:bg-secondary-button-hover active:bg-secondary-button-clicked disabled:bg-secondary-button-disabled text-default-text-color",
+      none: "text-default-text-color",
     },
     size: {
       default: "w-full p-[6] rounded-[12] text-[16px]",
