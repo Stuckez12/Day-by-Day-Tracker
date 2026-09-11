@@ -9,11 +9,7 @@ from src.enums import BackupTriggerMethod
 from src.tasks import database_logical_backup, simulate_celery_task, verify_backup
 
 
-api = APIRouter(
-    prefix="/execute/task",
-    tags=["Execute Task"],
-    dependencies=[Depends(PermissionValidator(admin_route=True))],
-)
+api = APIRouter(prefix="/execute/task", tags=["Execute Task"])
 
 
 @api.get("/simulate", status_code=status.HTTP_200_OK)
@@ -23,7 +19,11 @@ def run_task_simulation(_: Request):
     return task.get()
 
 
-@api.get("/database-backup", status_code=status.HTTP_200_OK)
+@api.get(
+    "/database-backup",
+    status_code=status.HTTP_200_OK,
+    dependencies=[Depends(PermissionValidator(admin_route=True))],
+)
 def run_database_logical_backup(_: Request):
     task: AsyncResult = database_logical_backup.delay(
         trigger=BackupTriggerMethod.MANUAL.value
@@ -32,7 +32,11 @@ def run_database_logical_backup(_: Request):
     return task.get()
 
 
-@api.get("/verify-backup", status_code=status.HTTP_200_OK)
+@api.get(
+    "/verify-backup",
+    status_code=status.HTTP_200_OK,
+    dependencies=[Depends(PermissionValidator(admin_route=True))],
+)
 def run_verify_backup(backup_id: UUID):
     task: AsyncResult = verify_backup.delay(backup_id=backup_id)
 
