@@ -1,4 +1,5 @@
 import { Result, ValidationErrorProp } from "@/lib/interfaces/common";
+import { isObject } from "@/lib/common/utils";
 
 export interface Request {
   url_path: string;
@@ -39,26 +40,30 @@ export class APICall {
   private async handle_response<T>(
     response: Response,
   ): Promise<Result<T, ValidationErrorProp>> {
-    let body = null;
+    let body;
 
     try {
-      if (response.status !== 204) {
-        body = await response.json();
-      }
+      if (response.status !== 204) body = await response.json();
     } catch {
       body = null;
     }
 
-    if (response.ok) {
-      return { ok: true, data: body };
-    }
+    if (response.ok) return { ok: true, data: body };
+
+    // If the error is not a string in detail, we wont know what the error could be.
+    // TODO: Maybe in the future expand this to handle more cases.
+    let api_error = body?.detail ?? "Unknown API error";
+    if (isObject(api_error)) api_error = "Unknown API error";
+    if (Array.isArray(api_error)) api_error = "Unknown API error";
 
     return {
       ok: false,
       error: {
         api_response: true,
         error_count: 1,
-        errors: { api: body?.detail ?? "Unknown API error" },
+        errors: {
+          api: api_error,
+        },
       },
     };
   }

@@ -1,1 +1,110 @@
 @import "tailwindcss";
+
+h1 {
+  font-size: 40px;
+  font-weight: 500;
+}
+
+@theme inline {
+  --color-base: var(--base);
+  --color-primary: var(--primary);
+  --color-secondary: var(--secondary);
+  --color-action: var(--action);
+  --color-accent: var(--accent);
+
+  --color-default-text-color: var(--default-text-color);
+  --color-inverted-text-color: var(--inverted-text-color);
+
+  --color-table-row-color-header: var(--table-row-color-header);
+  --color-table-row-color-odd: var(--table-row-color-odd);
+  --color-table-row-color-even: var(--table-row-color-even);
+  --color-table-row-color-highlight: var(--table-row-color-highlight);
+
+  --color-button: var(--button);
+  --color-button-hover: var(--button-hover);
+  --color-button-clicked: var(--button-clicked);
+  --color-button-disabled: var(--button-disabled);
+
+  --color-secondary-button: var(--secondary-button);
+  --color-secondary-button-hover: var(--secondary-button-hover);
+  --color-secondary-button-clicked: var(--secondary-button-clicked);
+  --color-secondary-button-disabled: var(--secondary-button-disabled);
+
+  --color-popup-header: var(--popup-header);
+  --color-popup-body: var(--popup-body);
+  --color-popup-footer: var(--popup-footer);
+  --color-popup-border: var(--popup-border);
+
+  --color-table-border: var(--table-border);
+
+  --color-calendar-empty: var(--calendar-empty);
+  --color-calendar-border-hover: var(--calendar-border-hover);
+  --color-calendar-border-clicked: var(--calendar-border-clicked);
+
+  --color-rank-0: var(--rank-0);
+  --color-rank-1: var(--rank-1);
+  --color-rank-2: var(--rank-2);
+  --color-rank-3: var(--rank-3);
+  --color-rank-4: var(--rank-4);
+  --color-rank-5: var(--rank-5);
+  --color-rank-6: var(--rank-6);
+  --color-rank-7: var(--rank-7);
+  --color-rank-8: var(--rank-8);
+  --color-rank-9: var(--rank-9);
+  --color-rank-10: var(--rank-10);
+
+  --color-banner-info: var(--banner-info);
+  --color-banner-warning: var(--banner-warning);
+}
+
+[data-theme="base"] {
+  --base: #ffffff;
+  --primary: #00171f;
+  --secondary: #003459;
+  --action: #007ea7;
+  --accent: #00a8e8;
+
+  --default-text-color: #000000;
+  --inverted-text-color: #ffffff;
+
+  --table-row-color-header: #007ea7;
+  --table-row-color-odd: #e9e9e9;
+  --table-row-color-even: #f3f3f3;
+  --table-row-color-highlight: #d4d4d4;
+
+  --button: #007ea7;
+  --button-hover: #00a1d6;
+  --button-clicked: #00a8e8;
+  --button-disabled: #004d66;
+
+  --secondary-button: #f0f0f0;
+  --secondary-button-hover: #f3f3f3;
+  --secondary-button-clicked: #f6f6f6;
+  --secondary-button-disabled: #c7c7c7;
+
+  --popup-header: #ffffff;
+  --popup-body: #ffffff;
+  --popup-footer: #ffffff;
+  --popup-border: #c9c9c9;
+
+  --table-border: #dddddd;
+
+  --calendar-empty: #d9d9d9;
+  --calendar-border-hover: #afafaf;
+  --calendar-border-clicked: #9f9f9f;
+
+  --rank-0: #f01d1d;
+  --rank-1: #f44336;
+  --rank-2: #ff7a00;
+  --rank-3: #f2c231;
+  --rank-4: #f0db4c;
+  --rank-5: #b6e269;
+  --rank-6: #6ad26d;
+  --rank-7: #22c55e;
+  --rank-8: #16a34a;
+  --rank-9: #15803d;
+  --rank-10: #166534;
+
+  --banner-info: #0092e7;
+  --banner-warning: #cf7c00;
+}

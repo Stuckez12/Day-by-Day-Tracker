@@ -3,8 +3,6 @@
 import { useRouter } from "next/navigation";
 import { signOut } from "next-auth/react";
 
-import "@/styles/forms/login-form.scss";
-
 function Logout() {
   const router = useRouter();
 
@@ -15,7 +13,10 @@ function Logout() {
   }
 
   return (
-    <button className="submit-button" onClick={onSubmit}>
+    <button
+      className="my-4 w-full rounded-lg bg-button py-1 text-center text-inverted-text-color hover:bg-button-hover active:bg-button-clicked"
+      onClick={onSubmit}
+    >
       Logout
     </button>
   );

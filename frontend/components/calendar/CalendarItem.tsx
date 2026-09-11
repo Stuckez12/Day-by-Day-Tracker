@@ -24,20 +24,20 @@ export default function CalendarItem({ data, date }: CalendarItemData) {
 
   // Worst to best
   const rankingColourRange = [
-    "#f01d1d",
-    "#F44336",
-    "#FF7A00",
-    "#f2c231",
-    "#f0db4c",
-    "#b6e269",
-    "#6ad26d",
-    "#22C55E",
-    "#16A34A",
-    "#15803D",
-    "#166534",
+    "bg-rank-0",
+    "bg-rank-1",
+    "bg-rank-2",
+    "bg-rank-3",
+    "bg-rank-4",
+    "bg-rank-5",
+    "bg-rank-6",
+    "bg-rank-7",
+    "bg-rank-8",
+    "bg-rank-9",
+    "bg-rank-10",
   ];
 
-  let calendarBGColor = "#d9d9d9";
+  let calendarBGColor = "bg-calendar-empty";
 
   if (data !== null) {
     if (data.ranking != null) {
@@ -48,11 +48,10 @@ export default function CalendarItem({ data, date }: CalendarItemData) {
   return (
     <div className="w-full h-full flex p-[4]">
       <div
-        className="w-full h-full flex items-center rounded-md hover:border-2 hover:border-[#afafaf] active:border-2 active:border-[#9f9f9f]"
-        style={{ backgroundColor: calendarBGColor }}
+        className={`w-full h-full flex items-center rounded-md hover:border-2 hover:border-calendar-border-hover active:border-2 active:border-calendar-border-clicked ${calendarBGColor}`}
         onClick={selectDay}
       >
-        <span className="text-center w-full font-bold text-black">
+        <span className="text-center w-full font-bold text-default-text-color">
           {dayData.dayNum}
         </span>
       </div>

@@ -8,6 +8,7 @@ import RateDayText from "@/components/tracker/rateDayText";
 import RateDayTracker from "@/components/tracker/rateDayTracker";
 import { RankingUIDataProp } from "@/lib/interfaces/ranking";
 import { getRankTodayQuery } from "@/lib/queries/ranking";
+import PageWrapper from "@/components/common/PageWrapper";
 
 export default function TrackerPage() {
   const [refreshRanking, setRefreshRanking] = useState<RankingUIDataProp>({
@@ -33,8 +34,8 @@ export default function TrackerPage() {
   }, []);
 
   return (
-    <div className="page-wrapper">
-      <div className="tracker-container">
+    <PageWrapper>
+      <div className="mx-auto">
         <RankingTrackerContext.Provider
           value={{ refreshRanking, setRefreshRanking }}
         >
@@ -43,6 +44,6 @@ export default function TrackerPage() {
           <RateDayText />
         </RankingTrackerContext.Provider>
       </div>
-    </div>
+    </PageWrapper>
   );
 }

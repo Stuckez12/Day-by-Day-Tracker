@@ -6,16 +6,16 @@ import { useState } from "react";
 
 import ListErrors from "@/components/common/errors/ListErrors";
 import PasswordInput from "@/components/common/form-inputs/PasswordInput";
-import SubmitButton from "@/components/common/form-inputs/SubmitButton";
 import TextInput from "@/components/common/form-inputs/TextInput";
 import { updateForm } from "@/lib/common/updateForm";
 import { PersonnelLogin } from "@/lib/interfaces/personnel";
-import "@/styles/forms/login-form.scss";
+import Button from "../common/buttons/Button";
 
 export default function LoginForm() {
   const router = useRouter();
 
   const [errors, setErrors] = useState<string[]>([]);
+  const [isLoading, setIsLoading] = useState<boolean>(false);
   const [form, setForm] = useState<PersonnelLogin>({
     email: "",
     password: "",
@@ -28,6 +28,8 @@ export default function LoginForm() {
   async function submitForm(e: React.SubmitEvent<HTMLFormElement>) {
     e.preventDefault();
 
+    setIsLoading(true);
+
     const result = await signIn("credentials", {
       ...form,
       redirect: false,
@@ -39,11 +41,16 @@ export default function LoginForm() {
     }
 
     setErrors(["Invalid email or password"]);
+    setIsLoading(false);
   }
 
   return (
-    <div className="login-form-container">
-      <form className="login-form" method="post" onSubmit={submitForm}>
+    <div className="mx-auto min-h-[calc(100vh-64px)] w-full">
+      <form
+        className="mx-auto mt-32 max-w-md p-8 max-sm:mt-16 max-sm:p-3"
+        method="post"
+        onSubmit={submitForm}
+      >
         <h1>Login</h1>
         <TextInput
           name="email"
@@ -59,7 +66,7 @@ export default function LoginForm() {
           onChange={onChange}
         />
         <ListErrors errors={errors} />
-        <SubmitButton label="Submit" />
+        <Button loading={isLoading}>Submit</Button>
       </form>
     </div>
   );

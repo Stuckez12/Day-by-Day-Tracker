@@ -35,6 +35,7 @@ def create_app():
 
     app.include_router(api, prefix="/v1")
 
+    logging.info("DB Creation")
     create_db()
 
     if is_prod_env:

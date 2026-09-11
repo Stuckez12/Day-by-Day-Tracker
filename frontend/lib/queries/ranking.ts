@@ -7,7 +7,7 @@ import { Result, ValidationErrorProp } from "@/lib/interfaces/common";
 import { RankingProp, RankingUIDataProp } from "@/lib/interfaces/ranking";
 import { APICall, MustBeLoggedIn } from "@/lib/queries/base";
 
-const API = new APICall(process.env.BASE_API_URL!);
+const API = new APICall(process.env.NEXTAUTH_URL!);
 
 export async function getRankQuery(
   date: string,

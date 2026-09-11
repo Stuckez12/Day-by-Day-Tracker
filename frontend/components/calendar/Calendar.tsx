@@ -2,7 +2,7 @@
 
 import { Temporal } from "@js-temporal/polyfill";
 
-import { useEffect, useRef, useState } from "react";
+import { useContext, useEffect, useRef, useState } from "react";
 import GridItem from "@/components/layouts/grid/GridItem";
 import GridRow from "@/components/layouts/grid/GridRow";
 import { getDateValues, getDayCountForMonth } from "@/lib/common/datetime";
@@ -13,7 +13,10 @@ import { CalendarItemData } from "@/lib/interfaces/calendar";
 import CalendarHeader from "./CalendarHeader";
 import Button from "@/components/common/buttons/Button";
 import Icon from "@/components/common/Icon";
+import { CalendarContext } from "@/components/calendar/CalendarContext";
+
 export default function Calendar() {
+  const { ranking } = useContext(CalendarContext);
   const calendarRef = useRef<HTMLDivElement>(null);
   const [calendarWidth, setCalendarWidth] = useState(0);
   const [calendarDatesData, setCalendarDatesData] = useState<
@@ -129,7 +132,7 @@ export default function Calendar() {
     }
 
     setCalendarData();
-  }, [currentDate]);
+  }, [currentDate, ranking]);
 
   const weekdays = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
   const calendarItemSize = calendarWidth / weekdayCount;
@@ -138,8 +141,11 @@ export default function Calendar() {
   const monthDisplay = `${displayData.month} ${displayData.year}`;
 
   return (
-    <div className="w-full flex flex-column gap-y-2" ref={calendarRef}>
-      <div className="flex gap-x-2" style={{ width: calendarItemSize * 7 }}>
+    <div className="w-full flex flex-col gap-y-2" ref={calendarRef}>
+      <div
+        className="flex flex-row gap-x-2"
+        style={{ width: calendarItemSize * 7 }}
+      >
         <Button
           style="secondary"
           size="square"
@@ -161,12 +167,12 @@ export default function Calendar() {
           />
         </Button>
       </div>
-      <div className="flex flex-column">
+      <div className="flex flex-col">
         <GridRow
           width={calendarItemSize * 7}
           height={calendarItemSize / 2}
           key={"Calendar Index"}
-          classes="rounded-md bg-[#d9d9d9]"
+          classes="rounded-md bg-calendar-empty"
           styles={{ margin: "4px" }}
         >
           {weekdays.map((day, _) => (

@@ -32,7 +32,7 @@ services:
     image: nginx:alpine
     container_name: nginx
     ports:
-      - "80:80"
+      - "${APP_PORT:-8080}:80"
     volumes:
       - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
       - ./nginx:/etc/nginx/ssl:ro
@@ -65,7 +65,7 @@ services:
       context: ./frontend
       dockerfile: Dockerfile
       target: dev
-    command: [ "npm", "run", "dev" ]
+    command: ["npm", "run", "dev"]
     expose:
       - "3000"
     networks:
@@ -78,17 +78,16 @@ services:
       - ./frontend/lib:/app/lib
       - ./frontend/styles:/app/styles
       - ./frontend/next.config.ts:/app/next.config.ts
-      # - ./frontend/:/app/
     environment:
       WATCHPACK_POLLING: "true"
       CHOKIDAR_USEPOLLING: "true"
       CHOKIDAR_INTERVAL: "20"
       NODE_ENV: development
       # NODE_ENV: production
-      BASE_API_URL: ${BASE_API_URL}
+      NEXTAUTH_URL: ${NEXTAUTH_URL}
       NEXTAUTH_SECRET: ${NEXTAUTH_SECRET}
-      NEXTAUTH_URL: ${NEXTAUTH_URL:-http://192.168.18.128}
       API_INTERNAL_URL: http://api:8000
+      IS_TEST_PROD: false
     restart: unless-stopped
 
   redis:
@@ -102,21 +101,6 @@ services:
     volumes:
       - redis-data:/data/
     restart: unless-stopped
-
-  beat-scheduler:
-    build:
-      context: .
-      dockerfile: src/Dockerfile
-    expose:
-      - "8001"
-    networks:
-      - app-network
-    volumes:
-      - ./src:/api/src
-    environment:
-      APP_ENV: dev
-    env_file: .env
-    entrypoint: celery -A src.main beat --loglevel=INFO
 
   worker:
     build:
@@ -132,7 +116,7 @@ services:
     environment:
       APP_ENV: dev
     env_file: .env
-    entrypoint: celery -A src.main worker -Ofair --concurrency=4 --loglevel=INFO -E
+    entrypoint: celery -A src.main worker -Ofair --concurrency=4 --loglevel=INFO -E -B
 
 networks:
   app-network:

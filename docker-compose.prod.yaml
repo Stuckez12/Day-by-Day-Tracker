@@ -1,6 +1,6 @@
 services:
   db:
-    image: postgres:17 
+    image: postgres:17
     ports:
       - ${DATABASE_PORT}:5432
     networks:
@@ -9,9 +9,9 @@ services:
       - postgres_data:/var/lib/postgresql/data
       - ./scripts/postgres:/docker-entrypoint-initdb.d
     environment:
-        POSTGRES_USER: ${DATABASE_USERNAME}
-        POSTGRES_PASSWORD: ${DATABASE_PASSWORD}
-        POSTGRES_PORT: ${DATABASE_PORT}
+      POSTGRES_USER: ${DATABASE_USERNAME}
+      POSTGRES_PASSWORD: ${DATABASE_PASSWORD}
+      POSTGRES_PORT: ${DATABASE_PORT}
     env_file: .env.prod
     attach: false
     restart: unless-stopped
@@ -34,7 +34,7 @@ services:
     image: nginx:alpine
     container_name: nginx
     ports:
-      - "80:80"
+      - "${APP_PORT:-8080}:80"
     volumes:
       - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
     depends_on:
@@ -50,10 +50,9 @@ services:
       - "8000"
     networks:
       - app-network
+    env_file: .env.prod
     environment:
       APP_ENV: prod
-    env_file:
-      - .env.prod
     command: uvicorn src.main:fastapi_app --host 0.0.0.0 --port 8000
     restart: unless-stopped
 
@@ -66,9 +65,10 @@ services:
     env_file: .env.prod
     environment:
       NODE_ENV: production
-      BASE_API_URL: ${BASE_API_URL}
+      NEXTAUTH_URL: ${NEXTAUTH_URL}
       NEXTAUTH_SECRET: ${NEXTAUTH_SECRET}
       API_INTERNAL_URL: http://api:8000
+      IS_TEST_PROD: ${IS_TEST_PROD:-false}
     restart: unless-stopped
 
   redis:
@@ -83,18 +83,6 @@ services:
       - redis-data:/data/
     restart: unless-stopped
 
-  beat-scheduler:
-    image: stukez12/day-by-day-tracker-api:${APP_VERSION}
-    expose:
-      - "8001"
-    networks:
-      - app-network
-    environment:
-      APP_ENV: prod
-    env_file: .env.prod
-    entrypoint: celery -A src.main beat --loglevel=INFO
-    restart: unless-stopped
-
   worker:
     image: stukez12/day-by-day-tracker-api:${APP_VERSION}
     expose:
@@ -103,16 +91,14 @@ services:
       - app-network
     volumes:
       - ${EXTERNAL_BACKUP_PATH}:${BACKUP_PATH}
+    env_file: .env.prod
     environment:
       APP_ENV: prod
-    env_file: .env.prod
-    entrypoint: celery -A src.main worker -Ofair --concurrency=4 --loglevel=INFO -E
+    entrypoint: celery -A src.main worker -Ofair --concurrency=4 --loglevel=INFO -E -B
     restart: unless-stopped
-
 
 networks:
   app-network:
-
 
 volumes:
   pgadmin-data:

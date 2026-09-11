@@ -6,8 +6,6 @@ import RankRow from "@/components/ranking/RankRow";
 import { RankingProp } from "@/lib/interfaces/ranking";
 import { getAllRanksQuery } from "@/lib/queries/ranking";
 
-import "@/styles/common/tables.scss";
-
 // interface RankTableProps {}
 
 export default function RankTable() {
@@ -28,9 +26,9 @@ export default function RankTable() {
   }, []);
 
   return (
-    <table>
+    <table className="w-full border-collapse pt-8">
       <thead>
-        <tr className="table-row table-header-row">
+        <tr className="bg-table-row-color-header text-left text-inverted-text-color [&>th]:border [&>th]:border-table-border [&>th]:p-2 [&>th]:py-3">
           <th>Date</th>
           <th>Ranking</th>
           <th>Has Text</th>

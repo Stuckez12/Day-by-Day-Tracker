@@ -26,8 +26,9 @@ export default function TextAreaInput({
   }
 
   return (
-    <div className="textarea-input">
+    <div className="relative my-4 w-full">
       <textarea
+        className="min-h-[4em] w-full rounded-[5px] border-2 px-3 py-1.5 shadow-none"
         name={name}
         value={final_value}
         onChange={onChange}

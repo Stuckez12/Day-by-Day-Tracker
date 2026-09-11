@@ -8,7 +8,7 @@ export default function RateDayTracker() {
   const { refreshRanking } = useContext(RankingTrackerContext);
 
   return (
-    <div className="rating-button-bar">
+    <div className="flex flex-wrap">
       <RateDayButton ranking={0} current_rank={refreshRanking.ranking} />
       <RateDayButton ranking={1} current_rank={refreshRanking.ranking} />
       <RateDayButton ranking={2} current_rank={refreshRanking.ranking} />
