@@ -291,12 +291,42 @@ def test_session_personnel(test_session: Session):
     test_session.commit()
 
 
+@pytest.fixture(scope="session")
+def test_session_admin(test_session: Session):
+    model = PersonnelModel(
+        email="admin@email.com",
+        password=pwd_hash.hash(VALID_PASSWORD),
+        first_name="Session",
+        last_name="User",
+    )
+    model.is_admin = True
+
+    test_session.add(model)
+    test_session.commit()
+
+    yield model
+
+    test_session.delete(model)
+    test_session.commit()
+
+
 @pytest.fixture
 def test_client_user_session(
     test_app: TestClient, test_session_personnel: PersonnelModel
 ):
     test_app.headers.update(
         {"Authorization": f"Bearer {create_access_token(test_session_personnel.id)}"}
+    )
+
+    yield test_app
+
+    test_app.headers.pop("Authorization", None)
+
+
+@pytest.fixture
+def test_client_admin_session(test_app: TestClient, test_session_admin: PersonnelModel):
+    test_app.headers.update(
+        {"Authorization": f"Bearer {create_access_token(test_session_admin.id)}"}
     )
 
     yield test_app

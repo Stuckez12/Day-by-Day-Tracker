@@ -13,14 +13,24 @@ from src.exc import HTTP_EXC_TASK_NOT_FOUND
 from src.schemas import TaskPaginated, TaskSchema
 
 
-api = APIRouter(
-    prefix="/task",
-    tags=["Task"],
+api = APIRouter(prefix="/task", tags=["Task"])
+
+
+@api.get("", status_code=status.HTTP_200_OK, response_model=TaskSchema)
+def get_task(service: TaskServiceDep, task_id: uuid.UUID = Query(...)):
+    try:
+        return service.get_by_task_id(task_id)
+
+    except NoResultFound:
+        raise HTTP_EXC_TASK_NOT_FOUND
+
+
+@api.get(
+    "/paginated",
+    status_code=status.HTTP_200_OK,
+    response_model=Page[TaskSchema],
     dependencies=[Depends(PermissionValidator(admin_route=True))],
 )
-
-
-@api.get("/paginated", status_code=status.HTTP_200_OK, response_model=Page[TaskSchema])
 def get_tasks_paginated(
     service: TaskServiceDep,
     params: Params = Depends(),
@@ -49,16 +59,11 @@ def get_tasks_paginated(
     return paginate(query, params)
 
 
-@api.get("/", status_code=status.HTTP_200_OK, response_model=TaskSchema)
-def get_task(service: TaskServiceDep, task_id: uuid.UUID = Query(...)):
-    try:
-        return service.get_by_task_id(task_id)
-
-    except NoResultFound:
-        raise HTTP_EXC_TASK_NOT_FOUND
-
-
-@api.get("/{task_id}/status", status_code=status.HTTP_200_OK)
+@api.get(
+    "/{task_id}/status",
+    status_code=status.HTTP_200_OK,
+    dependencies=[Depends(PermissionValidator(admin_route=True))],
+)
 def get_task_status(service: TaskServiceDep, task_id: uuid.UUID):
     try:
         task = service.get_by_task_id(task_id)
