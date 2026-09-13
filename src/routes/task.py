@@ -1,14 +1,16 @@
 import uuid
 from datetime import datetime
 
-from fastapi import APIRouter, Depends, Query, status
+from fastapi import APIRouter, Depends, Query, UploadFile, status
+from fastapi.responses import StreamingResponse
 from fastapi_pagination import Page, Params
 from fastapi_pagination.ext.sqlalchemy import paginate
 from sqlalchemy.exc import NoResultFound
 
 from src.common import TaskServiceDep
 from src.core.permission_validator import PermissionValidator
-from src.enums import TaskStatus
+from src.core.s3_storage import ObjectStorage
+from src.enums import ObjectType, TaskStatus
 from src.exc import HTTP_EXC_TASK_NOT_FOUND
 from src.schemas import TaskPaginated, TaskSchema
 
@@ -72,3 +74,25 @@ def get_task_status(service: TaskServiceDep, task_id: uuid.UUID):
 
     except NoResultFound:
         raise HTTP_EXC_TASK_NOT_FOUND
+
+
+@api.post("/test")
+def get_test(file_data: UploadFile):
+
+    # file_data.file
+    # file_data.filename
+    # file_data.size
+    return ObjectStorage().upload_file(
+        file_data.file, ObjectType.BACKUP, file_data.filename or "file.txt"
+    )
+
+
+@api.get("/test/file")
+def get_file(filename: str = Query(...)):
+    file_object = ObjectStorage().download_file(ObjectType.BACKUP, filename)
+
+    return StreamingResponse(
+        file_object["Body"],
+        media_type=file_object["ContentType"],
+        headers={"Content-Disposition": f'attachment; filename="{filename}"'},
+    )

@@ -1,5 +1,4 @@
 from datetime import datetime
-from pathlib import Path
 from typing import TYPE_CHECKING
 
 from sqlalchemy import Boolean, DateTime, ForeignKey, Integer, String
@@ -50,7 +49,13 @@ class MetaModel(BackupBaseModel):
         back_populates="meta",
     )
 
-    def __init__(self, metadata_schema: "Metadata", zipped_backup_path: str):
+    def __init__(
+        self,
+        metadata_schema: "Metadata",
+        file_name: str,
+        file_path: str,
+        file_size: int,
+    ):
         self.backup_id = metadata_schema.backup_id
         self.database_alembic_version = metadata_schema.database_alembic_version
         self.algorithm = metadata_schema.checksum.algorithm
@@ -60,6 +65,6 @@ class MetaModel(BackupBaseModel):
         self.tool_version = metadata_schema.tool.version
         self.date_range_start = metadata_schema.data.date_range.start
         self.date_range_end = metadata_schema.data.date_range.end
-        self.zip_filename = Path(zipped_backup_path).name
-        self.zip_path = zipped_backup_path
-        self.zip_size_bytes = Path(zipped_backup_path).stat().st_size
+        self.zip_filename = file_name
+        self.zip_path = file_path
+        self.zip_size_bytes = file_size

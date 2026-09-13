@@ -50,6 +50,12 @@ class AppConfig(BaseSettings):
 
         return self
 
+    # S3 Storage
+    S3_HTTP_ADDRESS: str
+    S3_ACCESS_KEY: str
+    S3_SECRET_KEY: str
+    S3_REGION: str
+
     # Maintenance
     BACKUP_PATH: str
 

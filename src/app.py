@@ -7,8 +7,8 @@ from fastapi_pagination import add_pagination
 
 from src import __version__ as APP_VERSION
 from src.api import api
-from src.core.create_db import create_db
-from src.core.upgrade_db import upgrade_db
+from src.core.database.create_db import create_db
+from src.core.database.upgrade_db import upgrade_db
 from src.settings import is_prod_env
 
 

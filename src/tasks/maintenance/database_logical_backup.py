@@ -53,7 +53,7 @@ def database_logical_backup(self: Task, trigger: str, *args, **kwargs) -> dict:
 
         logging.info("Zipping up all the files")
         zip_destination = f"{app_config.BACKUP_PATH}/{metadata_schema.created_at.strftime('%Y%m%d%H%M%S')}-tracker-backup.zip"
-        service.zip_folder(
+        zip_file = service.zip_folder(
             zip_destination=zip_destination,
             files=[backup_file, checksum_file, metadata_file],
         )
@@ -64,7 +64,7 @@ def database_logical_backup(self: Task, trigger: str, *args, **kwargs) -> dict:
         logging.info("State: Finishing")
         update_task_state(self, db, metadata={"stage": "Finishing"})
 
-        service.create_metadata_record(metadata_schema, zip_destination)
+        service.create_metadata_record(metadata_schema, zip_file, zip_destination)
 
         backup.duration = end - start
         backup.status = BackupStatus.SUCCESS
