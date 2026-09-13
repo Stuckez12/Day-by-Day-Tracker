@@ -17,6 +17,8 @@ from sqlalchemy.orm import Session, selectinload
 from sqlalchemy_utils import drop_database
 
 from src.core.database.recreate_db import recreate_database
+from src.core.s3_storage import ObjectStorage
+from src.enums.object_type import ObjectType
 from src.exc import HTTP_EXC_NO_BACKUP_FILENAME
 from src.models import BackupModel, MetaModel, RankerModel
 from src.schemas import (
@@ -262,8 +264,11 @@ STDERR: {e.stderr}
             files=files,
         )
 
-    def create_metadata_record(self, metadata: Metadata, zip_path: str):
-        meta_model = MetaModel(metadata, zip_path)
+    def create_metadata_record(self, metadata: Metadata, zip_file: str, zip_path: str):
+        file_metadata = ObjectStorage().file_metadata(ObjectType.BACKUP, zip_file)
+        meta_model = MetaModel(
+            metadata, zip_file, zip_path, file_metadata["ContentLength"]
+        )
 
         self.backup_db.add(meta_model)
         self.backup_db.commit()
@@ -292,6 +297,14 @@ STDERR: {e.stderr}
             for file in files:
                 path = Path(file)
                 zf.write(path, arcname=path.name)
+
+        with open(zip_destination, "rb") as f:
+            filename = Path(f.name).name
+            ObjectStorage().upload_file(f, ObjectType.BACKUP, filename)
+
+        Path.unlink(Path(zip_destination))
+
+        return filename
 
     def unzip_folder(self, zip_file: str) -> str:
         zip_path = Path(f"{app_config.BACKUP_PATH}/{zip_file}")

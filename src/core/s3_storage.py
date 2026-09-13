@@ -50,6 +50,10 @@ class ObjectStorage:
 
             self._raise_client_http_exception(status_code=status_code, detail=detail)
 
+    # TODO: Custom pydantic model with the metadata I only care about
+    def file_metadata(self, bucket_name: ObjectType, file_dir: str):
+        return self.client.head_object(Bucket=bucket_name.value, Key=file_dir)
+
     def upload_file(
         self, file: BinaryIO, file_type: ObjectType, file_dir: str
     ) -> FileObjectUploaded:
