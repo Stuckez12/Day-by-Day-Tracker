@@ -17,6 +17,7 @@ from src.schemas.common import (
     InvalidSchema,
     TaskIDSchema,
 )
+from src.schemas.file_object import FileObjectUploaded
 from src.schemas.personnel import (
     CreatePersonnelRequest,
     PersonnelSchema,
