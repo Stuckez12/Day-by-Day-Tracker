@@ -13,7 +13,7 @@ MetadataFileType = Literal["backup", "checksum"]
 
 class MetadataChecksum(BaseModel):
     algorithm: str
-    file_name: str
+    value: str
     verified: bool = False
     last_verified: datetime | None = None
 
@@ -27,6 +27,7 @@ class MetadataFiles(BaseModel):
     name: str
     type: MetadataFileType
     size_bytes: int
+    checksum: MetadataChecksum
 
 
 class MetadataDateRange(BaseModel):
@@ -50,17 +51,16 @@ class Metadata(BaseModel):
     database_alembic_version: str
     app_version: str = app_config.APP_VERSION
 
-    checksum: MetadataChecksum
     tool: MetadataTool
     files: list[MetadataFiles]
     data: MetadataData
 
-    def get_file_type_data(self, file_type: MetadataFileType) -> MetadataFiles | None:
-        for file in self.files:
-            if file.type == file_type:
-                return file
+    def get_checksum_data(self) -> MetadataChecksum:
+        """All checksums should be done by the same algorithm"""
+        if len(self.files) == 0:
+            raise ValueError("No files in the metadata object have been recorded")
 
-        return None
+        return self.files[0].checksum
 
 
 class BackupSchema(BaseModel):

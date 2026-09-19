@@ -27,7 +27,6 @@ from src.schemas import (
     MetadataChecksum,
     MetadataData,
     MetadataDateRange,
-    MetadataFiles,
     MetadataTool,
 )
 from src.services.base import BaseDBService
@@ -229,18 +228,7 @@ STDERR: {e.stderr}
             text("SELECT version_num FROM alembic_version")
         ).scalar()
 
-        files = [
-            MetadataFiles(
-                name=Path(backup_file).name,
-                type="backup",
-                size_bytes=Path(backup_file).stat().st_size,
-            ),
-            MetadataFiles(
-                name=Path(checksum_file).name,
-                type="checksum",
-                size_bytes=Path(checksum_file).stat().st_size,
-            ),
-        ]
+        files = []
 
         return Metadata(
             schema_version=1,

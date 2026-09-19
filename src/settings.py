@@ -57,6 +57,7 @@ class AppConfig(BaseSettings):
     S3_REGION: str
 
     # Maintenance
+    TEMPORARY_PATH: str = "/temp"
     BACKUP_PATH: str
 
 

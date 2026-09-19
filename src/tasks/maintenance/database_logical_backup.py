@@ -2,21 +2,23 @@ import logging
 import time
 from typing import cast
 
-import src.core as core
 from celery import Task, shared_task
 from src.common.celery import update_task_state
+from src.core import get_backup_db, get_db
+from src.core.s3_storage import ObjectStorage
 from src.enums import BackupStatus, BackupTriggerMethod, BackupType
 from src.schemas import BackupCreate, BackupSchema
 from src.services import BackupService
 from src.settings import app_config
+from src.workflows import BackupWorkflow
 
 
 @shared_task(bind=True)
 def database_logical_backup(self: Task, trigger: str, *args, **kwargs) -> dict:
-    db_gen = core.get_db()
+    db_gen = get_db()
     db = next(db_gen)
 
-    backup_db_gen = core.get_backup_db()
+    backup_db_gen = get_backup_db()
     backup_db = next(backup_db_gen)
 
     service = BackupService(db=db, backup_db=backup_db)
@@ -92,5 +94,55 @@ def database_logical_backup(self: Task, trigger: str, *args, **kwargs) -> dict:
     finally:
         service.delete_folder(temp_folder_path)
 
+        backup_db_gen.close()
+        db_gen.close()
+
+
+@shared_task(bind=True)
+def database_logical_backup_w_images(self: Task, trigger: str, *args, **kwargs):
+    db_gen = get_db()
+    db = next(db_gen)
+
+    backup_db_gen = get_backup_db()
+    backup_db = next(backup_db_gen)
+
+    try:
+        # create backup service
+        service = BackupService(db=db, backup_db=backup_db)
+
+        # create backup record
+        backup_data = BackupCreate(
+            celery_id=cast(str, self.request.id),
+            trigger_method=BackupTriggerMethod(trigger),
+            status=BackupStatus.RUNNING,
+            backup_type=BackupType.LOGICAL,
+        )
+        backup_record = service.create(backup_data)
+
+        s3_storage = ObjectStorage()
+
+        # database backup
+        workflow = BackupWorkflow(backup_db, service, backup_record, s3_storage)
+        workflow.create_logical_database_backup()
+
+        # database verify restoration
+        workflow.verify_backup_file()
+
+        # files backup
+
+        # metadata creation
+        workflow.generate_metadata(BackupType.LOGICAL)
+
+        # zipping of
+        workflow.zip_all_backup_files()
+        workflow.upload_zip_to_object_storage()
+        workflow.record_backup_into_database()
+
+        pass
+
+    except:
+        pass
+
+    finally:
         backup_db_gen.close()
         db_gen.close()
