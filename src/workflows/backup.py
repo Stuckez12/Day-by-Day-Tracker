@@ -1,3 +1,4 @@
+import logging
 import os
 import subprocess
 from datetime import datetime
@@ -26,23 +27,10 @@ from src.schemas import (
     MetadataTool,
 )
 from src.settings import app_config
-from src.utils import sha256_file
+from src.utils import delete_folder, sha256_file
 
 
 class BackupWorkflow:
-    temp_backup_path: Path
-
-    backup_file_path: Path | None = None
-    zipped_backup_file_path: Path | None = None
-
-    # Metadata
-    metadata: Metadata | None = None
-    metadata_file_path: Path | None = None
-
-    metadata_files: list[MetadataFiles] = []
-    metadata_tool: MetadataTool | None = None
-    metadata_date_range: MetadataDateRange | None = None
-
     def __init__(
         self,
         *,
@@ -57,7 +45,7 @@ class BackupWorkflow:
         self.object_storage = object_storage
 
         # File paths
-        temp_path = app_config.TEMPORARY_PATH + "/temp"
+        temp_path = app_config.TEMPORARY_PATH + "/backup/temp"
 
         self.temp_backup_path = Path(temp_path)
         self.temp_backup_path.mkdir(exist_ok=True)
@@ -314,4 +302,23 @@ STDERR: {e.stderr}
         model = MetaModel(metadata_schema=self.metadata, zipped_metadata=file_object)
 
         self.backup_db.add(model)
-        self.backup_db.commit()
+        self.backup_db.flush([model])
+
+    def cleanup(self) -> None:
+        try:
+            delete_folder(self.temp_backup_path)
+
+        except FileNotFoundError:
+            pass
+
+        except FileExistsError as e:
+            logging.exception("Failed to clean up backup workflow temp files")
+
+            raise e
+
+        except Exception as e:
+            logging.exception(
+                "Unknown error whilst trying to clean up BackupWorkflow temp folder"
+            )
+
+            raise e

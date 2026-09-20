@@ -1,21 +1,21 @@
-from pathlib import Path
 from typing import cast
 from uuid import UUID
 
 from celery.result import AsyncResult
 from fastapi import APIRouter, Depends, Query, UploadFile, status
-from fastapi.responses import FileResponse
+from fastapi.responses import StreamingResponse
 from sqlalchemy.exc import NoResultFound
 
 from src.common import BackupServiceDep
 from src.core.permission_validator import PermissionValidator
+from src.core.s3_storage import ObjectStorageDep
+from src.enums import ObjectType
 from src.exc import (
     HTTP_EXC_BACKUP_NOT_FOUND,
     HTTP_EXC_NO_BACKUP_METADATA,
     HTTP_EXC_NO_VALID_BACKUP_ID,
 )
 from src.schemas import BackupSchema, TaskIDSchema
-from src.settings import app_config
 from src.tasks import verify_backup
 
 
@@ -66,7 +66,9 @@ async def upload_backup(service: BackupServiceDep, file: UploadFile):
     response_model=list[BackupSchema],
     status_code=status.HTTP_200_OK,
 )
-def download_backup(service: BackupServiceDep, backup_id: UUID):
+def download_backup(
+    service: BackupServiceDep, object_storage: ObjectStorageDep, backup_id: UUID
+):
     try:
         backup = service.get_by_backup_id(backup_id)
 
@@ -76,10 +78,12 @@ def download_backup(service: BackupServiceDep, backup_id: UUID):
     if backup.meta is None:
         raise HTTP_EXC_NO_BACKUP_METADATA
 
-    return FileResponse(
-        Path(f"{app_config.BACKUP_PATH}{backup.meta.zip_path}"),
-        media_type="application/octet-stream",
-        filename=backup.meta.zip_filename,
+    file_object = object_storage.download_file(ObjectType.BACKUP, backup.meta.zip_path)
+
+    return StreamingResponse(
+        file_object["Body"],
+        media_type=file_object["ContentType"],
+        headers={"Content-Disposition": f'attachment; file="{backup.meta.zip_path}"'},
     )
 
 

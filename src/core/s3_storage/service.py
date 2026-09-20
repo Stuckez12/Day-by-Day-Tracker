@@ -1,8 +1,8 @@
-from typing import TYPE_CHECKING, BinaryIO
+from typing import TYPE_CHECKING, Annotated, BinaryIO
 
 import boto3
 from botocore.exceptions import ClientError
-from fastapi import HTTPException
+from fastapi import Depends, HTTPException
 
 from src.core.s3_storage.schemas import FileObjectMetadataSchema
 from src.enums import ObjectType
@@ -96,3 +96,10 @@ class ObjectStorage:
 
     def delete_file(self):
         pass
+
+
+def get_object_storage_service() -> ObjectStorage:
+    return ObjectStorage()
+
+
+ObjectStorageDep = Annotated[ObjectStorage, Depends(get_object_storage_service)]
