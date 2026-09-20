@@ -47,10 +47,12 @@ class BackupWorkflow:
         self,
         *,
         db: Session,
+        backup_db: Session,
         backup_record: BackupModel,
         object_storage: ObjectStorage,
     ) -> None:
         self.db = db
+        self.backup_db = backup_db
         self.backup_record = backup_record
         self.object_storage = object_storage
 
@@ -311,5 +313,5 @@ STDERR: {e.stderr}
 
         model = MetaModel(metadata_schema=self.metadata, zipped_metadata=file_object)
 
-        self.db.add(model)
-        self.db.commit()
+        self.backup_db.add(model)
+        self.backup_db.commit()

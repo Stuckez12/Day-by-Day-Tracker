@@ -136,7 +136,10 @@ def database_logical_backup(self: Task, trigger: str, *args, **kwargs):
     try:
         s3_storage = ObjectStorage()
         workflow = BackupWorkflow(
-            db=backup_db, backup_record=backup_record, object_storage=s3_storage
+            db=db,
+            backup_db=backup_db,
+            backup_record=backup_record,
+            object_storage=s3_storage,
         )
 
         update_task_state(self, db, metadata={"stage": "Creating Logical Backup"})

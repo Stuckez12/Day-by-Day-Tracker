@@ -1,4 +1,5 @@
 import os
+from pathlib import Path
 from typing import Literal, cast
 
 from pydantic import model_validator
@@ -59,6 +60,13 @@ class AppConfig(BaseSettings):
     # Maintenance
     TEMPORARY_PATH: str = "/temp"
     BACKUP_PATH: str
+
+    @model_validator(mode="after")
+    def generate_temporary_path_folder(self) -> Self:
+        temp_path = Path(self.TEMPORARY_PATH)
+        temp_path.mkdir(exist_ok=True)
+
+        return self
 
 
 class ProdAppConfig(AppConfig):
