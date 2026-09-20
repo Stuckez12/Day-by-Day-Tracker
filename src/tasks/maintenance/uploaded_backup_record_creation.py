@@ -4,6 +4,7 @@ from typing import cast
 import src.core as core
 from celery import Task, shared_task
 from src.common.celery import update_task_state
+from src.core import get_backup_db, get_db
 from src.enums.backup.status import BackupStatus
 from src.enums.backup.trigger_method import BackupTriggerMethod
 from src.enums.backup.type import BackupType
@@ -12,7 +13,7 @@ from src.services import BackupService
 
 
 @shared_task(bind=True)
-def uploaded_backup_record_creation(
+def uploaded_backup_record_creation_old(
     self: Task, new_backup_file: str, *args, **kwargs
 ) -> dict:
     db_gen = core.get_db()
@@ -72,5 +73,35 @@ def uploaded_backup_record_creation(
     finally:
         service.delete_folder(temp_folder_path)
 
+        backup_db_gen.close()
+        db_gen.close()
+
+
+@shared_task(bind=True)
+def uploaded_backup_record_creation(self: Task, new_backup_file: str, *args, **kwargs):
+    db_gen = get_db()
+    db = next(db_gen)
+
+    backup_db_gen = get_backup_db()
+    backup_db = next(backup_db_gen)
+
+    try:
+        # Extract zip from local
+
+        # Retrieve metadata
+
+        # Validate checksums
+
+        # Validate restoration
+
+        # Record in database
+
+        return
+
+    except Exception:
+        db.rollback()
+        backup_db.rollback()
+
+    finally:
         backup_db_gen.close()
         db_gen.close()

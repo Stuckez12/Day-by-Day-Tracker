@@ -5,13 +5,14 @@ from uuid import UUID
 import src.core as core
 from celery import Task, shared_task
 from src.common.celery import update_task_state
+from src.core import get_backup_db, get_db
 from src.enums.backup.status import BackupStatus
 from src.schemas.backup import BackupSchema
 from src.services import BackupService
 
 
 @shared_task(bind=True)
-def verify_backup(self: Task, backup_id: UUID, *args, **kwargs) -> dict:
+def verify_backup_old(self: Task, backup_id: UUID, *args, **kwargs) -> dict:
     db_gen = core.get_db()
     db = next(db_gen)
 
@@ -76,5 +77,39 @@ def verify_backup(self: Task, backup_id: UUID, *args, **kwargs) -> dict:
             backup.meta.last_verified = datetime.now()
             backup_db.commit()
 
+        backup_db_gen.close()
+        db_gen.close()
+
+
+@shared_task(bind=True)
+def verify_backup(self: Task, backup_id: UUID, *args, **kwargs):
+    db_gen = get_db()
+    db = next(db_gen)
+
+    backup_db_gen = get_backup_db()
+    backup_db = next(backup_db_gen)
+
+    try:
+        # Initialise
+
+        # Fetch zip
+
+        # Extract zip
+
+        # Retrieve metadata
+
+        # Validate checksums
+
+        # Validate restoration
+
+        # Record in database
+
+        return
+
+    except Exception:
+        db.rollback()
+        backup_db.rollback()
+
+    finally:
         backup_db_gen.close()
         db_gen.close()
