@@ -1,12 +1,12 @@
 from __future__ import annotations
 
 from datetime import datetime
-from pathlib import Path
 from typing import TYPE_CHECKING
 
 from sqlalchemy import Boolean, DateTime, ForeignKey, Integer, String
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
+from src.core.s3_storage import FileObjectMetadataSchema
 from src.models.backup.base import BackupBaseModel
 from src.settings import app_config
 
@@ -52,7 +52,9 @@ class MetaModel(BackupBaseModel):
         back_populates="meta",
     )
 
-    def __init__(self, metadata_schema: Metadata, zipped_file: Path):
+    def __init__(
+        self, metadata_schema: Metadata, zipped_metadata: FileObjectMetadataSchema
+    ):
         checksum_data = metadata_schema.get_checksum_data()
 
         # Identification
@@ -73,6 +75,6 @@ class MetaModel(BackupBaseModel):
         self.date_range_end = metadata_schema.data.date_range.end
 
         # Zipped backup file
-        self.zip_filename = zipped_file.name
-        self.zip_path = str(zipped_file)
-        self.zip_size_bytes = zipped_file.stat().st_size
+        self.zip_filename = zipped_metadata.directory.name
+        self.zip_path = str(zipped_metadata.directory)
+        self.zip_size_bytes = zipped_metadata.byte_size

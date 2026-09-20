@@ -25,7 +25,6 @@ from src.schemas import (
     MetadataFiles,
     MetadataTool,
 )
-from src.services import BackupService
 from src.settings import app_config
 from src.utils import sha256_file
 
@@ -46,23 +45,34 @@ class BackupWorkflow:
 
     def __init__(
         self,
+        *,
         db: Session,
-        backup_service: BackupService,
         backup_record: BackupModel,
         object_storage: ObjectStorage,
     ) -> None:
         self.db = db
-        self.backup_service = backup_service
         self.backup_record = backup_record
         self.object_storage = object_storage
 
+        # File paths
         temp_path = app_config.TEMPORARY_PATH + "/temp"
 
         self.temp_backup_path = Path(temp_path)
         self.temp_backup_path.mkdir(exist_ok=True)
 
-        # app_config.BACKUP_PATH  # Location of where the backups are stored on the ssd
-        # app_config.TEMPORARY_PATH  # Location of a temporary folder where all files within are redundant
+        self.backup_file_path: Path | None = None
+        self.zipped_backup_file_path: Path | None = None
+
+        # Metadata
+        self.metadata: Metadata | None = None
+        self.metadata_file_path: Path | None = None
+
+        self.metadata_files: list[MetadataFiles] = []
+        self.metadata_tool: MetadataTool | None = None
+        self.metadata_date_range: MetadataDateRange | None = None
+
+        # Is backup uploaded
+        self.backup_uploaded = False
 
     # ------------------------ DB Backup ----------------------- #
 
@@ -215,7 +225,7 @@ STDERR: {e.stderr}
 
         meta_json = self.metadata.model_dump_json(exclude={"backup_id"})
 
-        self.metadata_file_path = self.backup_file_path / "metadata.json"
+        self.metadata_file_path = self.temp_backup_path / "metadata.json"
 
         with open(self.metadata_file_path, "w+") as f:
             f.write(meta_json)
@@ -279,6 +289,8 @@ STDERR: {e.stderr}
             filename = self.zipped_backup_file_path.name
             self.object_storage.upload_file(file, ObjectType.BACKUP, filename)
 
+            self.backup_uploaded = True
+
     # ------------------------- Utils -------------------------- #
 
     def record_backup_into_database(self) -> None:
@@ -288,9 +300,16 @@ STDERR: {e.stderr}
         if self.zipped_backup_file_path is None:
             raise ValueError("Zipped file path not set")
 
-        model = MetaModel(
-            metadata_schema=self.metadata, zipped_file=self.zipped_backup_file_path
+        if not self.backup_uploaded:
+            raise ValueError(
+                "Backup must be uploaded into the object storage container"
+            )
+
+        file_object = self.object_storage.file_metadata(
+            ObjectType.BACKUP, self.zipped_backup_file_path.name
         )
+
+        model = MetaModel(metadata_schema=self.metadata, zipped_metadata=file_object)
 
         self.db.add(model)
         self.db.commit()

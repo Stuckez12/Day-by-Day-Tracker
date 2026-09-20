@@ -31,6 +31,9 @@ def update_task_state(
 
             db.commit()
 
+        if metadata.get("stage", None) is not None:
+            logging.info(f"Stage: {metadata.get('stage', 'No stage found')}")
+
     except NoResultFound:
         logging.warning(
             "Unable to find task db record when trying to update task status. Continuing task"

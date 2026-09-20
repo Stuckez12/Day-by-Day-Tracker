@@ -4,6 +4,7 @@ from typing import cast
 
 from celery import Task, shared_task
 from src.common.celery import update_task_state
+from src.constants import FILLER_UUID4
 from src.core import get_backup_db, get_db
 from src.core.s3_storage import ObjectStorage
 from src.enums import BackupStatus, BackupTriggerMethod, BackupType
@@ -14,7 +15,7 @@ from src.workflows import BackupWorkflow
 
 
 @shared_task(bind=True)
-def database_logical_backup(self: Task, trigger: str, *args, **kwargs) -> dict:
+def database_logical_backup_old(self: Task, trigger: str, *args, **kwargs) -> dict:
     db_gen = get_db()
     db = next(db_gen)
 
@@ -99,49 +100,94 @@ def database_logical_backup(self: Task, trigger: str, *args, **kwargs) -> dict:
 
 
 @shared_task(bind=True)
-def database_logical_backup_w_images(self: Task, trigger: str, *args, **kwargs):
+def database_logical_backup(self: Task, trigger: str, *args, **kwargs):
     db_gen = get_db()
     db = next(db_gen)
 
     backup_db_gen = get_backup_db()
     backup_db = next(backup_db_gen)
 
-    try:
-        # create backup service
-        service = BackupService(db=db, backup_db=backup_db)
+    start = time.perf_counter()
 
-        # create backup record
-        backup_data = BackupCreate(
-            celery_id=cast(str, self.request.id),
-            trigger_method=BackupTriggerMethod(trigger),
-            status=BackupStatus.RUNNING,
-            backup_type=BackupType.LOGICAL,
-        )
+    backup_data = BackupCreate(
+        celery_id=cast(str, self.request.id),
+        trigger_method=BackupTriggerMethod(trigger),
+        status=BackupStatus.RUNNING,
+        backup_type=BackupType.LOGICAL,
+    )
+
+    try:
+        update_task_state(self, db, metadata={"stage": "Initialising Backup Task"})
+        service = BackupService(db=db, backup_db=backup_db)
         backup_record = service.create(backup_data)
 
-        s3_storage = ObjectStorage()
+    except:
+        backup_db_gen.close()
+        db_gen.close()
 
-        # database backup
-        workflow = BackupWorkflow(backup_db, service, backup_record, s3_storage)
+        return BackupSchema.model_validate(
+            {
+                "id": FILLER_UUID4,
+                "status": BackupStatus.FAILURE,
+                **backup_data.model_dump(mode="json", exclude={"status"}),
+            }
+        ).model_dump(mode="json")
+
+    try:
+        s3_storage = ObjectStorage()
+        workflow = BackupWorkflow(
+            db=backup_db, backup_record=backup_record, object_storage=s3_storage
+        )
+
+        update_task_state(self, db, metadata={"stage": "Creating Logical Backup"})
         workflow.create_logical_database_backup()
 
-        # database verify restoration
+        update_task_state(
+            self, db, metadata={"stage": "Verifying Generated Backup File"}
+        )
         workflow.verify_backup_file()
 
-        # files backup
+        # TODO: files backup when images are implemented
+        # update_task_state(self, db, metadata={"stage": "Creating Object Storage Backups"})~
 
-        # metadata creation
+        update_task_state(self, db, metadata={"stage": "Compiling Metadata"})
         workflow.generate_metadata(BackupType.LOGICAL)
 
-        # zipping of
+        update_task_state(self, db, metadata={"stage": "Packaging Backup"})
         workflow.zip_all_backup_files()
+
+        update_task_state(self, db, metadata={"stage": "Saving Packaged Backup"})
         workflow.upload_zip_to_object_storage()
         workflow.record_backup_into_database()
 
-        pass
+        update_task_state(self, db, metadata={"stage": "Finalising Backup Task"})
+        end = time.perf_counter()
 
-    except:
-        pass
+        backup_record.duration = end - start
+        backup_record.status = BackupStatus.UPLOADED
+
+        backup_db.commit()
+
+        return BackupSchema.model_validate(backup_record).model_dump(mode="json")
+
+    except Exception as e:
+        db.rollback()
+        backup_db.rollback()
+
+        end = time.perf_counter()
+        logging.info("Timer stopped on failure")
+
+        backup_record.duration = end - start
+        backup_record.status = BackupStatus.FAILURE
+        backup_record.error_message = f"{type(e).__name__}: {e}"
+        backup_record.error_traceback = str(e)
+
+        logging.error(backup_record.error_traceback)
+        logging.error(backup_record.error_message)
+
+        backup_db.commit()
+
+        return BackupSchema.model_validate(backup_record).model_dump(mode="json")
 
     finally:
         backup_db_gen.close()
