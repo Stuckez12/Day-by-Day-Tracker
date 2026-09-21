@@ -33,7 +33,7 @@ from src.services.base import BaseDBService
 from src.settings import app_config
 
 
-class BackupService(BaseDBService):
+class BackupService(BaseDBService[BackupModel]):
     def __init__(self, db: Session, backup_db: Session) -> None:
         super().__init__(db=db, model=BackupModel)
 

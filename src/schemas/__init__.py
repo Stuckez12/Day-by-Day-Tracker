@@ -9,6 +9,7 @@ from src.schemas.backup import (
     MetadataFiles,
     MetadataFileType,
     MetadataTool,
+    VerifiedBackupResultSchema,
 )
 from src.schemas.common import (
     DateRangeRequest,

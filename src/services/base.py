@@ -4,10 +4,11 @@ from uuid import UUID
 from pydantic import BaseModel
 from sqlalchemy.orm import Session
 
+from src.models.backup.base import BackupBaseModel
 from src.models.base import BaseModel as DBBase
 
 
-Model = TypeVar("Model", bound=DBBase)
+Model = TypeVar("Model", bound=DBBase | BackupBaseModel)
 
 
 class BaseDBService(Generic[Model]):

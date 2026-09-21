@@ -4,7 +4,10 @@ import boto3
 from botocore.exceptions import ClientError
 from fastapi import Depends, HTTPException
 
-from src.core.s3_storage.schemas import FileObjectMetadataSchema
+from src.core.s3_storage.schemas import (
+    FileObjectDownloadSchema,
+    FileObjectMetadataSchema,
+)
 from src.enums import ObjectType
 from src.schemas import FileObjectUploaded
 from src.settings import app_config
@@ -84,7 +87,9 @@ class ObjectStorage:
             filename=file_dir.split("/")[-1],
         )
 
-    def download_file(self, file_type: ObjectType, file_dir: str):
+    def download_file(
+        self, file_type: ObjectType, file_dir: str
+    ) -> FileObjectDownloadSchema:
         self.create_bucket(file_type, error_if_exists=False)
 
         file_object = self.client.get_object(
@@ -92,7 +97,7 @@ class ObjectStorage:
             Key=file_dir,
         )
 
-        return file_object
+        return FileObjectDownloadSchema.model_validate(file_object)
 
     def delete_file(self):
         pass

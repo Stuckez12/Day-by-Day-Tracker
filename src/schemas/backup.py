@@ -8,7 +8,7 @@ from src.enums import BackupStatus, BackupTriggerMethod, BackupType
 from src.settings import app_config
 
 
-MetadataFileType = Literal["backup", "checksum"]
+MetadataFileType = Literal["backup"]
 
 
 class MetadataChecksum(BaseModel):
@@ -72,6 +72,15 @@ class BackupSchema(BaseModel):
     status: BackupStatus
     backup_type: BackupType
     duration: float | None = None
+    error_message: str | None = None
+    error_traceback: str | None = None
+
+
+class VerifiedBackupResultSchema(BaseModel):
+    id: UUID
+    celery_id: UUID
+    verified: bool
+    backup_type: BackupType | None = None
     error_message: str | None = None
     error_traceback: str | None = None
 

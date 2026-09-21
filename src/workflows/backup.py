@@ -1,5 +1,7 @@
+import json
 import logging
 import os
+import shutil
 import subprocess
 from datetime import datetime
 from pathlib import Path
@@ -11,7 +13,7 @@ from sqlalchemy.orm import Session
 from sqlalchemy_utils import drop_database
 
 from src.common import utcnow
-from src.core.database import recreate_database
+from src.core.database.recreate_db import recreate_database
 from src.core.s3_storage import ObjectStorage
 from src.enums import BackupType
 from src.enums.object_type import ObjectType
@@ -45,7 +47,7 @@ class BackupWorkflow:
         self.object_storage = object_storage
 
         # File paths
-        temp_path = app_config.TEMPORARY_PATH + "/backup/temp"
+        temp_path = app_config.TEMPORARY_PATH + "/backup"
 
         self.temp_backup_path = Path(temp_path)
         self.temp_backup_path.mkdir(exist_ok=True)
@@ -61,8 +63,9 @@ class BackupWorkflow:
         self.metadata_tool: MetadataTool | None = None
         self.metadata_date_range: MetadataDateRange | None = None
 
-        # Is backup uploaded
+        # Boolean guards
         self.backup_uploaded = False
+        self.extracted_zip = False
 
     # ------------------------ DB Backup ----------------------- #
 
@@ -125,16 +128,6 @@ STDOUT: {e.stdout}
 STDERR: {e.stderr}
 """)
 
-    def verify_backup_file(self) -> None:
-        test_database_name = "restore_backup_test"
-        temp_db_url = recreate_database(test_database_name)
-
-        try:
-            self._restore_backup_in_database(test_database_name)
-
-        finally:
-            drop_database(temp_db_url)
-
     def _restore_backup_in_database(self, database_name: str) -> None:
         if self.backup_file_path is None:
             raise ValueError("Backup file path not set")
@@ -178,6 +171,25 @@ STDERR: {e.stderr}
         checksum = sha256_file(file_path)
 
         return "sha256", checksum
+
+    def verify_backup_file(self) -> None:
+        test_database_name = "restore_backup_test"
+        temp_db_url = recreate_database(test_database_name)
+
+        try:
+            self._restore_backup_in_database(test_database_name)
+
+        finally:
+            drop_database(temp_db_url)
+
+    def update_verification_metadata_record(self, verified: bool = True):
+        if self.backup_record.meta is None:
+            raise ValueError("backup record does not have any attached metadata")
+
+        self.backup_record.meta.verified = verified
+        self.backup_record.meta.last_verified = utcnow()
+
+        self.backup_db.flush()
 
     # ----------------------- File Backup ---------------------- #
 
@@ -245,6 +257,42 @@ STDERR: {e.stderr}
 
         return cast(datetime, min_date), cast(datetime, max_date)
 
+    def retrieve_metadata_from_file(self):
+        if not self.extracted_zip:
+            raise ValueError("ZIp file not extracted")
+
+        self.metadata_file_path = self.temp_backup_path / "metadata.json"
+
+        with open(self.metadata_file_path, "rb") as file:
+            schema = json.load(file)
+
+        self.metadata = Metadata.model_validate(
+            {
+                "backup_id": str(self.backup_record.id),
+                **schema,
+            }
+        )
+
+        for file in self.metadata.files:
+            if file.type == "backup":
+                self.backup_file_path = self.temp_backup_path / file.name
+
+                break
+
+    def validate_metadata_checksums(self):
+        if self.metadata is None:
+            raise ValueError("Metadata not set")
+
+        for file in self.metadata.files:
+            file_path = self.temp_backup_path / file.name
+
+            _, checksum = self._generate_checksum(file_path)
+
+            if checksum != file.checksum.value:
+                raise ValueError(
+                    f"Specified file '{file.name}' corrupted. Checksum does not match"
+                )
+
     # ------------------------ ZIP File ------------------------ #
 
     def zip_all_backup_files(self) -> None:
@@ -281,6 +329,32 @@ STDERR: {e.stderr}
 
             self.backup_uploaded = True
 
+    def retrieve_zip_file(self) -> None:
+        if self.backup_record.meta is None:
+            raise ValueError("backup record does not have any attached metadata")
+
+        file_data = self.object_storage.download_file(
+            ObjectType.BACKUP, self.backup_record.meta.zip_path
+        )
+
+        self.zipped_backup_file_path = (
+            self.temp_backup_path / self.backup_record.meta.zip_filename
+        )
+
+        with open(self.zipped_backup_file_path, "wb") as file:
+            shutil.copyfileobj(file_data.file, file)
+
+        self._extract_zip_file()
+
+    def _extract_zip_file(self) -> None:
+        if self.zipped_backup_file_path is None:
+            raise ValueError("Zipped file path not set")
+
+        with ZipFile(self.zipped_backup_file_path, "r") as zf:
+            zf.extractall(self.temp_backup_path)
+
+        self.extracted_zip = True
+
     # ------------------------- Utils -------------------------- #
 
     def record_backup_into_database(self) -> None:
@@ -309,16 +383,13 @@ STDERR: {e.stderr}
             delete_folder(self.temp_backup_path)
 
         except FileNotFoundError:
+            # What we expect to happen
             pass
 
-        except FileExistsError as e:
-            logging.exception("Failed to clean up backup workflow temp files")
+        except FileExistsError:
+            logging.error("Failed to clean up backup workflow temp files")
 
-            raise e
-
-        except Exception as e:
-            logging.exception(
+        except Exception:
+            logging.error(
                 "Unknown error whilst trying to clean up BackupWorkflow temp folder"
             )
-
-            raise e
