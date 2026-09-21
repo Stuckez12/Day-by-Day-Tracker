@@ -77,6 +77,8 @@ def uploaded_backup_record_creation_old(
         db_gen.close()
 
 
+# NOTE: Might not need this route as if im doing the uploading in the api the
+# verify task can do all the work after (this wpould more or less be a duplicate)
 @shared_task(bind=True)
 def uploaded_backup_record_creation(self: Task, new_backup_file: str, *args, **kwargs):
     db_gen = get_db()
@@ -86,7 +88,9 @@ def uploaded_backup_record_creation(self: Task, new_backup_file: str, *args, **k
     backup_db = next(backup_db_gen)
 
     try:
-        # Extract zip from local
+        # Extract zip from rustfs (zip and db record will be created in the api first before
+        # running the task to verify it)(will wanna add a delete backup route at some point,
+        # only if downloaded maybe???)
 
         # Retrieve metadata
 
@@ -94,7 +98,7 @@ def uploaded_backup_record_creation(self: Task, new_backup_file: str, *args, **k
 
         # Validate restoration
 
-        # Record in database
+        # Record in database (already done in the api)
 
         return
 

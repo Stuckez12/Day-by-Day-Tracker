@@ -10,6 +10,8 @@ from src.enums import TaskStatus
 from src.services import TaskService
 
 
+# TODO: Maybe if we get more tasks with many more steps, we explore a new way of defining backup
+# steps using a dict of task enum states and backup stage schemas explaining each step in general
 def update_task_state(
     task: Task,
     db: Session,

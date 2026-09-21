@@ -26,6 +26,7 @@ api = APIRouter(
 )
 
 
+# TODO: Add get backup by id route and add admin perms
 @api.get("", response_model=BackupSchema, status_code=status.HTTP_200_OK)
 def get_backup(
     service: BackupServiceDep,
@@ -81,8 +82,8 @@ def download_backup(
     file_object = object_storage.download_file(ObjectType.BACKUP, backup.meta.zip_path)
 
     return StreamingResponse(
-        file_object["Body"],
-        media_type=file_object["ContentType"],
+        file_object.file,
+        media_type=file_object.file_type,
         headers={"Content-Disposition": f'attachment; file="{backup.meta.zip_path}"'},
     )
 

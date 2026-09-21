@@ -11,6 +11,7 @@ from src.settings import app_config
 MetadataFileType = Literal["backup"]
 
 
+# TODO: move metadata schemas into new file and group with backup file in backup folder
 class MetadataChecksum(BaseModel):
     algorithm: str
     value: str
