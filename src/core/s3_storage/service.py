@@ -99,6 +99,17 @@ class ObjectStorage:
 
         return FileObjectDownloadSchema.model_validate(file_object)
 
+    def file_exists(self, file_type: ObjectType, file_dir: str) -> bool:
+        self.create_bucket(file_type, error_if_exists=False)
+
+        try:
+            self.file_metadata(file_type, file_dir)
+
+            return True
+
+        except ClientError:
+            return False
+
     def delete_file(self):
         pass
 

@@ -16,3 +16,11 @@ HTTP_EXC_NO_BACKUP_FILENAME = HTTPException(
     status_code=status.HTTP_400_BAD_REQUEST,
     detail="File uploaded does not have a file name attached. Cancelled file upload",
 )
+HTTP_EXC_UPLOAD_BACKUP_FILE = HTTPException(
+    status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+    detail="Unable to upload file",
+)
+HTTP_EXC_BACKUP_FILENAME_PRESENT = HTTPException(
+    status_code=status.HTTP_400_BAD_REQUEST,
+    detail="Uploaded file is already present within storage",
+)

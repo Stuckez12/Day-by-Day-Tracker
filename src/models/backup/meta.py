@@ -1,7 +1,8 @@
 from __future__ import annotations
 
 from datetime import datetime
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Optional
+from uuid import UUID
 
 from sqlalchemy import Boolean, DateTime, ForeignKey, Integer, String
 from sqlalchemy.orm import Mapped, mapped_column, relationship
@@ -19,7 +20,7 @@ if TYPE_CHECKING:
 class MetaModel(BackupBaseModel):
     __tablename__ = "meta"
 
-    backup_id: Mapped[str] = mapped_column(
+    backup_id: Mapped[UUID] = mapped_column(
         ForeignKey("backups.id", ondelete="CASCADE"), nullable=False
     )
 
@@ -32,7 +33,7 @@ class MetaModel(BackupBaseModel):
     # Checksum Data
     algorithm: Mapped[str] = mapped_column(String, nullable=False)
     verified: Mapped[bool] = mapped_column(Boolean, nullable=False)
-    last_verified: Mapped[datetime | None] = mapped_column(DateTime, nullable=True)
+    last_verified: Mapped[Optional[datetime]] = mapped_column(DateTime, nullable=True)
 
     # Tool Used
     tool_used: Mapped[str] = mapped_column(String, nullable=False)
@@ -58,7 +59,7 @@ class MetaModel(BackupBaseModel):
         checksum_data = metadata_schema.get_checksum_data()
 
         # Identification
-        self.backup_id = metadata_schema.backup_id
+        self.backup_id = UUID(metadata_schema.backup_id)
         self.database_alembic_version = metadata_schema.database_alembic_version
 
         # Checksum

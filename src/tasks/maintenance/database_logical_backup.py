@@ -73,7 +73,7 @@ def database_logical_backup(self: Task, trigger: str, *args, **kwargs) -> dict:
         workflow.verify_backup_file()
 
         # TODO: files backup when images are implemented
-        # update_task_state(self, db, metadata={"stage": "Creating Object Storage Backups"})~
+        # update_task_state(self, db, metadata={"stage": "Creating Object Storage Backups"})
 
         update_task_state(self, db, metadata={"stage": "Compiling Metadata"})
         workflow.generate_metadata(BackupType.LOGICAL)

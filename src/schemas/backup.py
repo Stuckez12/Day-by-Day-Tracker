@@ -64,6 +64,34 @@ class Metadata(BaseModel):
         return self.files[0].checksum
 
 
+class RecordMetadata(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
+    backup_id: UUID
+
+    # Database Data
+    database_alembic_version: str
+    app_version: str
+
+    # Checksum Data
+    algorithm: str
+    verified: bool
+    last_verified: datetime | None = None
+
+    # Tool Used
+    tool_used: str
+    tool_version: str
+
+    # Database Data
+    date_range_start: datetime
+    date_range_end: datetime
+
+    # File Data
+    zip_filename: str
+    zip_path: str
+    zip_size_bytes: int
+
+
 class BackupSchema(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
@@ -75,6 +103,8 @@ class BackupSchema(BaseModel):
     duration: float | None = None
     error_message: str | None = None
     error_traceback: str | None = None
+
+    meta: RecordMetadata | None = None
 
 
 class VerifiedBackupResultSchema(BaseModel):

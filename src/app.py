@@ -5,18 +5,17 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 from fastapi_pagination import add_pagination
 
-from src import __version__ as APP_VERSION
 from src.api import api
 from src.core.database.create_db import create_db
 from src.core.database.upgrade_db import upgrade_db
-from src.settings import is_prod_env
+from src.settings import app_config, is_prod_env
 
 
 def create_app():
     app = FastAPI(
         title="Day by Day Tracker",
         description="A web application that records user inputs regarding their day rankings, activities and summaries.",
-        version=APP_VERSION,
+        version=app_config.APP_VERSION,
         root_path="/api",
     )
 
