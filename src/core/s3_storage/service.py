@@ -1,4 +1,4 @@
-from typing import TYPE_CHECKING, Annotated, BinaryIO
+from typing import TYPE_CHECKING, Annotated, BinaryIO, Never
 
 import boto3
 from botocore.exceptions import ClientError
@@ -27,7 +27,7 @@ class ObjectStorage:
             region_name=app_config.S3_REGION,
         )
 
-    def _raise_client_http_exception(self, status_code: int, detail: str):
+    def _raise_client_http_exception(self, status_code: int, detail: str) -> Never:
         raise HTTPException(status_code=status_code, detail=f"Client Error: {detail}")
 
     def create_bucket(self, bucket_name: ObjectType, error_if_exists: bool = True):
