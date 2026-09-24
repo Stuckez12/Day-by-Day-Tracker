@@ -120,7 +120,7 @@ services:
     restart: unless-stopped
 
   object-storage:
-    image: rustfs/rustfs:latest
+    image: rustfs/rustfs:1.0.0
     expose:
       - "9000"
     networks:
