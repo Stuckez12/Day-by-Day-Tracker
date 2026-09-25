@@ -63,7 +63,7 @@ class AppConfig(BaseSettings):
     @model_validator(mode="after")
     def generate_temporary_path_folder(self) -> Self:
         temp_path = Path(self.TEMPORARY_PATH)
-        temp_path.mkdir(exist_ok=True)
+        temp_path.mkdir(parents=True, exist_ok=True)
 
         return self
 

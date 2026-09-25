@@ -62,6 +62,9 @@ jobs:
       # Celery
       REDIS_URL: redis://localhost:6379
 
+      # Maintenance
+      TEMPORARY_PATH: /home/runner/work/Day-by-Day-Tracker/Day-by-Day-Tracker/test-temp
+
     services:
       postgres:
         image: postgres:17
