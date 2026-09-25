@@ -99,7 +99,7 @@ services:
     networks:
       - app-network
     volumes:
-      - ${EXTERNAL_FILE_PATH}:/data
+      - rustfs-data:/data
       # - rustfs-data:/data
       - rustfs-logs:/app/logs
     environment:
@@ -117,3 +117,5 @@ volumes:
   pgadmin-data:
   postgres_data:
   redis-data:
+  rustfs-data:
+  rustfs-logs:

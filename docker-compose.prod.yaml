@@ -104,3 +104,4 @@ volumes:
   pgadmin-data:
   postgres_data:
   redis-data:
+  rustfs-logs:
