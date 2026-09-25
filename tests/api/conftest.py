@@ -165,7 +165,7 @@ def test_file_2(tmp_path: Path):
 
 @pytest.fixture(scope="session")
 def test_backup_zip_name() -> Path:
-    return Path("/api/tests/files/20260925080016-tracker-backup.zip")
+    return Path("./tests/files/20260925080016-tracker-backup.zip")
 
 
 @pytest.fixture(scope="function")

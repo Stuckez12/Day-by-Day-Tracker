@@ -24,7 +24,7 @@ jobs:
 
       - name: API Logs
         run: |
-          docker compose logs api
+          docker compose -f docker-compose.prod-test.yaml logs api
 
       - name: API Check
         run: |
