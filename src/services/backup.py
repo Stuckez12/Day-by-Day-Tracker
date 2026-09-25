@@ -1,4 +1,3 @@
-from pathlib import Path
 from uuid import UUID
 
 from sqlalchemy.orm import Session, selectinload
@@ -8,7 +7,6 @@ from src.schemas import (
     BackupCreate,
 )
 from src.services.base import BaseDBService
-from src.settings import app_config
 
 
 class BackupService(BaseDBService[BackupModel]):
@@ -16,9 +14,6 @@ class BackupService(BaseDBService[BackupModel]):
         super().__init__(db=db, model=BackupModel)
 
         self.backup_db = backup_db
-        backup_path = Path(app_config.BACKUP_PATH)
-        self.temp_file_path = str(backup_path / "temp")
-        self.temp_restore_path = str(backup_path / "restore")
 
     def get_by_backup_id(self, backup_id: UUID) -> BackupModel:
         return (

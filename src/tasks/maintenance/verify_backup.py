@@ -49,7 +49,7 @@ def verify_backup(self: Task, backup_id: UUID, *args, **kwargs) -> dict:
             error_traceback=traceback.format_exc(),
         ).model_dump(mode="json")
 
-    except ValueError as e:
+    except Exception as e:
         backup_db_gen.close()
         db_gen.close()
 
@@ -114,6 +114,7 @@ def verify_backup(self: Task, backup_id: UUID, *args, **kwargs) -> dict:
         return VerifiedBackupResultSchema(
             id=backup_id,
             celery_id=celery_id,
+            backup_type=backup.backup_type,
             verified=False,
             error_message="Backup verification raised an unexpected error",
             error_traceback=traceback.format_exc(),

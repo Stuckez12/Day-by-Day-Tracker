@@ -59,7 +59,6 @@ class AppConfig(BaseSettings):
 
     # Maintenance
     TEMPORARY_PATH: str = "/temp"
-    BACKUP_PATH: str
 
     @model_validator(mode="after")
     def generate_temporary_path_folder(self) -> Self:
@@ -93,8 +92,14 @@ class TestAppConfig(AppConfig):
     # JWT tokens
     JWT_SECRET: str = "test-token"
 
+    # S3 Storage
+    S3_HTTP_ADDRESS: str = "changed-in-fixture"
+    S3_ACCESS_KEY: str = "test-access-key"
+    S3_SECRET_KEY: str = "test-secret-key"
+    S3_REGION: str = "us-east-1"
+
     # Maintenance
-    BACKUP_PATH: str = "/"
+    TEMPORARY_PATH: str = "/test-temp"
 
 
 APP_SETTINGS = AppConfig | TestAppConfig | ProdAppConfig

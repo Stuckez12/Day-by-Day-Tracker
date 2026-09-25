@@ -1,14 +1,16 @@
 import os
+import time
 import uuid
 from datetime import date, datetime, timedelta
 from pathlib import Path
 from typing import Generator
 from unittest.mock import patch
-from zipfile import ZIP_DEFLATED, ZipFile
 
+import boto3
 import pytest
 from alembic import command
 from alembic.config import Config
+from botocore.exceptions import BotoCoreError, ClientError
 from celery.contrib.testing.worker import start_worker
 from fastapi.testclient import TestClient
 from pytest import TempPathFactory
@@ -16,22 +18,29 @@ from pytest_mock import MockerFixture
 from sqlalchemy import Engine, create_engine
 from sqlalchemy.orm import Session, sessionmaker
 from sqlalchemy_utils import create_database, database_exists
+from testcontainers.core.container import DockerContainer
 
 from celery import current_app as current_celery_app
 from src.common.security import create_access_token
+from src.common.utils import utcnow
 from src.core import get_backup_db, get_db
 from src.core.password_hash import pwd_hash
+from src.core.s3_storage import (
+    ObjectStorage,
+    get_object_storage_service,
+)
 from src.enums import BackupStatus, BackupTriggerMethod, BackupType, TaskStatus
+from src.enums.object_type import ObjectType
 from src.main import fastapi_app
 from src.models import BackupModel, MetaModel, PersonnelModel, RankerModel, TaskModel
 from src.schemas import (
     Metadata,
-    MetadataChecksum,
     MetadataData,
     MetadataDateRange,
     MetadataFiles,
     MetadataTool,
 )
+from src.schemas.backup import MetadataChecksum
 from src.services import (
     AuthService,
     BackupService,
@@ -122,6 +131,83 @@ def test_date_today() -> Generator[date, None, None]:
     yield date.today()
 
 
+@pytest.fixture(scope="function")
+def test_temp_backup_path(mocker: MockerFixture, tmp_path: Path):
+    mocker.patch.object(app_config, "BACKUP_PATH", str(tmp_path))
+
+    yield tmp_path
+
+
+################################################################################
+# Test Files
+################################################################################
+
+
+@pytest.fixture(scope="session")
+def shared_tmp_path(tmp_path_factory: TempPathFactory):
+    return tmp_path_factory.mktemp("shared")
+
+
+@pytest.fixture(scope="function")
+def test_backup_zip_stored(
+    test_backup_session: Session, test_object_storage: ObjectStorage
+) -> Generator[BackupModel, None, None]:
+    with open("/api/tests/files/20260925080016-tracker-backup.zip", "rb") as f:
+        filename = "20260925080016-tracker-backup.zip"
+        test_object_storage.upload_file(f, ObjectType.BACKUP, filename)
+
+    backup_model = BackupModel(
+        celery_id=uuid.uuid4(),
+        trigger_method=BackupTriggerMethod.MANUAL,
+        status=BackupStatus.SUCCESS,
+        backup_type=BackupType.LOGICAL,
+        duration=10.0,
+        error_message=None,
+        error_traceback=None,
+    )
+    test_backup_session.add(backup_model)
+    test_backup_session.flush([backup_model])
+
+    metadata = Metadata(
+        backup_id=str(backup_model.id),
+        backup_type=BackupType.LOGICAL,
+        created_at=utcnow(),
+        database_alembic_version="00000000",
+        app_version=app_config.APP_VERSION,
+        tool=MetadataTool(name="pg_dump", version="17.11"),
+        files=[
+            MetadataFiles(
+                name="tracker-backup-2026-Sep-25.dump",
+                type="backup",
+                size_bytes=6000,
+                checksum=MetadataChecksum(
+                    algorithm="sha256",
+                    value="711e725775090c79aad4d1d84f917ab2cf1e5e669506523903b6baf361b71362",
+                    verified=True,
+                    last_verified=utcnow(),
+                ),
+            )
+        ],
+        data=MetadataData(date_range=MetadataDateRange(start=utcnow(), end=utcnow())),
+    )
+
+    file_metadata = test_object_storage.file_metadata(ObjectType.BACKUP, filename)
+    metadata_model = MetaModel(metadata, file_metadata)
+
+    test_backup_session.add(metadata_model)
+    test_backup_session.commit()
+
+    yield backup_model
+
+    test_backup_session.delete(backup_model)
+    test_backup_session.commit()
+
+
+################################################################################
+# Celery Tasks
+################################################################################
+
+
 @pytest.fixture(scope="session")
 def celery_app():
     celery_app = current_celery_app
@@ -144,83 +230,6 @@ def celery_worker(celery_app, shared_tmp_path):
         yield None
 
 
-@pytest.fixture(scope="function")
-def test_temp_backup_path(mocker: MockerFixture, tmp_path: Path):
-    mocker.patch.object(app_config, "BACKUP_PATH", str(tmp_path))
-
-    yield tmp_path
-
-
-################################################################################
-# Test Files
-################################################################################
-
-
-@pytest.fixture(scope="session")
-def shared_tmp_path(tmp_path_factory: TempPathFactory):
-    return tmp_path_factory.mktemp("shared")
-
-
-@pytest.fixture(scope="function")
-def test_file(tmp_path: Path):
-    test_file = tmp_path / "test.txt"
-    test_file.write_bytes(b"hello world")
-
-    return test_file
-
-
-@pytest.fixture(scope="function")
-def test_backup_zip(shared_tmp_path: Path, test_metadata_schema: Metadata):
-    zip_temp_path = shared_tmp_path / "zip_creation"
-    Path(zip_temp_path).mkdir()
-
-    backup_file = zip_temp_path / "backup.sql"
-    backup_file.write_bytes(b"INSERT INTO help (id) VALUES (1);")
-
-    checksum_file = zip_temp_path / "backup.checksum"
-    checksum_file.write_bytes(
-        b"3c8988be5542abfd6dcbd716f1574dbc779d90feebaa54151934a56eeb98a38a"
-    )
-
-    # Modify metadata to point to newly created test files
-    test_metadata_schema.files = [
-        MetadataFiles(
-            name=backup_file.name, type="backup", size_bytes=backup_file.stat().st_size
-        ),
-        MetadataFiles(
-            name=checksum_file.name,
-            type="checksum",
-            size_bytes=checksum_file.stat().st_size,
-        ),
-    ]
-
-    metadata_file = zip_temp_path / "metadata.json"
-    metadata_file.write_bytes(test_metadata_schema.model_dump_json().encode())
-
-    # Zip
-    files = [backup_file, metadata_file, checksum_file]
-
-    zip_file = shared_tmp_path / "backup.zip"
-
-    with ZipFile(zip_file, "w", compression=ZIP_DEFLATED) as zf:
-        for file in files:
-            path = Path(file)
-            zf.write(path, arcname=path.name)
-
-    yield zip_file.name
-
-    Path(zip_file).unlink()
-    Path(checksum_file).unlink()
-    Path(metadata_file).unlink()
-    Path(backup_file).unlink()
-    Path(zip_temp_path).rmdir()
-
-
-################################################################################
-# Celery Tasks
-################################################################################
-
-
 @pytest.fixture
 def mock_task_db(test_session: Session, test_backup_session: Session):
     def _get_test_db():
@@ -236,13 +245,58 @@ def mock_task_db(test_session: Session, test_backup_session: Session):
         yield
 
 
+@pytest.fixture(scope="session", autouse=True)
+def test_s3_container() -> Generator[None, None, None]:
+    with (
+        DockerContainer(
+            "rustfs/rustfs:1.0.0"  # Ensure this version is up to date with dev/prod
+        )
+        .with_exposed_ports(9000)
+        .with_env("RUSTFS_ADDRESS", ":9000")
+        .with_env("RUSTFS_ACCESS_KEY", app_config.S3_ACCESS_KEY)
+        .with_env("RUSTFS_SECRET_KEY", app_config.S3_SECRET_KEY)
+    ) as container:
+        host = container.get_container_host_ip()
+        port = container.get_exposed_port(9000)
+        endpoint = f"http://{host}:{port}"
+
+        client = boto3.client(
+            "s3",
+            endpoint_url=endpoint,
+            aws_access_key_id=app_config.S3_ACCESS_KEY,
+            aws_secret_access_key=app_config.S3_SECRET_KEY,
+            region_name=app_config.S3_REGION,
+        )
+
+        deadline = time.monotonic() + 30
+
+        while True:
+            try:
+                client.list_buckets()
+                break
+
+            except (BotoCoreError, ClientError):
+                if time.monotonic() > deadline:
+                    raise
+
+                time.sleep(0.5)
+
+        app_config.S3_HTTP_ADDRESS = endpoint
+
+        yield
+
+
 ################################################################################
 # Clients
 ################################################################################
 
 
 @pytest.fixture(scope="session")
-def test_app(test_session: Session, test_backup_session: Session):
+def test_app(
+    test_session: Session,
+    test_backup_session: Session,
+    test_object_storage: ObjectStorage,
+):
     def _get_test_db():
         try:
             yield test_session
@@ -255,8 +309,17 @@ def test_app(test_session: Session, test_backup_session: Session):
         finally:
             pass
 
+    def _get_object_storage_service():
+        try:
+            yield test_object_storage
+        finally:
+            pass
+
     fastapi_app.dependency_overrides[get_db] = _get_test_db
     fastapi_app.dependency_overrides[get_backup_db] = _get_test_backup_db
+    fastapi_app.dependency_overrides[get_object_storage_service] = (
+        _get_object_storage_service
+    )
 
     with TestClient(fastapi_app, base_url="http://testserver/api/v1") as client:
         yield client
@@ -334,34 +397,9 @@ def test_client_admin_session(test_app: TestClient, test_session_admin: Personne
     test_app.headers.pop("Authorization", None)
 
 
-################################################################################
-# Schemas
-################################################################################
-
-
-@pytest.fixture(scope="function")
-def test_metadata_schema(test_backup: BackupModel):
-    yield Metadata(
-        backup_id=str(test_backup.id),
-        backup_type=BackupType.LOGICAL,
-        created_at=datetime.now(),
-        database_alembic_version="qwertyuiop",
-        app_version="1.0.0",
-        checksum=MetadataChecksum(
-            algorithm="SHA256",
-            file_name="test_zip",
-            verified=True,
-            last_verified=datetime.now(),
-        ),
-        tool=MetadataTool(
-            name="pg_dump",
-            version="17.1",
-        ),
-        files=[MetadataFiles(name="test_file_name", type="backup", size_bytes=1)],
-        data=MetadataData(
-            date_range=MetadataDateRange(start=datetime.now(), end=datetime.now())
-        ),
-    )
+@pytest.fixture(scope="session")
+def test_object_storage(test_s3_container: None):
+    yield ObjectStorage()
 
 
 ################################################################################
@@ -616,37 +654,6 @@ def test_backup_2(test_backup_session: Session):
         error_message=None,
         error_traceback=None,
     )
-
-    test_backup_session.add(model)
-    test_backup_session.commit()
-
-    yield model
-
-    test_backup_session.delete(model)
-    test_backup_session.commit()
-
-
-@pytest.fixture(scope="function")
-def test_backup_w_file(
-    test_temp_backup_path: Path,
-    test_backup_session: Session,
-    test_metadata: MetaModel,
-):
-    test_file = test_temp_backup_path / "test.txt"
-    test_file.write_bytes(b"hello world")
-
-    test_metadata.zip_filename = test_file.name
-    test_metadata.zip_path = f"/{test_file.name}"
-    test_metadata.zip_size_bytes = test_file.stat().st_size
-
-    test_backup_session.commit()
-
-    yield test_file
-
-
-@pytest.fixture(scope="function")
-def test_metadata(test_backup_session: Session, test_metadata_schema: Metadata):
-    model = MetaModel(metadata_schema=test_metadata_schema, zipped_backup_path="/")
 
     test_backup_session.add(model)
     test_backup_session.commit()

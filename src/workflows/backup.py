@@ -218,12 +218,6 @@ STDERR: {e.stderr}
 
         self._create_metadata_file()
 
-    def create_metadata_record(self):
-        if self.metadata is None:
-            raise ValueError("Metadata not set")
-
-        self.backup_db.flush()
-
     def _create_metadata_file(self) -> None:
         if self.backup_file_path is None:
             raise ValueError("Backup file path not set")

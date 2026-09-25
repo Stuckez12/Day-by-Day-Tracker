@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from typing import TYPE_CHECKING, Annotated, BinaryIO, Never
 
 import boto3
@@ -19,7 +21,7 @@ if TYPE_CHECKING:
 
 class ObjectStorage:
     def __init__(self):
-        self.client: "S3Client" = boto3.client(
+        self.client: S3Client = boto3.client(
             "s3",
             endpoint_url=app_config.S3_HTTP_ADDRESS,
             aws_access_key_id=app_config.S3_ACCESS_KEY,
@@ -107,8 +109,14 @@ class ObjectStorage:
 
             return True
 
-        except ClientError:
-            return False
+        except ClientError as e:
+            status_code = int(e.response["Error"]["Code"])  # type: ignore
+            detail = str(e.response["Error"]["Message"])  # type: ignore
+
+            if status_code == 404:
+                return False
+
+            self._raise_client_http_exception(status_code=status_code, detail=detail)
 
     def delete_file(self):
         pass

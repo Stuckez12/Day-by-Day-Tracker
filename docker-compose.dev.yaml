@@ -55,6 +55,8 @@ services:
       - ./tests:/api/tests
       - ./alembic.ini:/api/alembic.ini
       - ${EXTERNAL_BACKUP_PATH}:${BACKUP_PATH}
+      # Development/Testing ONLY
+      - /var/run/docker.sock:/var/run/docker.sock
     environment:
       APP_ENV: dev
     env_file: .env
