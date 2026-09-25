@@ -95,6 +95,22 @@ services:
     entrypoint: celery -A src.main worker -Ofair --concurrency=4 --loglevel=INFO -E -B
     restart: unless-stopped
 
+  object-storage:
+    image: rustfs/rustfs:1.0.0
+    expose:
+      - "9000"
+    networks:
+      - app-network
+    volumes:
+      - ${EXTERNAL_FILE_PATH}:/data
+      # - rustfs-data:/data
+      - rustfs-logs:/app/logs
+    environment:
+      RUSTFS_ADDRESS: ":9000"
+      RUSTFS_ACCESS_KEY: ${S3_ACCESS_KEY}
+      RUSTFS_SECRET_KEY: ${S3_SECRET_KEY}
+    restart: unless-stopped
+
 networks:
   app-network:
 
