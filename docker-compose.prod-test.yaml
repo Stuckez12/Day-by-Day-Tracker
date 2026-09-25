@@ -1,8 +1,8 @@
 services:
   db:
     image: postgres:17 
-    ports:
-      - 5432:5432
+    expose:
+      - 5432
     networks:
       - app-network
     volumes:
@@ -91,6 +91,22 @@ services:
     environment:
       APP_ENV: prod
     entrypoint: celery -A src.main worker -Ofair --concurrency=4 --loglevel=INFO -E -B
+
+  object-storage:
+    image: rustfs/rustfs:1.0.0
+    expose:
+      - "9000"
+    networks:
+      - app-network
+    volumes:
+      - ${EXTERNAL_FILE_PATH}:/data
+      # - rustfs-data:/data
+      - rustfs-logs:/app/logs
+    environment:
+      RUSTFS_ADDRESS: ":9000"
+      RUSTFS_ACCESS_KEY: ACCESS-KEY
+      RUSTFS_SECRET_KEY: SECRET-KEY
+    restart: unless-stopped
 
 
 networks:
