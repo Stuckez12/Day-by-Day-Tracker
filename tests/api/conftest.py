@@ -14,7 +14,6 @@ from botocore.exceptions import BotoCoreError, ClientError
 from celery.contrib.testing.worker import start_worker
 from fastapi.testclient import TestClient
 from pytest import TempPathFactory
-from pytest_mock import MockerFixture
 from sqlalchemy import Engine, create_engine
 from sqlalchemy.orm import Session, sessionmaker
 from sqlalchemy_utils import create_database, database_exists
@@ -131,13 +130,6 @@ def test_date_today() -> Generator[date, None, None]:
     yield date.today()
 
 
-@pytest.fixture(scope="function")
-def test_temp_backup_path(mocker: MockerFixture, tmp_path: Path):
-    mocker.patch.object(app_config, "BACKUP_PATH", str(tmp_path))
-
-    yield tmp_path
-
-
 ################################################################################
 # Test Files
 ################################################################################
@@ -148,11 +140,18 @@ def shared_tmp_path(tmp_path_factory: TempPathFactory):
     return tmp_path_factory.mktemp("shared")
 
 
+@pytest.fixture(scope="session")
+def test_backup_zip_name() -> Path:
+    return Path("/api/tests/files/20260925080016-tracker-backup.zip")
+
+
 @pytest.fixture(scope="function")
 def test_backup_zip_stored(
-    test_backup_session: Session, test_object_storage: ObjectStorage
+    test_backup_session: Session,
+    test_object_storage: ObjectStorage,
+    test_backup_zip_name: Path,
 ) -> Generator[BackupModel, None, None]:
-    with open("/api/tests/files/20260925080016-tracker-backup.zip", "rb") as f:
+    with open(test_backup_zip_name, "rb") as f:
         filename = "20260925080016-tracker-backup.zip"
         test_object_storage.upload_file(f, ObjectType.BACKUP, filename)
 
@@ -179,7 +178,7 @@ def test_backup_zip_stored(
             MetadataFiles(
                 name="tracker-backup-2026-Sep-25.dump",
                 type="backup",
-                size_bytes=6000,
+                size_bytes=9696,
                 checksum=MetadataChecksum(
                     algorithm="sha256",
                     value="711e725775090c79aad4d1d84f917ab2cf1e5e669506523903b6baf361b71362",
@@ -413,17 +412,7 @@ def test_auth_service(test_session: Session):
 
 
 @pytest.fixture(scope="function")
-def test_backup_service(
-    mocker: MockerFixture,
-    tmp_path: Path,
-    test_session: Session,
-    test_backup_session: Session,
-):
-    mocker.patch.object(
-        app_config,
-        "BACKUP_PATH",
-        str(tmp_path),
-    )
+def test_backup_service(test_session: Session, test_backup_session: Session):
     yield BackupService(db=test_session, backup_db=test_backup_session)
 
 

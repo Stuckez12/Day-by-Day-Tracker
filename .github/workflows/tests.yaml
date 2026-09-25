@@ -62,9 +62,6 @@ jobs:
       # Celery
       REDIS_URL: redis://localhost:6379
 
-      # Backup file paths
-      EXTERNAL_BACKUP_PATH: ${{ github.workspace }}
-
     services:
       postgres:
         image: postgres:17
