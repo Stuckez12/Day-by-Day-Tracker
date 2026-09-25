@@ -1,8 +1,8 @@
 services:
   db:
     image: postgres:17
-    ports:
-      - ${DATABASE_PORT}:${DATABASE_PORT}
+    expose:
+      - 5432
     networks:
       - app-network
     volumes:
