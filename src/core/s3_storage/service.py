@@ -1,0 +1,129 @@
+from __future__ import annotations
+
+from typing import TYPE_CHECKING, Annotated, BinaryIO, Never
+
+import boto3
+from botocore.exceptions import ClientError
+from fastapi import Depends, HTTPException
+
+from src.core.s3_storage.schemas import (
+    FileObjectDownloadSchema,
+    FileObjectMetadataSchema,
+)
+from src.enums import ObjectType
+from src.schemas import FileObjectUploaded
+from src.settings import app_config
+
+
+if TYPE_CHECKING:
+    from mypy_boto3_s3.client import S3Client
+
+
+class ObjectStorage:
+    def __init__(self):
+        self.client: S3Client = boto3.client(
+            "s3",
+            endpoint_url=app_config.S3_HTTP_ADDRESS,
+            aws_access_key_id=app_config.S3_ACCESS_KEY,
+            aws_secret_access_key=app_config.S3_SECRET_KEY,
+            region_name=app_config.S3_REGION,
+        )
+
+    def _raise_client_http_exception(self, status_code: int, detail: str) -> Never:
+        raise HTTPException(status_code=status_code, detail=f"Client Error: {detail}")
+
+    def create_bucket(self, bucket_name: ObjectType, error_if_exists: bool = True):
+        if self.bucket_exists(bucket_name):
+            if error_if_exists:
+                raise ValueError("Bucket already exists")
+
+            return
+
+        self.client.create_bucket(Bucket=bucket_name.value)
+
+    def bucket_exists(self, bucket_name: ObjectType) -> bool:
+        try:
+            self.client.head_bucket(Bucket=bucket_name.value)
+
+            return True
+
+        except ClientError as e:
+            status_code = int(e.response["Error"]["Code"])  # type: ignore
+            detail = str(e.response["Error"]["Message"])  # type: ignore
+
+            if status_code == 404:
+                return False
+
+            self._raise_client_http_exception(status_code=status_code, detail=detail)
+
+    def file_metadata(
+        self, bucket_name: ObjectType, file_dir: str
+    ) -> FileObjectMetadataSchema:
+        metadata = self.client.head_object(Bucket=bucket_name.value, Key=file_dir)
+
+        return FileObjectMetadataSchema.model_validate(
+            {
+                "bucket": bucket_name.value,
+                "directory": file_dir,
+                **metadata,
+            }
+        )
+
+    def upload_file(
+        self, file: BinaryIO, file_type: ObjectType, file_dir: str
+    ) -> FileObjectUploaded:
+        if file_dir[-1] == "/":
+            raise IndexError("Invalid file directory provided")
+
+        self.create_bucket(file_type, error_if_exists=False)
+
+        self.client.upload_fileobj(
+            Fileobj=file,
+            Bucket=file_type.value,
+            Key=file_dir,
+        )
+
+        return FileObjectUploaded(
+            message="File successfully uploaded",
+            bucket=file_type,
+            filename=file_dir.split("/")[-1],
+        )
+
+    def download_file(
+        self, file_type: ObjectType, file_dir: str
+    ) -> FileObjectDownloadSchema:
+        self.create_bucket(file_type, error_if_exists=False)
+
+        file_object = self.client.get_object(
+            Bucket=file_type.value,
+            Key=file_dir,
+        )
+
+        return FileObjectDownloadSchema.model_validate(file_object)
+
+    def file_exists(self, file_type: ObjectType, file_dir: str) -> bool:
+        self.create_bucket(file_type, error_if_exists=False)
+
+        try:
+            self.file_metadata(file_type, file_dir)
+
+            return True
+
+        except ClientError as e:
+            status_code = int(e.response["Error"]["Code"])  # type: ignore
+            detail = str(e.response["Error"]["Message"])  # type: ignore
+
+            if status_code == 404:
+                return False
+
+            self._raise_client_http_exception(status_code=status_code, detail=detail)
+
+    def delete_file(self, file_type: ObjectType, file_dir: str) -> None:
+        self.client.delete_object(Bucket=file_type.value, Key=file_dir)
+
+
+def get_object_storage_service() -> ObjectStorage:
+    return ObjectStorage()
+
+
+ObjectStorageDep = Annotated[ObjectStorage, Depends(get_object_storage_service)]

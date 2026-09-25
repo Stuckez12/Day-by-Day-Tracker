@@ -62,8 +62,8 @@ jobs:
       # Celery
       REDIS_URL: redis://localhost:6379
 
-      # Backup file paths
-      EXTERNAL_BACKUP_PATH: ${{ github.workspace }}
+      # Maintenance
+      TEMPORARY_PATH: /home/runner/work/Day-by-Day-Tracker/Day-by-Day-Tracker/test-temp
 
     services:
       postgres:

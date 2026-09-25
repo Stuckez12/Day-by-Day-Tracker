@@ -4,9 +4,12 @@ from pathlib import Path
 from fastapi import status
 from fastapi.testclient import TestClient
 from pytest_mock import MockerFixture
+from sqlalchemy import delete
 from sqlalchemy.orm import Session
 
-from src.exc.permission import HTTP_EXC_NOT_AN_ADMIN
+from src.core.s3_storage import ObjectStorage
+from src.enums import ObjectType
+from src.exc import HTTP_EXC_NOT_AN_ADMIN
 from src.models import BackupModel
 from src.schemas import BackupSchema
 
@@ -107,26 +110,37 @@ class TestUploadBackupRoute:
     def test_success(
         self,
         mocker: MockerFixture,
-        test_file: Path,
-        test_temp_backup_path: Path,
+        test_backup_session: Session,
         test_client_admin_session: TestClient,
+        test_backup_zip_name: Path,
+        test_object_storage: ObjectStorage,
     ):
         task_id = str(uuid.uuid4())
         mocker.patch(
-            "src.tasks.uploaded_backup_record_creation",
+            "src.routes.backup.uploaded_backup_record_creation",
             **{"s.return_value.apply_async.return_value": mocker.Mock(id=task_id)},
         )
 
-        with test_file.open("rb") as test_file_content:
-            files = {"file": (test_file.name, test_file_content)}
+        with test_backup_zip_name.open("rb") as test_file_content:
+            files = {"file": (test_backup_zip_name.name, test_file_content)}
             result = test_client_admin_session.post("/backup/upload", files=files)
 
         assert result.status_code == status.HTTP_202_ACCEPTED
-        assert result.json() == {"task_id": str(task_id)}
+        assert result.json() == {"task_id": task_id}
 
-        test_uploaded_file = test_temp_backup_path / test_file.name
-        assert test_uploaded_file.exists()
-        assert test_uploaded_file.read_bytes() == test_file.read_bytes()
+        file_metadata = test_object_storage.file_metadata(
+            ObjectType.BACKUP, test_backup_zip_name.name
+        )
+        assert str(file_metadata.directory) == test_backup_zip_name.name
+        assert file_metadata.bucket == ObjectType.BACKUP.value
+        assert file_metadata.byte_size == 9696
+        assert file_metadata.file_type == "application/zip"
+
+        data = result.json()
+        test_backup_session.execute(
+            delete(BackupModel).where(BackupModel.celery_id == data["task_id"])
+        )
+        test_backup_session.commit()
 
     def test_non_admin_restricted(self, test_client_user_session: TestClient):
         result = test_client_user_session.post("/backup/upload")
@@ -139,20 +153,21 @@ class TestUploadBackupRoute:
 
 class TestDownloadBackupRoute:
     def test_success(
-        self,
-        tmp_path: Path,
-        mocker: MockerFixture,
-        test_client_admin_session: TestClient,
-        test_backup_w_file: Path,
-        test_backup: BackupModel,
+        self, test_client_admin_session: TestClient, test_backup_zip_stored: BackupModel
     ):
-        mocker.patch("src.routes.backup.app_config.BACKUP_PATH", str(tmp_path))
+        assert test_backup_zip_stored.meta
 
-        result = test_client_admin_session.get(f"/backup/{test_backup.id}/download")
+        result = test_client_admin_session.get(
+            f"/backup/{test_backup_zip_stored.id}/download"
+        )
         assert result.status_code == status.HTTP_200_OK
+        assert (
+            f'filename="{test_backup_zip_stored.meta.zip_filename}"'
+            in result.headers["content-disposition"]
+        )
 
-        file = result.read()
-        assert file == test_backup_w_file.read_bytes()
+        file_size = len(result.content)
+        assert file_size == test_backup_zip_stored.meta.zip_size_bytes
 
     def test_non_admin_restricted(self, test_client_user_session: TestClient):
         result = test_client_user_session.get(f"/backup/{uuid.uuid4()}/download")

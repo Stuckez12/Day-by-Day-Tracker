@@ -1,10 +1,13 @@
+from __future__ import annotations
+
 from datetime import datetime
-from pathlib import Path
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Optional
+from uuid import UUID
 
 from sqlalchemy import Boolean, DateTime, ForeignKey, Integer, String
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
+from src.core.s3_storage import FileObjectMetadataSchema
 from src.models.backup.base import BackupBaseModel
 from src.settings import app_config
 
@@ -17,7 +20,7 @@ if TYPE_CHECKING:
 class MetaModel(BackupBaseModel):
     __tablename__ = "meta"
 
-    backup_id: Mapped[str] = mapped_column(
+    backup_id: Mapped[UUID] = mapped_column(
         ForeignKey("backups.id", ondelete="CASCADE"), nullable=False
     )
 
@@ -30,7 +33,7 @@ class MetaModel(BackupBaseModel):
     # Checksum Data
     algorithm: Mapped[str] = mapped_column(String, nullable=False)
     verified: Mapped[bool] = mapped_column(Boolean, nullable=False)
-    last_verified: Mapped[datetime | None] = mapped_column(DateTime, nullable=True)
+    last_verified: Mapped[Optional[datetime]] = mapped_column(DateTime, nullable=True)
 
     # Tool Used
     tool_used: Mapped[str] = mapped_column(String, nullable=False)
@@ -50,16 +53,29 @@ class MetaModel(BackupBaseModel):
         back_populates="meta",
     )
 
-    def __init__(self, metadata_schema: "Metadata", zipped_backup_path: str):
-        self.backup_id = metadata_schema.backup_id
+    def __init__(
+        self, metadata_schema: Metadata, zipped_metadata: FileObjectMetadataSchema
+    ):
+        checksum_data = metadata_schema.get_checksum_data()
+
+        # Identification
+        self.backup_id = UUID(metadata_schema.backup_id)
         self.database_alembic_version = metadata_schema.database_alembic_version
-        self.algorithm = metadata_schema.checksum.algorithm
-        self.verified = metadata_schema.checksum.verified
-        self.last_verified = metadata_schema.checksum.last_verified
+
+        # Checksum
+        self.algorithm = checksum_data.algorithm
+        self.verified = checksum_data.verified
+        self.last_verified = checksum_data.last_verified
+
+        # Tool
         self.tool_used = metadata_schema.tool.name
         self.tool_version = metadata_schema.tool.version
+
+        # Data
         self.date_range_start = metadata_schema.data.date_range.start
         self.date_range_end = metadata_schema.data.date_range.end
-        self.zip_filename = Path(zipped_backup_path).name
-        self.zip_path = zipped_backup_path
-        self.zip_size_bytes = Path(zipped_backup_path).stat().st_size
+
+        # Zipped backup file
+        self.zip_filename = zipped_metadata.directory.name
+        self.zip_path = str(zipped_metadata.directory)
+        self.zip_size_bytes = zipped_metadata.byte_size

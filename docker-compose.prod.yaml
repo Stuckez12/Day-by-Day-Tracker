@@ -89,8 +89,6 @@ services:
       - "8002"
     networks:
       - app-network
-    volumes:
-      - ${EXTERNAL_BACKUP_PATH}:${BACKUP_PATH}
     env_file: .env.prod
     environment:
       APP_ENV: prod

@@ -44,8 +44,9 @@ export default function TextInput({
       />
       <label
         className={cn(
-          "pointer-events-none absolute left-2 top-2 select-none rounded-lg bg-base px-2 text-base outline-0 transition-all duration-150 ease-in-out peer-focus:left-6 peer-focus:top-[-0.7rem] peer-focus:text-[0.8rem] max-sm:top-[0.6rem] max-sm:text-[0.8rem] max-sm:peer-focus:top-[-0.7rem]",
-          isLabelFloating && "left-6 top-[-0.7rem] text-[0.8rem] max-sm:top-[-0.7rem]",
+          "pointer-events-none absolute left-2 top-2 select-none rounded-lg text-default-text-color bg-base px-2 text-base outline-0 transition-all duration-150 ease-in-out peer-focus:left-6 peer-focus:top-[-0.7rem] peer-focus:text-[0.8rem] max-sm:top-[0.6rem] max-sm:text-[0.8rem] max-sm:peer-focus:top-[-0.7rem]",
+          isLabelFloating &&
+            "left-6 top-[-0.7rem] text-[0.8rem] max-sm:top-[-0.7rem]",
         )}
       >
         {label}

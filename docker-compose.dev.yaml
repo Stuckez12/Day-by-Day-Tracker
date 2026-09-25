@@ -54,7 +54,8 @@ services:
       - ./src:/api/src
       - ./tests:/api/tests
       - ./alembic.ini:/api/alembic.ini
-      - ${EXTERNAL_BACKUP_PATH}:${BACKUP_PATH}
+      # Development/Testing ONLY
+      - /var/run/docker.sock:/var/run/docker.sock
     environment:
       APP_ENV: dev
     env_file: .env
@@ -112,11 +113,27 @@ services:
       - app-network
     volumes:
       - ./src:/api/src
-      - ${EXTERNAL_BACKUP_PATH}:${BACKUP_PATH}
     environment:
       APP_ENV: dev
     env_file: .env
     entrypoint: celery -A src.main worker -Ofair --concurrency=4 --loglevel=INFO -E -B
+    restart: unless-stopped
+
+  object-storage:
+    image: rustfs/rustfs:1.0.0
+    expose:
+      - "9000"
+    networks:
+      - app-network
+    volumes:
+      - ${EXTERNAL_FILE_PATH}:/data
+      # - rustfs-data:/data
+      - rustfs-logs:/app/logs
+    environment:
+      RUSTFS_ADDRESS: ":9000"
+      RUSTFS_ACCESS_KEY: ${S3_ACCESS_KEY}
+      RUSTFS_SECRET_KEY: ${S3_SECRET_KEY}
+    restart: unless-stopped
 
 networks:
   app-network:
@@ -126,3 +143,5 @@ volumes:
   pgadmin-data:
   postgres_data:
   redis-data:
+  # rustfs-data:
+  rustfs-logs:

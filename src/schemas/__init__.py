@@ -9,6 +9,7 @@ from src.schemas.backup import (
     MetadataFiles,
     MetadataFileType,
     MetadataTool,
+    VerifiedBackupResultSchema,
 )
 from src.schemas.common import (
     DateRangeRequest,
@@ -17,6 +18,7 @@ from src.schemas.common import (
     InvalidSchema,
     TaskIDSchema,
 )
+from src.schemas.file_object import FileObjectUploaded
 from src.schemas.personnel import (
     CreatePersonnelRequest,
     PersonnelSchema,
