@@ -184,10 +184,10 @@ STDERR: {e.stderr}
 
     def update_verification_metadata_record(self, verified: bool = True):
         if self.backup_record.meta is None:
-            raise ValueError("backup record does not have any attached metadata")
+            raise ValueError("Backup record does not have any attached metadata")
 
         self.backup_record.meta.verified = verified
-        self.backup_record.meta.last_verified = utcnow()
+        self.backup_record.meta.last_verified = utcnow().replace(tzinfo=None)
 
         self.backup_db.flush()
 
@@ -259,7 +259,7 @@ STDERR: {e.stderr}
 
     def retrieve_metadata_from_file(self):
         if not self.extracted_zip:
-            raise ValueError("ZIp file not extracted")
+            raise ValueError("ZIP file not extracted")
 
         self.metadata_file_path = self.temp_backup_path / "metadata.json"
 
@@ -331,7 +331,7 @@ STDERR: {e.stderr}
 
     def retrieve_zip_file(self) -> None:
         if self.backup_record.meta is None:
-            raise ValueError("backup record does not have any attached metadata")
+            raise ValueError("Backup record does not have any attached metadata")
 
         file_data = self.object_storage.download_file(
             ObjectType.BACKUP, self.backup_record.meta.zip_path

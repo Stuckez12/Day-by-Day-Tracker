@@ -20,26 +20,32 @@ from sqlalchemy_utils import create_database, database_exists
 from testcontainers.core.container import DockerContainer
 
 from celery import current_app as current_celery_app
+from src.common import utcnow
 from src.common.security import create_access_token
-from src.common.utils import utcnow
 from src.core import get_backup_db, get_db
 from src.core.password_hash import pwd_hash
 from src.core.s3_storage import (
+    FileObjectMetadataSchema,
     ObjectStorage,
     get_object_storage_service,
 )
-from src.enums import BackupStatus, BackupTriggerMethod, BackupType, TaskStatus
-from src.enums.object_type import ObjectType
+from src.enums import (
+    BackupStatus,
+    BackupTriggerMethod,
+    BackupType,
+    ObjectType,
+    TaskStatus,
+)
 from src.main import fastapi_app
 from src.models import BackupModel, MetaModel, PersonnelModel, RankerModel, TaskModel
 from src.schemas import (
     Metadata,
+    MetadataChecksum,
     MetadataData,
     MetadataDateRange,
     MetadataFiles,
     MetadataTool,
 )
-from src.schemas.backup import MetadataChecksum
 from src.services import (
     AuthService,
     BackupService,
@@ -48,6 +54,7 @@ from src.services import (
     TaskService,
 )
 from src.settings import app_config
+from src.workflows import BackupWorkflow
 from tests.api.constants import VALID_PASSWORD
 
 
@@ -138,6 +145,22 @@ def test_date_today() -> Generator[date, None, None]:
 @pytest.fixture(scope="session")
 def shared_tmp_path(tmp_path_factory: TempPathFactory):
     return tmp_path_factory.mktemp("shared")
+
+
+@pytest.fixture(scope="function")
+def test_file(tmp_path: Path):
+    test_file = tmp_path / "test.txt"
+    test_file.write_bytes(b"hello world")
+
+    return test_file
+
+
+@pytest.fixture(scope="function")
+def test_file_2(tmp_path: Path):
+    test_file = tmp_path / "test2.txt"
+    test_file.write_bytes(b"hello world")
+
+    return test_file
 
 
 @pytest.fixture(scope="session")
@@ -432,6 +455,26 @@ def test_task_service(test_session: Session):
 
 
 ################################################################################
+# Workflows
+################################################################################
+
+
+@pytest.fixture(scope="function")
+def test_backup_workflow(
+    test_session: Session,
+    test_backup_session: Session,
+    test_backup: BackupModel,
+    test_object_storage: ObjectStorage,
+):
+    yield BackupWorkflow(
+        db=test_session,
+        backup_db=test_backup_session,
+        backup_record=test_backup,
+        object_storage=test_object_storage,
+    )
+
+
+################################################################################
 # Models
 ################################################################################
 
@@ -651,3 +694,55 @@ def test_backup_2(test_backup_session: Session):
 
     test_backup_session.delete(model)
     test_backup_session.commit()
+
+
+@pytest.fixture(scope="function")
+def test_metadata(test_backup_session: Session, test_metadata_schema: Metadata):
+    file_data = FileObjectMetadataSchema(
+        ContentType="application/zip",
+        ContentLength=100,
+        bucket="temp",
+        directory=Path("/temp.file"),
+        LastModified=utcnow(),
+    )
+
+    model = MetaModel(test_metadata_schema, file_data)
+
+    test_backup_session.add(model)
+    test_backup_session.commit()
+
+    yield model
+
+    test_backup_session.delete(model)
+    test_backup_session.commit()
+
+
+################################################################################
+# Schemas
+################################################################################
+
+
+@pytest.fixture(scope="function")
+def test_metadata_schema(test_backup: BackupModel):
+    yield Metadata(
+        backup_id=str(test_backup.id),
+        backup_type=BackupType.FULL,
+        created_at=utcnow(),
+        database_alembic_version="00000000",
+        app_version=app_config.APP_VERSION,
+        tool=MetadataTool(name="pg_dump", version="17.11"),
+        files=[
+            MetadataFiles(
+                name="backup.dump",
+                type="backup",
+                size_bytes=9001,
+                checksum=MetadataChecksum(
+                    algorithm="sha256",
+                    value="val",
+                    verified=False,
+                    last_verified=utcnow(),
+                ),
+            )
+        ],
+        data=MetadataData(date_range=MetadataDateRange(start=utcnow(), end=utcnow())),
+    )

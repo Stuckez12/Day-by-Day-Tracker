@@ -118,8 +118,8 @@ class ObjectStorage:
 
             self._raise_client_http_exception(status_code=status_code, detail=detail)
 
-    def delete_file(self):
-        pass
+    def delete_file(self, file_type: ObjectType, file_dir: str) -> None:
+        self.client.delete_object(Bucket=file_type.value, Key=file_dir)
 
 
 def get_object_storage_service() -> ObjectStorage:
