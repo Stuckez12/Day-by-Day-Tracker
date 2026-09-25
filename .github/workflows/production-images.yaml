@@ -22,10 +22,6 @@ jobs:
         run: |
           curl --fail http://localhost:8080/login
 
-      - name: API Logs
-        run: |
-          docker compose -f docker-compose.prod-test.yaml logs api
-
       - name: API Check
         run: |
           curl --fail http://localhost:8080/api/docs
