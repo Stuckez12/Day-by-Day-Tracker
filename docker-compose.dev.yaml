@@ -88,7 +88,7 @@ services:
       NEXTAUTH_URL: ${NEXTAUTH_URL}
       NEXTAUTH_SECRET: ${NEXTAUTH_SECRET}
       API_INTERNAL_URL: http://api:8000
-      IS_TEST_PROD: false
+      IS_TEST_PROD: ${IS_TEST_PROD:-false}
     restart: unless-stopped
 
   redis:
