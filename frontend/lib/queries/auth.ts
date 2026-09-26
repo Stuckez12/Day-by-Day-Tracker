@@ -40,6 +40,7 @@ export async function personnelLoginQuery(
 
   return await API.post<LoginResponse>({
     url_path: "/v1/auth/login",
-    body: form,
+    body: { username: form.email, password: form.password },
+    form_encoded: true,
   });
 }

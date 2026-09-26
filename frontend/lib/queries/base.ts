@@ -8,6 +8,7 @@ export interface Request {
 
 export interface RequestBody extends Request {
   body: Record<string, unknown>;
+  form_encoded?: boolean;
 }
 
 enum RequestType {
@@ -80,9 +81,16 @@ export class APICall {
 
   public async post<T>(req: RequestBody) {
     const headers = this.define_headers(req, RequestType.POST);
+    let body: BodyInit = JSON.stringify(req.body);
+
+    if (req.form_encoded) {
+      headers["Content-Type"] = "application/x-www-form-urlencoded";
+      body = new URLSearchParams(req.body as Record<string, string>);
+    }
+
     const response = await fetch(`${this.base_url}/api${req.url_path}`, {
       method: "POST",
-      body: JSON.stringify(req.body),
+      body: body,
       headers: headers,
     });
 

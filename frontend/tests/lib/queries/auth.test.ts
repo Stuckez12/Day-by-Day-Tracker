@@ -23,7 +23,8 @@ describe("personnelLoginQuery", () => {
 
     expect(APIFixture.mockAPIPost).toHaveBeenCalledWith({
       url_path: "/v1/auth/login",
-      body: data,
+      body: { username: data.email, password: data.password },
+      form_encoded: true,
     });
   });
 

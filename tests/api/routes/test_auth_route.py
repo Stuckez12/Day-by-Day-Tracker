@@ -119,8 +119,8 @@ class TestLogInRoute:
     ):
         result = test_app.post(
             "/auth/login",
-            json={
-                "email": test_session_personnel.email,
+            data={
+                "username": test_session_personnel.email,
                 "password": VALID_PASSWORD,
             },
         )
@@ -143,8 +143,8 @@ class TestLogInRoute:
     def test_invalid_email(self, test_app: TestClient, test_personnel: PersonnelModel):
         result = test_app.post(
             "/auth/login",
-            json={
-                "email": "invalid@email.com",
+            data={
+                "username": "invalid@email.com",
                 "password": VALID_PASSWORD,
             },
         )
@@ -158,8 +158,8 @@ class TestLogInRoute:
     ):
         result = test_app.post(
             "/auth/login",
-            json={
-                "email": test_personnel.email,
+            data={
+                "username": test_personnel.email,
                 "password": INVALID_PASSWORD,
             },
         )

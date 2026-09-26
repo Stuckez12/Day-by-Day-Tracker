@@ -1,4 +1,7 @@
-from fastapi import APIRouter, status
+from typing import Annotated
+
+from fastapi import APIRouter, Depends, status
+from fastapi.security import OAuth2PasswordRequestForm
 
 from src.common import AuthServiceDep
 from src.common.security import create_access_token
@@ -16,8 +19,12 @@ def register_personnel(request: CreatePersonnelRequest, service: AuthServiceDep)
 
 
 @api.post("/login", status_code=status.HTTP_200_OK)
-def log_in(request: LogInRequest, service: AuthServiceDep):
-    personnel = service.log_in(request)
+def log_in(
+    form_data: Annotated[OAuth2PasswordRequestForm, Depends()], service: AuthServiceDep
+):
+    personnel = service.log_in(
+        LogInRequest(email=form_data.username, password=form_data.password)
+    )
 
     return {
         "access_token": create_access_token(personnel.id),
