@@ -4,7 +4,7 @@ from uuid import UUID
 
 import jwt
 from fastapi import Depends
-from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
+from fastapi.security import OAuth2PasswordBearer
 from jwt.exceptions import InvalidTokenError
 from sqlalchemy.exc import NoResultFound
 
@@ -14,7 +14,7 @@ from src.models.personnel import PersonnelModel
 from src.settings import app_config
 
 
-bearer_scheme = HTTPBearer()
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl="v1/auth/login")
 
 
 def create_access_token(personnel_id: UUID) -> str:
@@ -26,11 +26,11 @@ def create_access_token(personnel_id: UUID) -> str:
 
 def get_current_personnel_id(
     personnel_service: PersonnelServiceDep,
-    credentials: HTTPAuthorizationCredentials = Depends(bearer_scheme),
+    token: str = Depends(oauth2_scheme),
 ) -> PersonnelModel:
     try:
         payload = jwt.decode(
-            credentials.credentials,
+            token,
             app_config.JWT_SECRET,
             algorithms=["HS256"],
         )
