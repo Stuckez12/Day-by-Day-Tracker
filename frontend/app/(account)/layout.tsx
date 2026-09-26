@@ -9,9 +9,11 @@ export default function AccountGroupLayout({
   children: React.ReactNode;
 }>) {
   let banner = "";
-  if (process.env.NODE_ENV == "development")
+  const isTestProd = process.env.IS_TEST_PROD ?? "false";
+
+  if (process.env.NODE_ENV === "development")
     banner = "Application is in development mode";
-  else if (process.env.IS_TEST_PROD)
+  else if (isTestProd === "true")
     banner = "Application is deployed only as a showcase";
 
   return (

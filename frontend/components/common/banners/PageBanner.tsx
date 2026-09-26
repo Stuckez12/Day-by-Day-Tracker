@@ -4,7 +4,7 @@ import PageWrapper from "@/components/common/PageWrapper";
 import { cn } from "@/lib/common/utils";
 import { useState } from "react";
 import Button from "../buttons/Button";
-import Icon, { RotateColorEnum } from "../Icon";
+import Icon from "../Icon";
 
 interface PageBannerProps {
   message: string;
