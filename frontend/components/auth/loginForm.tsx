@@ -10,7 +10,8 @@ import TextInput from "@/components/common/form-inputs/TextInput";
 import { updateForm } from "@/lib/common/updateForm";
 import { PersonnelLogin } from "@/lib/interfaces/personnel";
 
-import Button from "../common/buttons/Button";
+import Button from "@/components/common/buttons/Button";
+import TestUserLoginButton from "@/components/showcase-mode/TestUserLoginButton";
 
 export default function LoginForm() {
   const router = useRouter();
@@ -69,6 +70,9 @@ export default function LoginForm() {
         <ListErrors errors={errors} />
         <Button loading={isLoading}>Submit</Button>
       </form>
+      <div className="mx-auto max-w-md px-8">
+        <TestUserLoginButton />
+      </div>
     </div>
   );
 }

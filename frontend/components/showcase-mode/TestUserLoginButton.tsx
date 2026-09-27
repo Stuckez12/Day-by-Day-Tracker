@@ -12,11 +12,7 @@ export default function TestUserLoginButton() {
   async function submitForm() {
     setIsLoading(true);
 
-    const result = await signIn("credentials", {
-      ...{
-        email: "email@email.com",
-        password: "password",
-      },
+    const result = await signIn("test-user-login", {
       redirect: false,
     });
 

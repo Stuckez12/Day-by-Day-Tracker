@@ -53,18 +53,13 @@ services:
     networks:
       - app-network
     tty: true
-    volumes:
-      - ./frontend/app:/app/app
-      - ./frontend/assets:/app/assets
-      - ./frontend/components:/app/components
-      - ./frontend/lib:/app/lib
-      - ./frontend/styles:/app/styles
-      # - ./frontend/:/app/
     environment:
       NODE_ENV: production
       NEXTAUTH_URL: http://localhost
       NEXTAUTH_SECRET: secret-for-me-to-only-know
       API_INTERNAL_URL: http://api:8000
+      TEST_USER_EMAIL: ${USER_EMAIL}
+      TEST_USER_PASSWORD: ${USER_PASSWORD}
     restart: unless-stopped
 
   redis:
