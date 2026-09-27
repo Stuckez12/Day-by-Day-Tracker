@@ -55,6 +55,8 @@ services:
       NEXTAUTH_SECRET: ${NEXTAUTH_SECRET}
       API_INTERNAL_URL: http://api:8000
       IS_TEST_PROD: ${IS_TEST_PROD:-false}
+      TEST_USER_EMAIL: ${USER_EMAIL}
+      TEST_USER_PASSWORD: ${USER_PASSWORD}
     restart: unless-stopped
 
   redis:

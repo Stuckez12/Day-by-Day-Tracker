@@ -77,7 +77,9 @@ services:
       - ./frontend/assets:/app/assets
       - ./frontend/components:/app/components
       - ./frontend/lib:/app/lib
+      - ./frontend/public:/app/public
       - ./frontend/styles:/app/styles
+      - ./frontend/types:/app/types
       - ./frontend/next.config.ts:/app/next.config.ts
     environment:
       WATCHPACK_POLLING: "true"
@@ -89,6 +91,8 @@ services:
       NEXTAUTH_SECRET: ${NEXTAUTH_SECRET}
       API_INTERNAL_URL: http://api:8000
       IS_TEST_PROD: ${IS_TEST_PROD:-false}
+      TEST_USER_EMAIL: ${USER_EMAIL}
+      TEST_USER_PASSWORD: ${USER_PASSWORD}
     restart: unless-stopped
 
   redis:

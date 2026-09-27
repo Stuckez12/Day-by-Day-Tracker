@@ -1,11 +1,11 @@
 "use client";
 
 import { Temporal } from "@js-temporal/polyfill";
+import { PropsWithChildren, useEffect, useState } from "react";
 
 import { CalendarContext } from "@/components/calendar/CalendarContext";
 import { RankingUIDataProp } from "@/lib/interfaces/ranking";
 import { getRankQuery } from "@/lib/queries/ranking";
-import { PropsWithChildren, useEffect, useState } from "react";
 
 export default function CalendarProvider({ children }: PropsWithChildren) {
   const [ranking, setRanking] = useState<RankingUIDataProp>({

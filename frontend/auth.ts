@@ -43,6 +43,30 @@ export const authOptions: NextAuthOptions = {
         };
       },
     }),
+    CredentialsProvider({
+      id: "test-user-login",
+      name: "Email and password",
+      credentials: {},
+      async authorize() {
+        const result = await personnelLoginQuery({
+          email: process.env.TEST_USER_EMAIL as string,
+          password: process.env.TEST_USER_PASSWORD as string,
+        });
+
+        if (!result.ok) {
+          throw new Error("API responded with failure to log in as Test User");
+        }
+
+        const { personnel, access_token: accessToken } = result.data;
+
+        return {
+          id: personnel.id,
+          email: personnel.email,
+          name: `${personnel.first_name} ${personnel.last_name}`.trim(),
+          accessToken,
+        };
+      },
+    }),
   ],
   callbacks: {
     async jwt({ token, user }) {

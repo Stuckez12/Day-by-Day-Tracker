@@ -2,12 +2,12 @@
 
 import { useState } from "react";
 
+import Button from "@/components/common/buttons/Button";
 import ListErrors from "@/components/common/errors/ListErrors";
 import PasswordInput from "@/components/common/form-inputs/PasswordInput";
 import { updateForm } from "@/lib/common/updateForm";
 import { UpdatePersonnelPassword } from "@/lib/interfaces/personnel";
 import { updatePersonnelPasswordQuery } from "@/lib/queries/personnel";
-import Button from "@/components/common/buttons/Button";
 
 export default function UpdatePasswordForm() {
   const [errors, setErrors] = useState<string[]>([]);

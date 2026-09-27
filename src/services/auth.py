@@ -1,3 +1,5 @@
+import logging
+
 from sqlalchemy.exc import NoResultFound
 from sqlalchemy.orm import Session
 
@@ -5,6 +7,7 @@ from src.core.password_hash import pwd_hash
 from src.models import PersonnelModel
 from src.schemas import CreatePersonnelRequest, LogInRequest
 from src.services.personnel import PersonnelService
+from src.settings import app_config
 
 
 class AuthService(PersonnelService):
@@ -45,3 +48,18 @@ class AuthService(PersonnelService):
             raise ValueError("Invalid email or password")
 
         return personnel
+
+    def seed_user(self) -> None:
+        try:
+            seed_data = CreatePersonnelRequest(
+                email=app_config.USER_EMAIL,
+                password=app_config.USER_PASSWORD,
+                first_name=app_config.USER_FIRST_NAME,
+                last_name=app_config.USER_LAST_NAME,
+            )
+
+            logging.info("Attempting To Seed User")
+            self.register(seed_data)
+
+        except Exception:
+            logging.warning("Seeding user data is invalid. Cancelled seeding")

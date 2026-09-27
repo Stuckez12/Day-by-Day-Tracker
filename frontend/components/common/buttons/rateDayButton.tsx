@@ -1,8 +1,8 @@
 import clsx from "clsx";
 import { useContext } from "react";
 
-import { rankTodayNumberQuery } from "@/lib/queries/ranking";
 import { RankingTrackerContext } from "@/components/tracker/rateDayContext";
+import { rankTodayNumberQuery } from "@/lib/queries/ranking";
 
 interface RateDayButtonProps {
   ranking: number;

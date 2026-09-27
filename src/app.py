@@ -7,8 +7,9 @@ from fastapi_pagination import add_pagination
 
 from src.api import api
 from src.core.database.create_db import create_db
+from src.core.database.seed_db import seed_db
 from src.core.database.upgrade_db import upgrade_db
-from src.settings import app_config, is_prod_env
+from src.settings import app_config
 
 
 def create_app():
@@ -37,11 +38,12 @@ def create_app():
     logging.info("DB Creation")
     create_db()
 
-    if is_prod_env:
+    if app_config.APP_ENV == "prod":
         logging.info("Production Environment Detected.")
         logging.info("Running Setup")
 
         upgrade_db()
+        seed_db()
 
     @app.exception_handler(TypeError)
     @app.exception_handler(ValueError)

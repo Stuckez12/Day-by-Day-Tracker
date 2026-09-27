@@ -1,4 +1,5 @@
 import NavBar from "@/components/navigation/NavBar";
+
 import ClientAccountLayout from "./ClientAccountLayout";
 
 export default function AccountGroupLayout({
@@ -7,12 +8,11 @@ export default function AccountGroupLayout({
   children: React.ReactNode;
 }>) {
   let banner = "";
-  const isTestProd = process.env.IS_TEST_PROD ?? "false";
+  const isTestProd = process.env.IS_TEST_PROD === "true";
 
   if (process.env.NODE_ENV === "development")
     banner = "Application is in development mode";
-  else if (isTestProd === "true")
-    banner = "Application is deployed only as a showcase";
+  else if (isTestProd) banner = "Application is deployed only as a showcase";
 
   return (
     <ClientAccountLayout nav={<NavBar pageBanner={banner} />}>
