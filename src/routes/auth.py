@@ -1,3 +1,4 @@
+import logging
 from typing import Annotated
 
 from fastapi import APIRouter, Depends, status
@@ -22,6 +23,8 @@ def register_personnel(request: CreatePersonnelRequest, service: AuthServiceDep)
 def log_in(
     form_data: Annotated[OAuth2PasswordRequestForm, Depends()], service: AuthServiceDep
 ):
+    logging.info("Entered Route")
+    logging.info(form_data.password)
     personnel = service.log_in(
         LogInRequest(email=form_data.username, password=form_data.password)
     )

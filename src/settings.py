@@ -7,6 +7,9 @@ from pydantic_settings import BaseSettings, SettingsConfigDict
 from typing_extensions import Self
 
 
+ENVS = Literal["dev", "prod", "test"]
+
+
 class AppConfig(BaseSettings):
     model_config = SettingsConfigDict(
         env_file=".env",
@@ -15,7 +18,7 @@ class AppConfig(BaseSettings):
 
     # App Params
     APP_VERSION: str
-    APP_ENV: str = "dev"
+    APP_ENV: ENVS = "dev"
 
     # DATABASE
     DATABASE_USERNAME: str
@@ -67,6 +70,12 @@ class AppConfig(BaseSettings):
 
         return self
 
+    # Seeding User
+    USER_EMAIL: str = ""
+    USER_PASSWORD: str = ""
+    USER_FIRST_NAME: str = ""
+    USER_LAST_NAME: str = ""
+
 
 class ProdAppConfig(AppConfig):
     model_config = SettingsConfigDict(
@@ -74,12 +83,12 @@ class ProdAppConfig(AppConfig):
         extra="ignore",
     )
 
-    APP_ENV: str = "prod"
+    APP_ENV: ENVS = "prod"
 
 
 class TestAppConfig(AppConfig):
     APP_VERSION: str = "0.0.1"
-    APP_ENV: str = "test"
+    APP_ENV: ENVS = "test"
 
     @property
     def db_url(self):
@@ -103,7 +112,6 @@ class TestAppConfig(AppConfig):
 
 
 APP_SETTINGS = AppConfig | TestAppConfig | ProdAppConfig
-ENVS = Literal["dev", "prod", "test"]
 
 
 def get_app_config() -> APP_SETTINGS:
@@ -121,7 +129,3 @@ def get_app_config() -> APP_SETTINGS:
 
 
 app_config: APP_SETTINGS = get_app_config()
-
-is_dev_env: bool = app_config.APP_ENV == "dev"
-is_prod_env: bool = app_config.APP_ENV == "prod"
-is_test_env: bool = app_config.APP_ENV == "test"
