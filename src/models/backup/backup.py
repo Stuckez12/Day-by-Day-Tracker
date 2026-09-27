@@ -17,15 +17,11 @@ class BackupModel(BackupBaseModel):
 
     celery_id: Mapped[UUID] = mapped_column(DBUUID(as_uuid=True), nullable=False)
     trigger_method: Mapped[BackupTriggerMethod] = mapped_column(
-        Enum(BackupTriggerMethod, native_enum=False), nullable=False
+        Enum(BackupTriggerMethod), nullable=False
     )
 
-    status: Mapped[BackupStatus] = mapped_column(
-        Enum(BackupStatus, native_enum=False), nullable=False
-    )
-    backup_type: Mapped[BackupType] = mapped_column(
-        Enum(BackupType, native_enum=False), nullable=False
-    )
+    status: Mapped[BackupStatus] = mapped_column(Enum(BackupStatus), nullable=False)
+    backup_type: Mapped[BackupType] = mapped_column(Enum(BackupType), nullable=False)
     duration: Mapped[float | None] = mapped_column(Float, nullable=True)
     error_message: Mapped[str | None] = mapped_column(String, nullable=True)
     error_traceback: Mapped[str | None] = mapped_column(String, nullable=True)

@@ -7,6 +7,7 @@ requires-python = ">=3.13"
 
 dependencies = [
     "alembic>=1.17.2",
+    "alembic-postgresql-enum>=1.10.0",
     "argon2-cffi>=25.1.0",
     "bcrypt>=5.0.0",
     "boto3>=1.43.92",
