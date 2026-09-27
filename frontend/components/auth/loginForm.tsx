@@ -4,16 +4,19 @@ import { useRouter } from "next/navigation";
 import { signIn } from "next-auth/react";
 import { useState } from "react";
 
+import Button from "@/components/common/buttons/Button";
 import ListErrors from "@/components/common/errors/ListErrors";
 import PasswordInput from "@/components/common/form-inputs/PasswordInput";
 import TextInput from "@/components/common/form-inputs/TextInput";
+import TestUserLoginButton from "@/components/showcase-mode/TestUserLoginButton";
 import { updateForm } from "@/lib/common/updateForm";
 import { PersonnelLogin } from "@/lib/interfaces/personnel";
 
-import Button from "@/components/common/buttons/Button";
-import TestUserLoginButton from "@/components/showcase-mode/TestUserLoginButton";
+type LoginFormProps = {
+  isTestProd: boolean;
+};
 
-export default function LoginForm() {
+export default function LoginForm({ isTestProd }: LoginFormProps) {
   const router = useRouter();
 
   const [errors, setErrors] = useState<string[]>([]);
@@ -70,9 +73,11 @@ export default function LoginForm() {
         <ListErrors errors={errors} />
         <Button loading={isLoading}>Submit</Button>
       </form>
-      <div className="mx-auto max-w-md px-8">
-        <TestUserLoginButton />
-      </div>
+      {isTestProd && (
+        <div className="mx-auto max-w-md px-8">
+          <TestUserLoginButton />
+        </div>
+      )}
     </div>
   );
 }
