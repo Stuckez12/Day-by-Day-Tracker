@@ -232,7 +232,7 @@ class TestGetTaskRoute:
 
 
 class TestGetTaskStatusRoute:
-    def test_success(
+    def test_success_w_running_state(
         self, test_client_admin_session: TestClient, test_task_2: TaskModel
     ):
         mock_task = MagicMock()
@@ -242,6 +242,26 @@ class TestGetTaskStatusRoute:
         with patch("src.services.task.AsyncResult", return_value=mock_task):
             result = test_client_admin_session.get(
                 f"/task/{test_task_2.task_id}/status"
+            )
+
+        assert result.status_code == status.HTTP_200_OK
+
+        data = result.json()
+        assert data == {
+            "status": "SUCCESS",
+            "info": {"result": "done"},
+        }
+
+    def test_success_w_success_state(
+        self, test_client_admin_session: TestClient, test_task_3: TaskModel
+    ):
+        mock_task = MagicMock()
+        mock_task.state = "SUCCESS"
+        mock_task.info = {"result": "done"}
+
+        with patch("src.services.task.AsyncResult", return_value=mock_task):
+            result = test_client_admin_session.get(
+                f"/task/{test_task_3.task_id}/status"
             )
 
         assert result.status_code == status.HTTP_200_OK
@@ -269,12 +289,3 @@ class TestGetTaskStatusRoute:
 
         data = result.json()
         assert data["detail"] == "Task is waiting to be processed"
-
-    def test_is_finished(
-        self, test_client_admin_session: TestClient, test_task_3: TaskModel
-    ):
-        result = test_client_admin_session.get(f"/task/{test_task_3.task_id}/status")
-        assert result.status_code == status.HTTP_400_BAD_REQUEST
-
-        data = result.json()
-        assert data["detail"] == "Task has finished processing"

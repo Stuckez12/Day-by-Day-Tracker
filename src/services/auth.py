@@ -59,7 +59,11 @@ class AuthService(PersonnelService):
             )
 
             logging.info("Attempting To Seed User")
-            self.register(seed_data)
+            personnel_seeded = self.register(seed_data)
+
+            personnel_seeded.is_admin = True
+            self.db.commit()
+            logging.info("Seeded User")
 
         except Exception:
             logging.warning("Seeding user data is invalid. Cancelled seeding")
