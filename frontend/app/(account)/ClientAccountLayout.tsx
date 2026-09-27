@@ -1,12 +1,12 @@
 "use client";
 
-import { getAccessToken } from "@/lib/common/auth/getAccessToken";
-import { getPersonnelQuery } from "@/lib/queries/personnel";
 import { useRouter } from "next/navigation";
-import { useContext, useEffect, type ReactNode } from "react";
 import { useSession } from "next-auth/react";
+import { type ReactNode,useContext, useEffect } from "react";
 
 import { PartialPersonnelContext } from "@/components/common/contexts/personnelContext";
+import { getAccessToken } from "@/lib/common/auth/getAccessToken";
+import { getPersonnelQuery } from "@/lib/queries/personnel";
 
 interface ClientAccountLayoutProps {
   children: ReactNode;

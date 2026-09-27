@@ -2,9 +2,9 @@
 
 import { useContext, useEffect, useState } from "react";
 
+import Button from "@/components/common/buttons/Button";
 import { PartialPersonnelContext } from "@/components/common/contexts/personnelContext";
 import ListErrors from "@/components/common/errors/ListErrors";
-import Button from "@/components/common/buttons/Button";
 import TextInput from "@/components/common/form-inputs/TextInput";
 import { updateForm } from "@/lib/common/updateForm";
 import { UpdatePersonnelInfo } from "@/lib/interfaces/personnel";

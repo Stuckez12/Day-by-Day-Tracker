@@ -2,13 +2,13 @@
 
 import { useEffect, useState } from "react";
 
+import PageWrapper from "@/components/common/PageWrapper";
 import DisplayRankingToday from "@/components/tracker/displayRankingData";
 import { RankingTrackerContext } from "@/components/tracker/rateDayContext";
 import RateDayText from "@/components/tracker/rateDayText";
 import RateDayTracker from "@/components/tracker/rateDayTracker";
 import { RankingUIDataProp } from "@/lib/interfaces/ranking";
 import { getRankTodayQuery } from "@/lib/queries/ranking";
-import PageWrapper from "@/components/common/PageWrapper";
 
 export default function TrackerPage() {
   const [refreshRanking, setRefreshRanking] = useState<RankingUIDataProp>({

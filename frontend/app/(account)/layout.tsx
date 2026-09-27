@@ -1,4 +1,5 @@
 import NavBar from "@/components/navigation/NavBar";
+
 import ClientAccountLayout from "./ClientAccountLayout";
 
 export default function AccountGroupLayout({

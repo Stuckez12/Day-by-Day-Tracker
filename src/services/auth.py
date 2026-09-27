@@ -32,7 +32,6 @@ class AuthService(PersonnelService):
         return self.create_personnel(data)
 
     def log_in(self, data: LogInRequest) -> PersonnelModel:
-        logging.info("Service")
         try:
             personnel = (
                 self.db.query(PersonnelModel)
@@ -43,16 +42,10 @@ class AuthService(PersonnelService):
         except NoResultFound:
             raise ValueError("Invalid email or password")
 
-        logging.info("1")
-
         confirm_password = pwd_hash.verify(data.password, personnel.password)
-
-        logging.info("2")
 
         if not confirm_password:
             raise ValueError("Invalid email or password")
-
-        logging.info("3")
 
         return personnel
 

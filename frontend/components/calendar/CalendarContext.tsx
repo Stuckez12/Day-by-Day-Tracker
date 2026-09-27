@@ -1,5 +1,6 @@
-import { RankingUIDataProp } from "@/lib/interfaces/ranking";
 import { createContext, Dispatch, SetStateAction } from "react";
+
+import { RankingUIDataProp } from "@/lib/interfaces/ranking";
 
 interface ContextType {
   ranking: RankingUIDataProp;

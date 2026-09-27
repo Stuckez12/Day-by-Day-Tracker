@@ -1,6 +1,8 @@
 import type { ChangeEventHandler, MouseEventHandler } from "react";
-import Button from "../buttons/Button";
+
 import { cn } from "@/lib/common/utils";
+
+import Button from "../buttons/Button";
 
 interface TextInputWButtonProps {
   name: string;

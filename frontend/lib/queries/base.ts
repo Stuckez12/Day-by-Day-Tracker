@@ -1,5 +1,5 @@
-import { Result, ValidationErrorProp } from "@/lib/interfaces/common";
 import { isObject } from "@/lib/common/utils";
+import { Result, ValidationErrorProp } from "@/lib/interfaces/common";
 
 export interface Request {
   url_path: string;

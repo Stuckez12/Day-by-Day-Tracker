@@ -2,9 +2,9 @@
 
 import { useContext, useEffect, useState } from "react";
 
+import Button from "@/components/common/buttons/Button";
 import ListErrors from "@/components/common/errors/ListErrors";
 import TextAreaInput from "@/components/common/form-inputs/TextAreaInput";
-import Button from "@/components/common/buttons/Button";
 import { RankingTrackerContext } from "@/components/tracker/rateDayContext";
 import { updateForm } from "@/lib/common/updateForm";
 import { RankingTextDataProp } from "@/lib/interfaces/ranking";
