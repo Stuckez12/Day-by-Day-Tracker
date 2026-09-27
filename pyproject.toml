@@ -56,11 +56,12 @@ omit = [
     "src/common/database.py",
     "src/common/recreate_db.py",
     "src/common/upgrade_db.py",
+    "src/core/log_format.py",
     "src/main.py",
     "src/migrations/*",
     "src/routes/task_run.py",
-    "src/tasks/task_management.py",
     "src/settings.py",
+    "src/tasks/task_management.py",
 ]
 
 [tool.pytest.ini_options]

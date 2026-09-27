@@ -12,7 +12,7 @@ from src.core.s3_storage import ObjectStorage
 from src.enums import BackupStatus, BackupTriggerMethod, BackupType
 from src.schemas import BackupCreate, VerifiedBackupResultSchema
 from src.services import BackupService
-from src.workflows import BackupWorkflow
+from src.workflows import LogicalBackupWorkflow
 
 
 # NOTE: Might not need this route as if im doing the uploading in the api the
@@ -55,11 +55,11 @@ def uploaded_backup_record_creation(self: Task, new_backup_file: str, *args, **k
             error_traceback=traceback.format_exc(),
         ).model_dump(mode="json")
 
-    workflow: BackupWorkflow | None = None
+    workflow: LogicalBackupWorkflow | None = None
 
     try:
         s3_storage = ObjectStorage()
-        workflow = BackupWorkflow(
+        workflow = LogicalBackupWorkflow(
             db=db,
             backup_db=backup_db,
             backup_record=backup,

@@ -11,7 +11,7 @@ from src.core import get_backup_db, get_db
 from src.core.s3_storage.service import ObjectStorage
 from src.schemas.backup import VerifiedBackupResultSchema
 from src.services import BackupService
-from src.workflows.backup import BackupWorkflow
+from src.workflows.backup import LogicalBackupWorkflow
 
 
 @shared_task(bind=True)
@@ -63,11 +63,11 @@ def verify_backup(self: Task, backup_id: UUID, *args, **kwargs) -> dict:
             error_traceback=traceback.format_exc(),
         ).model_dump(mode="json")
 
-    workflow: BackupWorkflow | None = None
+    workflow: LogicalBackupWorkflow | None = None
 
     try:
         s3_storage = ObjectStorage()
-        workflow = BackupWorkflow(
+        workflow = LogicalBackupWorkflow(
             db=db,
             backup_db=backup_db,
             backup_record=backup,

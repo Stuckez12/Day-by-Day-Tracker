@@ -10,7 +10,7 @@ from src.enums import BackupType
 from src.models import BackupModel
 from src.schemas import VerifiedBackupResultSchema
 from src.tasks import uploaded_backup_record_creation
-from src.workflows import BackupWorkflow
+from src.workflows import LogicalBackupWorkflow
 
 
 @pytest.mark.usefixtures("mock_task_db")
@@ -48,7 +48,9 @@ class TestUploadBackupRecordCreationTask:
     ):
         mocker.patch.object(subprocess, "run", return_value=None)
         mocker.patch.object(
-            BackupWorkflow, "retrieve_downloaded_zip_file", side_effect=RuntimeError
+            LogicalBackupWorkflow,
+            "retrieve_downloaded_zip_file",
+            side_effect=RuntimeError,
         )
         assert test_backup_zip_stored.meta
 

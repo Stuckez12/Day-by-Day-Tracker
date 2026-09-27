@@ -54,7 +54,8 @@ from src.services import (
     TaskService,
 )
 from src.settings import app_config
-from src.workflows import BackupWorkflow
+from src.workflows import LogicalBackupWorkflow, RangedBackupWorkflow
+from src.workflows.backup import BaseBackupWorkflow
 from tests.api.constants import VALID_PASSWORD
 
 
@@ -460,13 +461,43 @@ def test_task_service(test_session: Session):
 
 
 @pytest.fixture(scope="function")
-def test_backup_workflow(
+def test_base_backup_workflow(
     test_session: Session,
     test_backup_session: Session,
     test_backup: BackupModel,
     test_object_storage: ObjectStorage,
 ):
-    yield BackupWorkflow(
+    yield BaseBackupWorkflow(
+        db=test_session,
+        backup_db=test_backup_session,
+        backup_record=test_backup,
+        object_storage=test_object_storage,
+    )
+
+
+@pytest.fixture(scope="function")
+def test_logical_backup_workflow(
+    test_session: Session,
+    test_backup_session: Session,
+    test_backup: BackupModel,
+    test_object_storage: ObjectStorage,
+):
+    yield LogicalBackupWorkflow(
+        db=test_session,
+        backup_db=test_backup_session,
+        backup_record=test_backup,
+        object_storage=test_object_storage,
+    )
+
+
+@pytest.fixture(scope="function")
+def test_ranged_backup_workflow(
+    test_session: Session,
+    test_backup_session: Session,
+    test_backup: BackupModel,
+    test_object_storage: ObjectStorage,
+):
+    yield RangedBackupWorkflow(
         db=test_session,
         backup_db=test_backup_session,
         backup_record=test_backup,
@@ -726,7 +757,7 @@ def test_metadata(test_backup_session: Session, test_metadata_schema: Metadata):
 def test_metadata_schema(test_backup: BackupModel):
     yield Metadata(
         backup_id=str(test_backup.id),
-        backup_type=BackupType.FULL,
+        backup_type=BackupType.LOGICAL,
         created_at=utcnow(),
         database_alembic_version="00000000",
         app_version=app_config.APP_VERSION,

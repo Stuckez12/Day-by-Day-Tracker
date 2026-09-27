@@ -1,28 +1,20 @@
 import json
 import logging
-import os
 import shutil
 import subprocess
-from datetime import datetime
 from pathlib import Path
 from typing import cast
 from zipfile import ZIP_DEFLATED, ZipFile
 
-from sqlalchemy import func, text
+from sqlalchemy import text
 from sqlalchemy.orm import Session
-from sqlalchemy_utils import drop_database
 
 from src.common import utcnow
-from src.core.database.recreate_db import recreate_database
 from src.core.s3_storage import ObjectStorage
-from src.enums import BackupType
-from src.enums.object_type import ObjectType
-from src.models import BackupModel
-from src.models.backup.meta import MetaModel
-from src.models.ranking import RankerModel
+from src.enums import BackupType, ObjectType
+from src.models import BackupModel, MetaModel
 from src.schemas import (
     Metadata,
-    MetadataChecksum,
     MetadataData,
     MetadataDateRange,
     MetadataFiles,
@@ -32,7 +24,7 @@ from src.settings import app_config
 from src.utils import delete_folder, sha256_file
 
 
-class BackupWorkflow:
+class BaseBackupWorkflow:
     def __init__(
         self,
         *,
@@ -69,118 +61,10 @@ class BackupWorkflow:
 
     # ------------------------ DB Backup ----------------------- #
 
-    def create_logical_database_backup(self) -> None:
-        date = datetime.now().strftime("%Y-%b-%d")
-        backup_file_name = f"{app_config.DATABASE_DB_NAME}-backup-{date}"
-
-        file_path = self.temp_backup_path / f"{backup_file_name}.dump"
-
-        command = [
-            "pg_dump",
-            "--clean",
-            "--if-exists",
-            "-h",
-            app_config.DATABASE_HOST,
-            "-p",
-            str(app_config.DATABASE_PORT),
-            "-U",
-            app_config.DATABASE_USERNAME,
-            "-F",
-            "c",
-            "-f",
-            str(file_path),
-            app_config.DATABASE_DB_NAME,
-        ]
-        env = os.environ.copy()
-        env["PGPASSWORD"] = app_config.DATABASE_PASSWORD
-
-        try:
-            subprocess.run(command, env=env, check=True, capture_output=True, text=True)
-
-            self.backup_file_path = file_path
-            algorithm, checksum = self._generate_checksum(file_path)
-
-            self.metadata_files.append(
-                MetadataFiles(
-                    type="backup",
-                    name=Path(file_path).name,
-                    size_bytes=Path(file_path).stat().st_size,
-                    checksum=MetadataChecksum(
-                        algorithm=algorithm,
-                        value=checksum,
-                        verified=True,
-                        last_verified=utcnow(),
-                    ),
-                )
-            )
-
-            self.metadata_tool = self._get_pg_dump_metadata_tool()
-
-            start, end = self._get_database_date_range()
-            self.metadata_date_range = MetadataDateRange(start=start, end=end)
-
-        except subprocess.CalledProcessError as e:
-            raise SystemError(f"""
-Unable to create database backup
-
-RETURN CODE: {e.returncode}
-STDOUT: {e.stdout}
-STDERR: {e.stderr}
-""")
-
-    def _restore_backup_in_database(self, database_name: str) -> None:
-        if self.backup_file_path is None:
-            raise ValueError("Backup file path not set")
-
-        command = [
-            "pg_restore",
-            "--clean",
-            "--if-exists",
-            "-h",
-            app_config.DATABASE_HOST,
-            "-p",
-            str(app_config.DATABASE_PORT),
-            "-U",
-            app_config.DATABASE_USERNAME,
-            "-d",
-            database_name,
-            self.backup_file_path,
-        ]
-        env = os.environ.copy()
-        env["PGPASSWORD"] = app_config.DATABASE_PASSWORD
-
-        try:
-            subprocess.run(
-                command,
-                env=env,
-                check=True,
-                capture_output=True,
-                text=True,
-            )
-
-        except subprocess.CalledProcessError as e:
-            raise SystemError(f"""
-Unable to restore database backup
-
-RETURN CODE: {e.returncode}
-STDOUT: {e.stdout}
-STDERR: {e.stderr}
-""")
-
     def _generate_checksum(self, file_path: Path) -> tuple[str, str]:
         checksum = sha256_file(file_path)
 
         return "sha256", checksum
-
-    def verify_backup_file(self) -> None:
-        test_database_name = "restore_backup_test"
-        temp_db_url = recreate_database(test_database_name)
-
-        try:
-            self._restore_backup_in_database(test_database_name)
-
-        finally:
-            drop_database(temp_db_url)
 
     def update_verification_metadata_record(self, verified: bool = True):
         if self.backup_record.meta is None:
@@ -192,10 +76,6 @@ STDERR: {e.stderr}
         self.backup_db.flush()
 
     # ----------------------- File Backup ---------------------- #
-
-    def create_object_folder_backup(self) -> None:
-        """Only for object storage files within the rustfs container/dedicated ssd directory"""
-        pass
 
     # ------------------------ Metadata ------------------------ #
 
@@ -244,18 +124,6 @@ STDERR: {e.stderr}
             name="pg_dump",
             version=subprocess.check_output(["pg_dump", "--version"]).decode().strip(),
         )
-
-    def _get_database_date_range(self) -> tuple[datetime, datetime]:
-        min_date, max_date = (
-            self.db.query(
-                func.min(RankerModel.created_at),
-                func.max(RankerModel.updated_at),
-            )
-            .select_from(RankerModel)
-            .one()
-        )
-
-        return cast(datetime, min_date), cast(datetime, max_date)
 
     def retrieve_metadata_from_file(self):
         if not self.extracted_zip:

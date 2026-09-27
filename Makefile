@@ -98,6 +98,7 @@ tests:
 	@docker compose -f docker-compose.dev.yaml exec api sh -c "pytest -vv -q -s $(TEST_PATH)"
 
 checks:
+	@$(MAKE) check-db
 	@$(MAKE) flint
 	@$(MAKE) ftests
 	@$(MAKE) lint

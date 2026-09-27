@@ -10,7 +10,7 @@ from src.enums import BackupType
 from src.models import BackupModel
 from src.schemas import VerifiedBackupResultSchema
 from src.tasks import verify_backup
-from src.workflows import BackupWorkflow
+from src.workflows import LogicalBackupWorkflow
 
 
 @pytest.mark.usefixtures("mock_task_db")
@@ -65,7 +65,7 @@ class TestVerifyBackupTask:
     ):
         mocker.patch.object(subprocess, "run", return_value=None)
         mocker.patch.object(
-            BackupWorkflow, "retrieve_zip_file", side_effect=RuntimeError
+            LogicalBackupWorkflow, "retrieve_zip_file", side_effect=RuntimeError
         )
 
         task: AsyncResult = verify_backup.delay(backup_id=test_backup_zip_stored.id)

@@ -11,11 +11,11 @@ from src.core.s3_storage import ObjectStorage
 from src.enums import BackupStatus, BackupTriggerMethod, BackupType
 from src.schemas import BackupCreate, BackupSchema
 from src.services import BackupService
-from src.workflows import LogicalBackupWorkflow
+from src.workflows import RangedBackupWorkflow
 
 
 @shared_task(bind=True)
-def database_logical_backup(self: Task, trigger: str, *args, **kwargs) -> dict:
+def database_logical_backup(self: Task, trigger: str, *args, **kwargs):
     db_gen = get_db()
     db = next(db_gen)
 
@@ -28,7 +28,7 @@ def database_logical_backup(self: Task, trigger: str, *args, **kwargs) -> dict:
         celery_id=cast(str, self.request.id),
         trigger_method=BackupTriggerMethod(trigger),
         status=BackupStatus.RUNNING,
-        backup_type=BackupType.LOGICAL,
+        backup_type=BackupType.RANGED,
     )
 
     try:
@@ -53,45 +53,16 @@ def database_logical_backup(self: Task, trigger: str, *args, **kwargs) -> dict:
             }
         ).model_dump(mode="json")
 
-    workflow: LogicalBackupWorkflow | None = None
+    workflow: RangedBackupWorkflow | None = None
 
     try:
         s3_storage = ObjectStorage()
-        workflow = LogicalBackupWorkflow(
+        workflow = RangedBackupWorkflow(
             db=db,
             backup_db=backup_db,
             backup_record=backup_record,
             object_storage=s3_storage,
         )
-
-        update_task_state(self, db, metadata={"stage": "Creating Logical Backup"})
-        workflow.create_logical_database_backup()
-
-        update_task_state(
-            self, db, metadata={"stage": "Verifying Generated Backup File"}
-        )
-        workflow.verify_backup_file()
-
-        # TODO: files backup when images are implemented
-        # update_task_state(self, db, metadata={"stage": "Creating Object Storage Backups"})
-
-        update_task_state(self, db, metadata={"stage": "Compiling Metadata"})
-        workflow.generate_metadata(BackupType.LOGICAL)
-
-        update_task_state(self, db, metadata={"stage": "Packaging Backup"})
-        workflow.zip_all_backup_files()
-
-        update_task_state(self, db, metadata={"stage": "Saving Packaged Backup"})
-        workflow.upload_zip_to_object_storage()
-        workflow.record_backup_into_database()
-
-        update_task_state(self, db, metadata={"stage": "Finalising Backup Task"})
-        end = time.perf_counter()
-
-        backup_record.duration = end - start
-        backup_record.status = BackupStatus.SUCCESS
-
-        backup_db.commit()
 
         return BackupSchema.model_validate(backup_record).model_dump(mode="json")
 
@@ -111,8 +82,6 @@ def database_logical_backup(self: Task, trigger: str, *args, **kwargs) -> dict:
         logging.error(backup_record.error_message)
 
         backup_db.commit()
-
-        return BackupSchema.model_validate(backup_record).model_dump(mode="json")
 
     finally:
         if workflow:
