@@ -1,3 +1,4 @@
+import alembic_postgresql_enum  # noqa
 from alembic import context
 from sqlalchemy import create_engine, pool
 
