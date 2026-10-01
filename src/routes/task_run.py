@@ -6,7 +6,12 @@ from fastapi import APIRouter, Depends, Request, status
 import src.tasks.task_management  # noqa
 from src.core.permission_validator import PermissionValidator
 from src.enums import BackupTriggerMethod
-from src.tasks import database_logical_backup, simulate_celery_task, verify_backup
+from src.tasks import (
+    database_logical_backup,
+    database_ranged_backup,
+    simulate_celery_task,
+    verify_backup,
+)
 
 
 api = APIRouter(prefix="/execute/task", tags=["Execute Task"])
@@ -20,13 +25,28 @@ def run_task_simulation(_: Request):
 
 
 @api.get(
-    "/database-backup",
+    "/database-logical-backup",
     status_code=status.HTTP_200_OK,
     dependencies=[Depends(PermissionValidator(admin_route=True))],
 )
 def run_database_logical_backup(_: Request):
     task: AsyncResult = database_logical_backup.delay(
         trigger=BackupTriggerMethod.MANUAL.value
+    )
+
+    return task.get()
+
+
+@api.get(
+    "/database-ranged-backup",
+    status_code=status.HTTP_200_OK,
+    dependencies=[Depends(PermissionValidator(admin_route=True))],
+)
+def run_database_ranged_backup(_: Request):
+    task: AsyncResult = database_ranged_backup.delay(
+        trigger=BackupTriggerMethod.MANUAL.value,
+        start_date="2026-09-13",
+        end_date="2026-10-17",
     )
 
     return task.get()
