@@ -29,12 +29,16 @@ class AppConfig(BaseSettings):
     DATABASE_BACKUP_DB_NAME: str = "backup-tracker"
 
     @property
+    def base_db_url(self):
+        return f"postgresql+psycopg2://{self.DATABASE_USERNAME}:{self.DATABASE_PASSWORD}@{self.DATABASE_HOST}:{self.DATABASE_PORT}"
+
+    @property
     def db_url(self):
-        return f"postgresql+psycopg2://{self.DATABASE_USERNAME}:{self.DATABASE_PASSWORD}@{self.DATABASE_HOST}:{self.DATABASE_PORT}/{self.DATABASE_DB_NAME}"
+        return f"{self.base_db_url}/{self.DATABASE_DB_NAME}"
 
     @property
     def backup_db_url(self):
-        return f"postgresql+psycopg2://{self.DATABASE_USERNAME}:{self.DATABASE_PASSWORD}@{self.DATABASE_HOST}:{self.DATABASE_PORT}/{self.DATABASE_BACKUP_DB_NAME}"
+        return f"{self.base_db_url}/{self.DATABASE_BACKUP_DB_NAME}"
 
     # Celery
     REDIS_URL: str = "redis://redis:6379"

@@ -19,7 +19,7 @@ from src.exc import (
     HTTP_EXC_UPLOAD_BACKUP_FILE,
 )
 from src.schemas import BackupSchema, TaskIDSchema
-from src.tasks import uploaded_backup_record_creation, verify_backup
+from src.tasks import uploaded_backup_record_creation, verify_logical_backup
 
 
 api = APIRouter(
@@ -120,6 +120,6 @@ def verify_backup_route(service: BackupServiceDep, backup_id: UUID):
     except NoResultFound:
         raise HTTP_EXC_BACKUP_NOT_FOUND
 
-    task: AsyncResult = verify_backup.s(backup_id=backup.id).apply_async()
+    task: AsyncResult = verify_logical_backup.s(backup_id=backup.id).apply_async()
 
     return TaskIDSchema(task_id=UUID(task.id))

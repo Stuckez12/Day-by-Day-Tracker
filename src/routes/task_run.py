@@ -10,7 +10,7 @@ from src.tasks import (
     database_logical_backup,
     database_ranged_backup,
     simulate_celery_task,
-    verify_backup,
+    verify_logical_backup,
 )
 
 
@@ -58,6 +58,6 @@ def run_database_ranged_backup(_: Request):
     dependencies=[Depends(PermissionValidator(admin_route=True))],
 )
 def run_verify_backup(backup_id: UUID):
-    task: AsyncResult = verify_backup.delay(backup_id=backup_id)
+    task: AsyncResult = verify_logical_backup.delay(backup_id=backup_id)
 
     return task.get()

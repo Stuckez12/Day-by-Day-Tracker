@@ -41,6 +41,7 @@ def get_ranking_range(
     return service.get_ranking_range(personnel.id, date_range)
 
 
+# TODO: Remove this as it is a duplicate
 @api.get("/today", response_model=RankingSchema, status_code=status.HTTP_200_OK)
 def get_todays_ranking(service: RankingServiceDep, personnel: CurrentPersonnel):
     return service.fetch_date(personnel.id, date.today())

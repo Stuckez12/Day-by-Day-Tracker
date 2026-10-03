@@ -5,8 +5,11 @@ from typing import Any, cast
 
 from sqlalchemy import select
 from sqlalchemy.orm import Session
+from sqlalchemy_utils import drop_database
 
 from src.common.utils import utcnow
+from src.core.database import temporary_db_session
+from src.core.database.recreate_db import recreate_database
 from src.core.s3_storage import ObjectStorage
 from src.models import BackupModel, TaskModel
 from src.models.base import Base
@@ -21,6 +24,7 @@ from src.workflows.backup.base import BaseBackupWorkflow
 
 
 NO_BACKUP_TABLES = [TaskModel]
+BACKUP_TABLE_ORDER = []
 
 
 class RangedBackupWorkflow(BaseBackupWorkflow):
@@ -91,13 +95,41 @@ class RangedBackupWorkflow(BaseBackupWorkflow):
             )
         )
 
-    def _write_to_json_file(self, file_path: Path, data: dict[str, Any]) -> None:
-        with file_path.open("w") as file:
-            json.dump(data, file, default=str)
+    def restore_backup_in_database(self, db: Session, data: dict[str, Any]) -> None:
+        for i, table in enumerate(Base.metadata.sorted_tables):
+            print(f"{i}: {table}")
+
+    def verify_backup_file(self) -> None:
+        test_database_name = "restore_backup_test"
+        temp_db_url = recreate_database(test_database_name)
+
+        data = self._get_backup_file_data()
+
+        try:
+            with temporary_db_session(test_database_name) as db:
+                self.restore_backup_in_database(db, data)
+
+        finally:
+            drop_database(temp_db_url)
+
+    def _get_backup_file_data(self) -> dict[str, Any]:
+        if self.backup_file_path is None:
+            raise ValueError("Backup file path not set")
+
+        if self.backup_file_path.suffix != ".json":
+            raise ValueError("Backup file type not json")
+
+        with self.backup_file_path.open("r") as file:
+            data: dict[str, Any] = json.load(file)
+
+        return data
 
     # ----------------------- File Backup ---------------------- #
 
-    def create_ranged_file_backup(self):
-        pass
-
     # ------------------------ Metadata ------------------------ #
+
+    # -------------------------- Utils ------------------------- #
+
+    def _write_to_json_file(self, file_path: Path, data: dict[str, Any]) -> None:
+        with file_path.open("w") as file:
+            json.dump(data, file, default=str)

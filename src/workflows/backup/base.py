@@ -147,6 +147,13 @@ class BaseBackupWorkflow:
 
                 break
 
+    def validate_backup_type(self, backup_type: BackupType):
+        if self.metadata is None:
+            raise ValueError("Metadata not set")
+
+        if self.metadata.backup_type != backup_type:
+            raise ValueError("Provided backup type is incompatible")
+
     def validate_metadata_checksums(self):
         if self.metadata is None:
             raise ValueError("Metadata not set")
