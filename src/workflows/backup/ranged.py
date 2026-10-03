@@ -7,12 +7,13 @@ from sqlalchemy import select
 from sqlalchemy.orm import Session
 from sqlalchemy_utils import drop_database
 
+import src.models as table_objects
 from src.common.utils import utcnow
 from src.core.database import temporary_db_session
 from src.core.database.recreate_db import recreate_database
 from src.core.s3_storage import ObjectStorage
 from src.models import BackupModel, TaskModel
-from src.models.base import Base
+from src.models.base import Base, BaseModel
 from src.schemas import DateRangeRequest
 from src.schemas.backup import (
     MetadataChecksum,
@@ -96,8 +97,28 @@ class RangedBackupWorkflow(BaseBackupWorkflow):
         )
 
     def restore_backup_in_database(self, db: Session, data: dict[str, Any]) -> None:
-        for i, table in enumerate(Base.metadata.sorted_tables):
-            print(f"{i}: {table}")
+        restricted_table_names = [table.__tablename__ for table in NO_BACKUP_TABLES]
+        all_tables: dict[str, type[BaseModel]] = {
+            obj.__tablename__: obj
+            for _, obj in vars(table_objects).items()
+            # Only include imported objects you have defined
+            if isinstance(obj, type)
+            # Filter out all models that dont match Base
+            and obj._sa_registry == Base.registry
+            # Filter out models that are not backed up
+            and obj.__tablename__ not in restricted_table_names
+        }
+
+        for model in Base.metadata.sorted_tables:
+            # _ =
+            print(model.name)
+
+            model_obj = all_tables.get(model.name, None)
+
+            if model_obj is None:
+                continue
+
+            db.query(model_obj.id)
 
     def verify_backup_file(self) -> None:
         test_database_name = "restore_backup_test"

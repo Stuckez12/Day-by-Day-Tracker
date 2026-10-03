@@ -16,7 +16,7 @@ from src.workflows import RangedBackupWorkflow
 
 
 @shared_task(bind=True)
-def verify_logical_backup(self: Task, backup_id: UUID, *args, **kwargs) -> dict:
+def verify_ranged_backup(self: Task, backup_id: UUID, *args, **kwargs) -> dict:
     db_gen = get_db()
     db = next(db_gen)
 
@@ -82,10 +82,6 @@ def verify_logical_backup(self: Task, backup_id: UUID, *args, **kwargs) -> dict:
             ),
         )
 
-        workflow.verify_backup_file()
-
-        raise KeyError("Test Done")
-
         update_task_state(self, db, metadata={"stage": "Retrieving Backup ZIP File"})
         workflow.retrieve_zip_file()
 
@@ -97,6 +93,7 @@ def verify_logical_backup(self: Task, backup_id: UUID, *args, **kwargs) -> dict:
 
         update_task_state(self, db, metadata={"stage": "Validating Backup Restoration"})
         workflow.verify_backup_file()
+        raise KeyError("Test Done")
 
         update_task_state(self, db, metadata={"stage": "Finalising Verification Task"})
         workflow.update_verification_metadata_record()
