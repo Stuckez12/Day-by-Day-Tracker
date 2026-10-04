@@ -1,9 +1,12 @@
 import json
+import logging
 from datetime import datetime, timedelta
 from pathlib import Path
 from typing import Any, cast
 
-from sqlalchemy import select
+from alembic import command
+from alembic.config import Config
+from sqlalchemy import Engine, select
 from sqlalchemy.orm import Session
 from sqlalchemy_utils import drop_database
 
@@ -21,11 +24,12 @@ from src.schemas.backup import (
     MetadataFiles,
     MetadataTool,
 )
+from src.settings import app_config
 from src.workflows.backup.base import BaseBackupWorkflow
 
 
 NO_BACKUP_TABLES = [TaskModel]
-BACKUP_TABLE_ORDER = []
+RESTRICTED_TABLES = [table.__tablename__ for table in NO_BACKUP_TABLES]
 
 
 class RangedBackupWorkflow(BaseBackupWorkflow):
@@ -57,12 +61,10 @@ class RangedBackupWorkflow(BaseBackupWorkflow):
 
     def create_ranged_backup(self) -> None:
         result = {}
-        restricted_table_names = [table.__tablename__ for table in NO_BACKUP_TABLES]
-
         self.metadata_date_range = cast(MetadataDateRange, self.metadata_date_range)
 
         for table in Base.metadata.sorted_tables:
-            if table.fullname in restricted_table_names:
+            if table.fullname in RESTRICTED_TABLES:
                 continue
 
             if "updated_at" not in table.c:
@@ -97,7 +99,21 @@ class RangedBackupWorkflow(BaseBackupWorkflow):
         )
 
     def restore_backup_in_database(self, db: Session, data: dict[str, Any]) -> None:
-        restricted_table_names = [table.__tablename__ for table in NO_BACKUP_TABLES]
+        """
+        NOTE: This requires that the database is already
+        seeded with data from a logical backup before.
+        """
+        if self.metadata is None:
+            raise ValueError("Metadata not set")
+
+        if type(db.bind) != Engine:
+            raise ValueError("Database session has no engine attached")
+
+        db_name = db.bind.engine.url.database
+
+        if db_name is None:
+            raise ValueError("Database name not found from session")
+
         all_tables: dict[str, type[BaseModel]] = {
             obj.__tablename__: obj
             for _, obj in vars(table_objects).items()
@@ -106,19 +122,74 @@ class RangedBackupWorkflow(BaseBackupWorkflow):
             # Filter out all models that dont match Base
             and obj._sa_registry == Base.registry
             # Filter out models that are not backed up
-            and obj.__tablename__ not in restricted_table_names
+            and obj.__tablename__ not in RESTRICTED_TABLES
         }
 
-        for model in Base.metadata.sorted_tables:
-            # _ =
-            print(model.name)
+        alembic_cfg = Config("alembic.ini")
+        alembic_cfg.set_main_option(
+            "sqlalchemy.url", f"{app_config.base_db_url}/{db_name}"
+        )
+        command.upgrade(alembic_cfg, self.metadata.database_alembic_version)
 
+        for model in Base.metadata.sorted_tables:
             model_obj = all_tables.get(model.name, None)
+            table_data: list[dict[str, Any]] | None = data.get(model.name, None)
 
             if model_obj is None:
                 continue
 
-            db.query(model_obj.id)
+            if table_data is None:
+                logging.warning(
+                    f"Restoration of table '{model.name}' was not found in data"
+                )
+                continue
+
+            logging.info(f"Ranged seeding table: '{model.name}'")
+
+            data_ids = []
+            id_mapping: dict[str, dict[str, Any]] = {}
+
+            for row in table_data:
+                data_id = row.get("id", None)
+
+                if data_id is None:
+                    continue
+
+                data_ids.append(data_id)
+                id_mapping[data_id] = row
+
+            existing_ids = {
+                str(row.id)
+                for row in db.execute(
+                    select(model.c.id).where(model.c.id.in_(data_ids))
+                )
+            }
+
+            logging.debug(
+                f"Existing {model.name} rows: {len(existing_ids)}/{len(table_data)}"
+            )
+
+            for data_id in existing_ids:
+                db.execute(
+                    model.update()
+                    .where(model.c.id == data_id)
+                    .values(**id_mapping[data_id])
+                )
+
+                id_mapping.pop(data_id)
+
+            logging.debug(
+                f"Remaining {model.name} rows to add: {len(id_mapping)}/{len(table_data)}"
+            )
+
+            for _, id_data in id_mapping.items():
+                db.execute(model.insert().values(**id_data))
+
+            db.flush()
+
+        db.commit()
+
+        logging.info("Seeded all ranged data")
 
     def verify_backup_file(self) -> None:
         test_database_name = "restore_backup_test"

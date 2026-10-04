@@ -91,10 +91,6 @@ def verify_ranged_backup(self: Task, backup_id: UUID, *args, **kwargs) -> dict:
         workflow.retrieve_metadata_from_file()
         workflow.validate_metadata_checksums()
 
-        update_task_state(self, db, metadata={"stage": "Validating Backup Restoration"})
-        workflow.verify_backup_file()
-        raise KeyError("Test Done")
-
         update_task_state(self, db, metadata={"stage": "Finalising Verification Task"})
         workflow.update_verification_metadata_record()
 
