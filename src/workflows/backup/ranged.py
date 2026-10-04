@@ -4,16 +4,11 @@ from datetime import datetime, timedelta
 from pathlib import Path
 from typing import Any, cast
 
-from alembic import command
-from alembic.config import Config
 from sqlalchemy import Engine, select
 from sqlalchemy.orm import Session
-from sqlalchemy_utils import drop_database
 
 import src.models as table_objects
 from src.common.utils import utcnow
-from src.core.database import temporary_db_session
-from src.core.database.recreate_db import recreate_database
 from src.core.s3_storage import ObjectStorage
 from src.models import BackupModel, TaskModel
 from src.models.base import Base, BaseModel
@@ -24,7 +19,6 @@ from src.schemas.backup import (
     MetadataFiles,
     MetadataTool,
 )
-from src.settings import app_config
 from src.workflows.backup.base import BaseBackupWorkflow
 
 
@@ -111,7 +105,7 @@ class RangedBackupWorkflow(BaseBackupWorkflow):
         if type(db.bind) != Engine:
             raise ValueError("Database session has no engine attached")
 
-        db_name = db.bind.engine.url.database
+        db_name = db.bind.engine.url.database  # ty: ignore[unresolved-attribute] may need to update ty as this typing is valid
 
         if db_name is None:
             raise ValueError("Database name not found from session")
@@ -126,12 +120,6 @@ class RangedBackupWorkflow(BaseBackupWorkflow):
             # Filter out models that are not backed up
             and obj.__tablename__ not in RESTRICTED_TABLES
         }
-
-        alembic_cfg = Config("alembic.ini")
-        alembic_cfg.set_main_option(
-            "sqlalchemy.url", f"{app_config.base_db_url}/{db_name}"
-        )
-        command.upgrade(alembic_cfg, self.metadata.database_alembic_version)
 
         for model in Base.metadata.sorted_tables:
             model_obj = all_tables.get(model.name, None)
@@ -198,17 +186,26 @@ class RangedBackupWorkflow(BaseBackupWorkflow):
         TODO LATER: explore this again later on and see whether this is still worth doing.
         This requires the ranged backup to be a part of a chain of backups.
         """
-        test_database_name = "restore_backup_test"
-        temp_db_url = recreate_database(test_database_name)
 
-        data = self._get_backup_file_data()
+        raise NotImplementedError("To be completed")
 
-        try:
-            with temporary_db_session(test_database_name) as db:
-                self.apply_ranged_backup_to_database(db, data)
+        # test_database_name = "restore_backup_test"
+        # temp_db_url = recreate_database(test_database_name)
 
-        finally:
-            drop_database(temp_db_url)
+        # data = self._get_backup_file_data()
+
+        # try:
+        #     alembic_cfg = Config("alembic.ini")
+        #     alembic_cfg.set_main_option(
+        #         "sqlalchemy.url", f"{app_config.base_db_url}/{db_name}"
+        #     )
+        #     command.upgrade(alembic_cfg, self.metadata.database_alembic_version)
+
+        #     with temporary_db_session(test_database_name) as db:
+        #         self.apply_ranged_backup_to_database(db, data)
+
+        # finally:
+        #     drop_database(temp_db_url)
 
     def _get_backup_file_data(self) -> dict[str, Any]:
         if self.backup_file_path is None:

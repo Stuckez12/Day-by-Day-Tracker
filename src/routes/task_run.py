@@ -49,8 +49,8 @@ def run_database_ranged_backup(
 ):
     task: AsyncResult = database_ranged_backup.delay(
         trigger=BackupTriggerMethod.MANUAL.value,
-        start_date=start_date,
-        end_date=end_date,
+        start_date=start_date.isoformat(),
+        end_date=end_date.isoformat(),
     )
 
     return task.get()
