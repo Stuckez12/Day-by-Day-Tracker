@@ -18,7 +18,7 @@ from src.workflows import RangedBackupWorkflow
 @shared_task(bind=True)
 def database_ranged_backup(
     self: Task, trigger: str, start_date: str, end_date: str, *args, **kwargs
-):
+) -> dict:
     db_gen = get_db()
     db = next(db_gen)
 
@@ -74,7 +74,7 @@ def database_ranged_backup(
             date_range=date_range,
         )
 
-        update_task_state(self, db, metadata={"stage": "Creating Logical Backup"})
+        update_task_state(self, db, metadata={"stage": "Creating Ranged Backup"})
         workflow.create_ranged_backup()
 
         # TODO: files backup when images are implemented
@@ -116,6 +116,8 @@ def database_ranged_backup(
         logging.error(backup_record.error_message)
 
         backup_db.commit()
+
+        return BackupSchema.model_validate(backup_record).model_dump(mode="json")
 
     finally:
         if workflow:

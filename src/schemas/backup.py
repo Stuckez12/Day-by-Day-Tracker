@@ -40,6 +40,9 @@ class MetadataData(BaseModel):
     date_range: MetadataDateRange
 
 
+# TODO: Add in a param that for ranged backups point to a ranged/logical backup
+# Ranged to Ranged the backup link should be the date range rather than the id since
+# I want all these backups to slot into any prod version with minimal conflict
 class Metadata(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 

@@ -98,7 +98,9 @@ class RangedBackupWorkflow(BaseBackupWorkflow):
             )
         )
 
-    def restore_backup_in_database(self, db: Session, data: dict[str, Any]) -> None:
+    def apply_ranged_backup_to_database(
+        self, db: Session, data: dict[str, Any]
+    ) -> None:
         """
         NOTE: This requires that the database is already
         seeded with data from a logical backup before.
@@ -192,6 +194,10 @@ class RangedBackupWorkflow(BaseBackupWorkflow):
         logging.info("Seeded all ranged data")
 
     def verify_backup_file(self) -> None:
+        """
+        TODO LATER: explore this again later on and see whether this is still worth doing.
+        This requires the ranged backup to be a part of a chain of backups.
+        """
         test_database_name = "restore_backup_test"
         temp_db_url = recreate_database(test_database_name)
 
@@ -199,7 +205,7 @@ class RangedBackupWorkflow(BaseBackupWorkflow):
 
         try:
             with temporary_db_session(test_database_name) as db:
-                self.restore_backup_in_database(db, data)
+                self.apply_ranged_backup_to_database(db, data)
 
         finally:
             drop_database(temp_db_url)
