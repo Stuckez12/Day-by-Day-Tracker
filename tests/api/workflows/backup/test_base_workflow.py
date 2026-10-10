@@ -94,6 +94,36 @@ class TestRetrieveMetadataFileBackupWorkflow:
             test_base_backup_workflow.retrieve_metadata_from_file()
 
 
+class TestValidateBackupTypeWorkflow:
+    def test_success(
+        self,
+        test_base_backup_workflow: BaseBackupWorkflow,
+        test_metadata_schema: Metadata,
+    ):
+        test_base_backup_workflow.metadata = test_metadata_schema
+        test_base_backup_workflow.validate_backup_type(test_metadata_schema.backup_type)
+
+    def test_no_metadata(self, test_base_backup_workflow: BaseBackupWorkflow):
+        with pytest.raises(ValueError, match="Metadata not set"):
+            test_base_backup_workflow.validate_backup_type(BackupType.RANGED)
+
+    def test_invalid_backup_type(
+        self,
+        test_base_backup_workflow: BaseBackupWorkflow,
+        test_metadata_schema: Metadata,
+    ):
+        test_metadata_schema.backup_type
+        test_base_backup_workflow.metadata = test_metadata_schema
+        invalid_backup_type = (
+            BackupType.LOGICAL
+            if test_metadata_schema.backup_type != BackupType.LOGICAL
+            else BackupType.RANGED
+        )
+
+        with pytest.raises(ValueError, match="Provided backup type is incompatible"):
+            test_base_backup_workflow.validate_backup_type(invalid_backup_type)
+
+
 class TestValidateChecksumsBackupWorkflow:
     def test_success(
         self,

@@ -46,6 +46,7 @@ from src.schemas import (
     MetadataFiles,
     MetadataTool,
 )
+from src.schemas.common import DateRangeRequest
 from src.services import (
     AuthService,
     BackupService,
@@ -284,7 +285,7 @@ def test_s3_container() -> Generator[None, None, None]:
         endpoint = f"http://{host}:{port}"
 
         client = boto3.client(
-            "s3",
+            "s3",  # type: ignore[report-argument-type]
             endpoint_url=endpoint,
             aws_access_key_id=app_config.S3_ACCESS_KEY,
             aws_secret_access_key=app_config.S3_SECRET_KEY,
@@ -496,12 +497,17 @@ def test_ranged_backup_workflow(
     test_backup_session: Session,
     test_backup: BackupModel,
     test_object_storage: ObjectStorage,
+    test_date_today: date,
 ):
     yield RangedBackupWorkflow(
         db=test_session,
         backup_db=test_backup_session,
         backup_record=test_backup,
         object_storage=test_object_storage,
+        date_range=DateRangeRequest(
+            min_date=test_date_today - timedelta(days=1),
+            max_date=test_date_today + timedelta(days=1),
+        ),
     )
 
 
