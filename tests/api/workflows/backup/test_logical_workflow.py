@@ -6,7 +6,7 @@ from pytest_mock import MockerFixture
 
 from src.core.database import recreate_database
 from src.models import RankerModel
-from src.schemas import MetadataDateRange, MetadataTool
+from src.schemas import MetadataDateRange
 from src.workflows import LogicalBackupWorkflow
 
 
@@ -24,10 +24,13 @@ class TestCreateLogicalDatabaseBackupWorkflow:
         test_logical_backup_workflow.backup_file_path.unlink()
         assert not test_logical_backup_workflow.backup_file_path.exists()
         assert len(test_logical_backup_workflow.metadata_files) == 1
-        assert test_logical_backup_workflow.metadata_tool == MetadataTool(
-            name="pg_dump",
-            version="pg_dump (PostgreSQL) 17.11 (Debian 17.11-1.pgdg12+2)",
-        )
+
+        assert test_logical_backup_workflow.metadata_tool
+        assert test_logical_backup_workflow.metadata_tool.name == "pg_dump"
+        assert test_logical_backup_workflow.metadata_tool.version in [
+            "pg_dump (PostgreSQL) 17.11 (Debian 17.11-1.pgdg12+2)",
+            "pg_dump (PostgreSQL) 17.11 (Ubuntu 17.11-1.pgdg24.04+2)",
+        ]
         assert test_logical_backup_workflow.metadata_date_range == MetadataDateRange(
             start=test_ranker.created_at, end=test_ranker.updated_at
         )
