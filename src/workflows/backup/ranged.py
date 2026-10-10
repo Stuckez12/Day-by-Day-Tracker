@@ -106,7 +106,7 @@ class RangedBackupWorkflow(BaseBackupWorkflow):
         if type(db.bind) != Engine:
             raise ValueError("Database session has no engine attached")
 
-        db_name = cast(str, db.bind.engine.url.database)
+        db_name = db.bind.engine.url.database  # ty: ignore[unresolved-attribute]
 
         if db_name is None:
             raise ValueError("Database name not found from session")
