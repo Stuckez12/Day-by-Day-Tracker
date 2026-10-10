@@ -16,14 +16,14 @@ class TestDatabaseLogicalBackupTask:
         self,
         mocker: MockerFixture,
         celery_worker: None,
-        test_backup_zip_stored: BackupModel,
+        test_logical_backup_zip_stored: BackupModel,
     ):
         mocker.patch.object(
             LogicalBackupWorkflow,
             "_get_database_date_range",
             return_value=(utcnow(), utcnow()),
         )
-        assert test_backup_zip_stored.meta
+        assert test_logical_backup_zip_stored.meta
 
         task: AsyncResult = database_logical_backup.delay(
             trigger=BackupTriggerMethod.MANUAL.value

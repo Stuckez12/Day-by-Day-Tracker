@@ -99,13 +99,14 @@ class RangedBackupWorkflow(BaseBackupWorkflow):
         NOTE: This requires that the database is already
         seeded with data from a logical backup before.
         """
+
         if self.metadata is None:
             raise ValueError("Metadata not set")
 
         if type(db.bind) != Engine:
             raise ValueError("Database session has no engine attached")
 
-        db_name = db.bind.engine.url.database  # ty: ignore[unresolved-attribute] may need to update ty as this typing is valid
+        db_name = cast(str, db.bind.engine.url.database)
 
         if db_name is None:
             raise ValueError("Database name not found from session")

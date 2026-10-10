@@ -166,19 +166,25 @@ def test_file_2(tmp_path: Path):
 
 
 @pytest.fixture(scope="session")
-def test_backup_zip_name() -> Path:
+def test_logical_backup_zip_name() -> Path:
     return Path("./tests/files/20260925080016-tracker-backup.zip")
 
 
+@pytest.fixture(scope="session")
+def test_ranged_backup_zip_name() -> Path:
+    return Path("./tests/files/20261003193940-tracker-backup-ranged.zip")
+
+
 @pytest.fixture(scope="function")
-def test_backup_zip_stored(
+def test_logical_backup_zip_stored(
     test_backup_session: Session,
     test_object_storage: ObjectStorage,
-    test_backup_zip_name: Path,
+    test_logical_backup_zip_name: Path,
 ) -> Generator[BackupModel, None, None]:
-    with open(test_backup_zip_name, "rb") as f:
-        filename = "20260925080016-tracker-backup.zip"
-        test_object_storage.upload_file(f, ObjectType.BACKUP, filename)
+    with test_logical_backup_zip_name.open("rb") as f:
+        test_object_storage.upload_file(
+            f, ObjectType.BACKUP, test_logical_backup_zip_name.name
+        )
 
     backup_model = BackupModel(
         celery_id=uuid.uuid4(),
@@ -215,13 +221,81 @@ def test_backup_zip_stored(
         data=MetadataData(date_range=MetadataDateRange(start=utcnow(), end=utcnow())),
     )
 
-    file_metadata = test_object_storage.file_metadata(ObjectType.BACKUP, filename)
+    file_metadata = test_object_storage.file_metadata(
+        ObjectType.BACKUP, test_logical_backup_zip_name.name
+    )
     metadata_model = MetaModel(metadata, file_metadata)
 
     test_backup_session.add(metadata_model)
     test_backup_session.commit()
 
     yield backup_model
+
+    test_object_storage.delete_file(
+        ObjectType.BACKUP, test_logical_backup_zip_name.name
+    )
+
+    test_backup_session.delete(backup_model)
+    test_backup_session.commit()
+
+
+@pytest.fixture(scope="function")
+def test_ranged_backup_zip_stored(
+    test_backup_session: Session,
+    test_object_storage: ObjectStorage,
+    test_ranged_backup_zip_name: Path,
+) -> Generator[BackupModel, None, None]:
+    with test_ranged_backup_zip_name.open("rb") as f:
+        test_object_storage.upload_file(
+            f, ObjectType.BACKUP, test_ranged_backup_zip_name.name
+        )
+
+    backup_model = BackupModel(
+        celery_id=uuid.uuid4(),
+        trigger_method=BackupTriggerMethod.MANUAL,
+        status=BackupStatus.SUCCESS,
+        backup_type=BackupType.RANGED,
+        duration=10.0,
+        error_message=None,
+        error_traceback=None,
+    )
+    test_backup_session.add(backup_model)
+    test_backup_session.flush([backup_model])
+
+    metadata = Metadata(
+        backup_id=str(backup_model.id),
+        backup_type=BackupType.RANGED,
+        created_at=utcnow(),
+        database_alembic_version="00000000",
+        app_version=app_config.APP_VERSION,
+        tool=MetadataTool(name="dbdt_json_collector", version="1"),
+        files=[
+            MetadataFiles(
+                name="tracker-backup-2026-Sep-25.dump",
+                type="backup",
+                size_bytes=9696,
+                checksum=MetadataChecksum(
+                    algorithm="sha256",
+                    value="c359023ae6aabc918f37c209940c837b2b4870af2f9325490b30a3ea5c7fafda",
+                    verified=True,
+                    last_verified=utcnow(),
+                ),
+            )
+        ],
+        data=MetadataData(date_range=MetadataDateRange(start=utcnow(), end=utcnow())),
+    )
+
+    file_metadata = test_object_storage.file_metadata(
+        ObjectType.BACKUP, test_ranged_backup_zip_name.name
+    )
+    metadata_model = MetaModel(metadata, file_metadata)
+
+    test_backup_session.add(metadata_model)
+    test_backup_session.commit()
+
+    yield backup_model
+
+    test_object_storage.delete_file(ObjectType.BACKUP, test_ranged_backup_zip_name.name)
 
     test_backup_session.delete(backup_model)
     test_backup_session.commit()
