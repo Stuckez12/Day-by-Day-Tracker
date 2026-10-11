@@ -21,6 +21,7 @@ dependencies = [
     "pyjwt>=2.13.0",
     "python-multipart>=0.0.32",
     "redis>=7.4.0",
+    "slowapi>=0.1.10",
     "sqlalchemy>=2.0.45",
     "sqlalchemy-utils>=0.42.1",
     "uvicorn>=0.38.0",
