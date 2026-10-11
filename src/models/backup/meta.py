@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from datetime import datetime
+from datetime import date, datetime
 from typing import TYPE_CHECKING, Optional
 from uuid import UUID
 
@@ -40,15 +40,15 @@ class MetaModel(BackupBaseModel):
     tool_version: Mapped[str] = mapped_column(String, nullable=False)
 
     # Database Data
-    date_range_start: Mapped[datetime] = mapped_column(DateTime, nullable=False)
-    date_range_end: Mapped[datetime] = mapped_column(DateTime, nullable=False)
+    date_range_start: Mapped[date] = mapped_column(DateTime, nullable=False)
+    date_range_end: Mapped[date] = mapped_column(DateTime, nullable=False)
 
     # File Data
     zip_filename: Mapped[str] = mapped_column(String, nullable=False)
     zip_path: Mapped[str] = mapped_column(String, nullable=False)
     zip_size_bytes: Mapped[int] = mapped_column(Integer, nullable=False)
 
-    backup: Mapped["BackupModel"] = relationship(
+    backup: Mapped[BackupModel] = relationship(
         "BackupModel",
         back_populates="meta",
     )

@@ -1,7 +1,9 @@
+from __future__ import annotations
+
 from typing import TYPE_CHECKING
 from uuid import UUID
 
-from sqlalchemy import UUID as DBUUID, Enum, Float, String
+from sqlalchemy import UUID as DBUUID, Enum, Float, ForeignKey, String
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from src.enums import BackupStatus, BackupTriggerMethod, BackupType
@@ -26,7 +28,11 @@ class BackupModel(BackupBaseModel):
     error_message: Mapped[str | None] = mapped_column(String, nullable=True)
     error_traceback: Mapped[str | None] = mapped_column(String, nullable=True)
 
-    meta: Mapped["MetaModel | None"] = relationship(
+    parent_backup: Mapped[UUID | None] = mapped_column(
+        ForeignKey("backups.id", ondelete="SET NULL"), default=None, nullable=True
+    )
+
+    meta: Mapped[MetaModel | None] = relationship(
         "MetaModel",
         cascade="all, delete-orphan",
         back_populates="backup",

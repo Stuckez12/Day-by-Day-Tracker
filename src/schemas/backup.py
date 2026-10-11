@@ -61,6 +61,7 @@ class Metadata(BaseModel):
 
     def get_checksum_data(self) -> MetadataChecksum:
         """All checksums should be done by the same algorithm"""
+
         if len(self.files) == 0:
             raise ValueError("No files in the metadata object have been recorded")
 

@@ -4,13 +4,15 @@ from datetime import datetime, timedelta
 from pathlib import Path
 from typing import Any, cast
 
-from sqlalchemy import Engine, select
+from sqlalchemy import Engine, desc, select
 from sqlalchemy.orm import Session
 
 import src.models as table_objects
 from src.common.utils import utcnow
 from src.core.s3_storage import ObjectStorage
+from src.enums.backup.status import BackupStatus
 from src.models import BackupModel, TaskModel
+from src.models.backup.meta import MetaModel
 from src.models.base import Base, BaseModel
 from src.schemas import DateRangeRequest
 from src.schemas.backup import (
@@ -229,3 +231,27 @@ class RangedBackupWorkflow(BaseBackupWorkflow):
     def _write_to_json_file(self, file_path: Path, data: dict[str, Any]) -> None:
         with file_path.open("w") as file:
             json.dump(data, file, default=str)
+
+    def link_parent_backup(self):
+        if self.backup_record.meta is None:
+            raise ValueError("Backup record does not have any attached metadata")
+
+        assert self.metadata_date_range, (
+            "Somehow the RangedBackupWorkflow was incorrectly initialised"
+        )
+
+        backup = (
+            self.backup_db.query(BackupModel)
+            .join(MetaModel, BackupModel.id == MetaModel.backup_id)
+            .filter(
+                BackupModel.id != self.backup_record.id,
+                BackupModel.meta.is_not(None),
+                BackupModel.status == BackupStatus.SUCCESS,
+                MetaModel.date_range_end < self.metadata_date_range.start,
+            )
+            .order_by(desc(MetaModel.date_range_end))
+            .first()
+        )
+
+        if backup is not None:
+            self.backup_record.parent_backup = backup.id

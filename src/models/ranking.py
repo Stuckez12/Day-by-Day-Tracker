@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import uuid
 from datetime import date
 from typing import TYPE_CHECKING, Optional
@@ -24,7 +26,7 @@ class RankerModel(BaseModel):
     text_events: Mapped[Optional[str]] = mapped_column(String, nullable=True)
     text_notes: Mapped[Optional[str]] = mapped_column(String, nullable=True)
 
-    personnel: Mapped["PersonnelModel"] = relationship(back_populates="ranker")
+    personnel: Mapped[PersonnelModel] = relationship(back_populates="ranker")
 
     def __init__(self, personnel_id: uuid.UUID, day: date, ranking: int | None = None):
         self.personnel_id = personnel_id
