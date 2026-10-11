@@ -9,6 +9,10 @@ from src.settings import app_config
 target_metadata = BackupBase.metadata
 
 
+def get_database_url() -> str:
+    return context.config.get_main_option("sqlalchemy.url") or app_config.backup_db_url
+
+
 def run_migrations_offline() -> None:
     """Run migrations in 'offline' mode.
 
@@ -22,7 +26,7 @@ def run_migrations_offline() -> None:
 
     """
     context.configure(
-        url=app_config.backup_db_url,
+        url=get_database_url(),
         target_metadata=target_metadata,
         literal_binds=True,
         dialect_opts={"paramstyle": "named"},
@@ -40,7 +44,7 @@ def run_migrations_online() -> None:
 
     """
     connectable = create_engine(
-        app_config.backup_db_url,
+        get_database_url(),
         poolclass=pool.NullPool,
     )
 

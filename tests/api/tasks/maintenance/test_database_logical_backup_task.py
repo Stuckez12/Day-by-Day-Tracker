@@ -7,7 +7,7 @@ from src.enums import BackupStatus, BackupTriggerMethod
 from src.models import BackupModel
 from src.schemas import BackupSchema
 from src.tasks import database_logical_backup
-from src.workflows import BackupWorkflow
+from src.workflows import LogicalBackupWorkflow
 
 
 @pytest.mark.usefixtures("mock_task_db")
@@ -16,14 +16,14 @@ class TestDatabaseLogicalBackupTask:
         self,
         mocker: MockerFixture,
         celery_worker: None,
-        test_backup_zip_stored: BackupModel,
+        test_logical_backup_zip_stored: BackupModel,
     ):
         mocker.patch.object(
-            BackupWorkflow,
+            LogicalBackupWorkflow,
             "_get_database_date_range",
             return_value=(utcnow(), utcnow()),
         )
-        assert test_backup_zip_stored.meta
+        assert test_logical_backup_zip_stored.meta
 
         task: AsyncResult = database_logical_backup.delay(
             trigger=BackupTriggerMethod.MANUAL.value
@@ -39,7 +39,9 @@ class TestDatabaseLogicalBackupTask:
 
     def test_workflow_failure(self, mocker: MockerFixture, celery_worker: None):
         mocker.patch.object(
-            BackupWorkflow, "create_logical_database_backup", side_effect=RuntimeError
+            LogicalBackupWorkflow,
+            "create_logical_database_backup",
+            side_effect=RuntimeError,
         )
 
         task: AsyncResult = database_logical_backup.delay(

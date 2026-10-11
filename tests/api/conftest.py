@@ -46,6 +46,7 @@ from src.schemas import (
     MetadataFiles,
     MetadataTool,
 )
+from src.schemas.common import DateRangeRequest
 from src.services import (
     AuthService,
     BackupService,
@@ -54,7 +55,8 @@ from src.services import (
     TaskService,
 )
 from src.settings import app_config
-from src.workflows import BackupWorkflow
+from src.workflows import LogicalBackupWorkflow, RangedBackupWorkflow
+from src.workflows.backup import BaseBackupWorkflow
 from tests.api.constants import VALID_PASSWORD
 
 
@@ -164,19 +166,25 @@ def test_file_2(tmp_path: Path):
 
 
 @pytest.fixture(scope="session")
-def test_backup_zip_name() -> Path:
+def test_logical_backup_zip_name() -> Path:
     return Path("./tests/files/20260925080016-tracker-backup.zip")
 
 
+@pytest.fixture(scope="session")
+def test_ranged_backup_zip_name() -> Path:
+    return Path("./tests/files/20261003193940-tracker-backup-ranged.zip")
+
+
 @pytest.fixture(scope="function")
-def test_backup_zip_stored(
+def test_logical_backup_zip_stored(
     test_backup_session: Session,
     test_object_storage: ObjectStorage,
-    test_backup_zip_name: Path,
+    test_logical_backup_zip_name: Path,
 ) -> Generator[BackupModel, None, None]:
-    with open(test_backup_zip_name, "rb") as f:
-        filename = "20260925080016-tracker-backup.zip"
-        test_object_storage.upload_file(f, ObjectType.BACKUP, filename)
+    with test_logical_backup_zip_name.open("rb") as f:
+        test_object_storage.upload_file(
+            f, ObjectType.BACKUP, test_logical_backup_zip_name.name
+        )
 
     backup_model = BackupModel(
         celery_id=uuid.uuid4(),
@@ -213,13 +221,81 @@ def test_backup_zip_stored(
         data=MetadataData(date_range=MetadataDateRange(start=utcnow(), end=utcnow())),
     )
 
-    file_metadata = test_object_storage.file_metadata(ObjectType.BACKUP, filename)
+    file_metadata = test_object_storage.file_metadata(
+        ObjectType.BACKUP, test_logical_backup_zip_name.name
+    )
     metadata_model = MetaModel(metadata, file_metadata)
 
     test_backup_session.add(metadata_model)
     test_backup_session.commit()
 
     yield backup_model
+
+    test_object_storage.delete_file(
+        ObjectType.BACKUP, test_logical_backup_zip_name.name
+    )
+
+    test_backup_session.delete(backup_model)
+    test_backup_session.commit()
+
+
+@pytest.fixture(scope="function")
+def test_ranged_backup_zip_stored(
+    test_backup_session: Session,
+    test_object_storage: ObjectStorage,
+    test_ranged_backup_zip_name: Path,
+) -> Generator[BackupModel, None, None]:
+    with test_ranged_backup_zip_name.open("rb") as f:
+        test_object_storage.upload_file(
+            f, ObjectType.BACKUP, test_ranged_backup_zip_name.name
+        )
+
+    backup_model = BackupModel(
+        celery_id=uuid.uuid4(),
+        trigger_method=BackupTriggerMethod.MANUAL,
+        status=BackupStatus.SUCCESS,
+        backup_type=BackupType.RANGED,
+        duration=10.0,
+        error_message=None,
+        error_traceback=None,
+    )
+    test_backup_session.add(backup_model)
+    test_backup_session.flush([backup_model])
+
+    metadata = Metadata(
+        backup_id=str(backup_model.id),
+        backup_type=BackupType.RANGED,
+        created_at=utcnow(),
+        database_alembic_version="00000000",
+        app_version=app_config.APP_VERSION,
+        tool=MetadataTool(name="dbdt_json_collector", version="1"),
+        files=[
+            MetadataFiles(
+                name="tracker-backup-2026-Sep-25.dump",
+                type="backup",
+                size_bytes=9696,
+                checksum=MetadataChecksum(
+                    algorithm="sha256",
+                    value="c359023ae6aabc918f37c209940c837b2b4870af2f9325490b30a3ea5c7fafda",
+                    verified=True,
+                    last_verified=utcnow(),
+                ),
+            )
+        ],
+        data=MetadataData(date_range=MetadataDateRange(start=utcnow(), end=utcnow())),
+    )
+
+    file_metadata = test_object_storage.file_metadata(
+        ObjectType.BACKUP, test_ranged_backup_zip_name.name
+    )
+    metadata_model = MetaModel(metadata, file_metadata)
+
+    test_backup_session.add(metadata_model)
+    test_backup_session.commit()
+
+    yield backup_model
+
+    test_object_storage.delete_file(ObjectType.BACKUP, test_ranged_backup_zip_name.name)
 
     test_backup_session.delete(backup_model)
     test_backup_session.commit()
@@ -283,7 +359,7 @@ def test_s3_container() -> Generator[None, None, None]:
         endpoint = f"http://{host}:{port}"
 
         client = boto3.client(
-            "s3",
+            "s3",  # type: ignore[report-argument-type]
             endpoint_url=endpoint,
             aws_access_key_id=app_config.S3_ACCESS_KEY,
             aws_secret_access_key=app_config.S3_SECRET_KEY,
@@ -460,17 +536,52 @@ def test_task_service(test_session: Session):
 
 
 @pytest.fixture(scope="function")
-def test_backup_workflow(
+def test_base_backup_workflow(
     test_session: Session,
     test_backup_session: Session,
     test_backup: BackupModel,
     test_object_storage: ObjectStorage,
 ):
-    yield BackupWorkflow(
+    yield BaseBackupWorkflow(
         db=test_session,
         backup_db=test_backup_session,
         backup_record=test_backup,
         object_storage=test_object_storage,
+    )
+
+
+@pytest.fixture(scope="function")
+def test_logical_backup_workflow(
+    test_session: Session,
+    test_backup_session: Session,
+    test_backup: BackupModel,
+    test_object_storage: ObjectStorage,
+):
+    yield LogicalBackupWorkflow(
+        db=test_session,
+        backup_db=test_backup_session,
+        backup_record=test_backup,
+        object_storage=test_object_storage,
+    )
+
+
+@pytest.fixture(scope="function")
+def test_ranged_backup_workflow(
+    test_session: Session,
+    test_backup_session: Session,
+    test_backup: BackupModel,
+    test_object_storage: ObjectStorage,
+    test_date_today: date,
+):
+    yield RangedBackupWorkflow(
+        db=test_session,
+        backup_db=test_backup_session,
+        backup_record=test_backup,
+        object_storage=test_object_storage,
+        date_range=DateRangeRequest(
+            min_date=test_date_today - timedelta(days=1),
+            max_date=test_date_today + timedelta(days=1),
+        ),
     )
 
 
@@ -726,7 +837,7 @@ def test_metadata(test_backup_session: Session, test_metadata_schema: Metadata):
 def test_metadata_schema(test_backup: BackupModel):
     yield Metadata(
         backup_id=str(test_backup.id),
-        backup_type=BackupType.FULL,
+        backup_type=BackupType.LOGICAL,
         created_at=utcnow(),
         database_alembic_version="00000000",
         app_version=app_config.APP_VERSION,

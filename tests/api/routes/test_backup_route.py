@@ -112,7 +112,7 @@ class TestUploadBackupRoute:
         mocker: MockerFixture,
         test_backup_session: Session,
         test_client_admin_session: TestClient,
-        test_backup_zip_name: Path,
+        test_logical_backup_zip_name: Path,
         test_object_storage: ObjectStorage,
     ):
         task_id = str(uuid.uuid4())
@@ -121,17 +121,17 @@ class TestUploadBackupRoute:
             **{"s.return_value.apply_async.return_value": mocker.Mock(id=task_id)},
         )
 
-        with test_backup_zip_name.open("rb") as test_file_content:
-            files = {"file": (test_backup_zip_name.name, test_file_content)}
+        with test_logical_backup_zip_name.open("rb") as test_file_content:
+            files = {"file": (test_logical_backup_zip_name.name, test_file_content)}
             result = test_client_admin_session.post("/backup/upload", files=files)
 
         assert result.status_code == status.HTTP_202_ACCEPTED
         assert result.json() == {"task_id": task_id}
 
         file_metadata = test_object_storage.file_metadata(
-            ObjectType.BACKUP, test_backup_zip_name.name
+            ObjectType.BACKUP, test_logical_backup_zip_name.name
         )
-        assert str(file_metadata.directory) == test_backup_zip_name.name
+        assert str(file_metadata.directory) == test_logical_backup_zip_name.name
         assert file_metadata.bucket == ObjectType.BACKUP.value
         assert file_metadata.byte_size == 9696
         assert file_metadata.file_type == "application/zip"
@@ -153,21 +153,23 @@ class TestUploadBackupRoute:
 
 class TestDownloadBackupRoute:
     def test_success(
-        self, test_client_admin_session: TestClient, test_backup_zip_stored: BackupModel
+        self,
+        test_client_admin_session: TestClient,
+        test_logical_backup_zip_stored: BackupModel,
     ):
-        assert test_backup_zip_stored.meta
+        assert test_logical_backup_zip_stored.meta
 
         result = test_client_admin_session.get(
-            f"/backup/{test_backup_zip_stored.id}/download"
+            f"/backup/{test_logical_backup_zip_stored.id}/download"
         )
         assert result.status_code == status.HTTP_200_OK
         assert (
-            f'filename="{test_backup_zip_stored.meta.zip_filename}"'
+            f'filename="{test_logical_backup_zip_stored.meta.zip_filename}"'
             in result.headers["content-disposition"]
         )
 
         file_size = len(result.content)
-        assert file_size == test_backup_zip_stored.meta.zip_size_bytes
+        assert file_size == test_logical_backup_zip_stored.meta.zip_size_bytes
 
     def test_non_admin_restricted(self, test_client_user_session: TestClient):
         result = test_client_user_session.get(f"/backup/{uuid.uuid4()}/download")
@@ -210,7 +212,7 @@ class TestVerifyBackupRoute:
         task_id = str(uuid.uuid4())
 
         mocker.patch(
-            "src.routes.backup.verify_backup",
+            "src.routes.backup.verify_logical_backup",
             **{"s.return_value.apply_async.return_value": mocker.Mock(id=task_id)},
         )
 

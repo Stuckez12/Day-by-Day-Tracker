@@ -11,7 +11,7 @@ from src.core.s3_storage import ObjectStorage
 from src.enums import BackupStatus, BackupTriggerMethod, BackupType
 from src.schemas import BackupCreate, BackupSchema
 from src.services import BackupService
-from src.workflows import BackupWorkflow
+from src.workflows import LogicalBackupWorkflow
 
 
 @shared_task(bind=True)
@@ -53,11 +53,11 @@ def database_logical_backup(self: Task, trigger: str, *args, **kwargs) -> dict:
             }
         ).model_dump(mode="json")
 
-    workflow: BackupWorkflow | None = None
+    workflow: LogicalBackupWorkflow | None = None
 
     try:
         s3_storage = ObjectStorage()
-        workflow = BackupWorkflow(
+        workflow = LogicalBackupWorkflow(
             db=db,
             backup_db=backup_db,
             backup_record=backup_record,

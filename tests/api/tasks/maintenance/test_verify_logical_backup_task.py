@@ -9,8 +9,8 @@ from sqlalchemy.orm import Session
 from src.enums import BackupType
 from src.models import BackupModel
 from src.schemas import VerifiedBackupResultSchema
-from src.tasks import verify_backup
-from src.workflows import BackupWorkflow
+from src.tasks import verify_logical_backup
+from src.workflows import LogicalBackupWorkflow
 
 
 @pytest.mark.usefixtures("mock_task_db")
@@ -19,11 +19,13 @@ class TestVerifyBackupTask:
         self,
         mocker: MockerFixture,
         celery_worker: None,
-        test_backup_zip_stored: BackupModel,
+        test_logical_backup_zip_stored: BackupModel,
     ):
         mocker.patch.object(subprocess, "run", return_value=None)
 
-        task: AsyncResult = verify_backup.delay(backup_id=test_backup_zip_stored.id)
+        task: AsyncResult = verify_logical_backup.delay(
+            backup_id=test_logical_backup_zip_stored.id
+        )
         backup = VerifiedBackupResultSchema.model_validate(task.result)
         assert backup.verified is True
         assert backup.backup_type == BackupType.LOGICAL
@@ -31,7 +33,7 @@ class TestVerifyBackupTask:
         assert backup.error_traceback is None
 
     def test_no_backup_record(self, celery_worker: None):
-        task: AsyncResult = verify_backup.delay(backup_id=uuid.uuid4())
+        task: AsyncResult = verify_logical_backup.delay(backup_id=uuid.uuid4())
         backup = VerifiedBackupResultSchema.model_validate(task.result)
         assert backup.verified is False
         assert backup.backup_type is None
@@ -43,14 +45,16 @@ class TestVerifyBackupTask:
         mocker: MockerFixture,
         celery_worker: None,
         test_backup_session: Session,
-        test_backup_zip_stored: BackupModel,
+        test_logical_backup_zip_stored: BackupModel,
     ):
         mocker.patch.object(subprocess, "run", return_value=None)
 
-        test_backup_zip_stored.meta = None
+        test_logical_backup_zip_stored.meta = None
         test_backup_session.commit()
 
-        task: AsyncResult = verify_backup.delay(backup_id=test_backup_zip_stored.id)
+        task: AsyncResult = verify_logical_backup.delay(
+            backup_id=test_logical_backup_zip_stored.id
+        )
         backup = VerifiedBackupResultSchema.model_validate(task.result)
         assert backup.verified is False
         assert backup.backup_type is None
@@ -61,16 +65,18 @@ class TestVerifyBackupTask:
         self,
         mocker: MockerFixture,
         celery_worker: None,
-        test_backup_zip_stored: BackupModel,
+        test_logical_backup_zip_stored: BackupModel,
     ):
         mocker.patch.object(subprocess, "run", return_value=None)
         mocker.patch.object(
-            BackupWorkflow, "retrieve_zip_file", side_effect=RuntimeError
+            LogicalBackupWorkflow, "retrieve_zip_file", side_effect=RuntimeError
         )
 
-        task: AsyncResult = verify_backup.delay(backup_id=test_backup_zip_stored.id)
+        task: AsyncResult = verify_logical_backup.delay(
+            backup_id=test_logical_backup_zip_stored.id
+        )
         backup = VerifiedBackupResultSchema.model_validate(task.result)
         assert backup.verified is False
-        assert backup.backup_type == test_backup_zip_stored.backup_type
+        assert backup.backup_type == test_logical_backup_zip_stored.backup_type
         assert backup.error_message is not None
         assert backup.error_traceback is not None

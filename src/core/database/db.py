@@ -1,5 +1,8 @@
+from contextlib import contextmanager
+from typing import Generator
+
 from sqlalchemy import create_engine
-from sqlalchemy.orm import sessionmaker
+from sqlalchemy.orm import Session, sessionmaker
 from sqlalchemy.pool import QueuePool
 
 from src.settings import app_config
@@ -49,3 +52,32 @@ def get_backup_db():
 
     finally:
         db.close()
+
+
+@contextmanager
+def temporary_db_session(
+    database_name: str,
+) -> Generator[Session, None, None]:
+
+    engine = create_engine(
+        f"{app_config.base_db_url}/{database_name}",
+        pool_pre_ping=True,
+        pool_size=2,
+        max_overflow=3,
+        pool_timeout=30,
+    )
+
+    SessionLocal = sessionmaker(
+        bind=engine,
+        autoflush=False,
+        autocommit=False,
+    )
+
+    db = SessionLocal()
+
+    try:
+        yield db
+
+    finally:
+        db.close()
+        engine.dispose()
