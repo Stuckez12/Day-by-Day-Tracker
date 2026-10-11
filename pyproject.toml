@@ -57,13 +57,14 @@ omit = [
     "src/main.py",
     "src/migrations/*",
     "src/routes/task_run.py",
+    "src/services/base.py",
     "src/settings.py",
     "src/tasks/task_management.py",
 ]
 
 [tool.pytest.ini_options]
 asyncio_mode="auto"
-addopts = "--cov=src"
+addopts = "--cov=src --cov-report=term-missing:skip-covered"
 
 filterwarnings = [
   "ignore:Accessing argon2\\.__version__ is deprecated.*:DeprecationWarning",

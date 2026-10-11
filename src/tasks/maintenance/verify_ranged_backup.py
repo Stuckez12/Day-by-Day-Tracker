@@ -77,8 +77,8 @@ def verify_ranged_backup(self: Task, backup_id: UUID, *args, **kwargs) -> dict:
             backup_record=backup,
             object_storage=s3_storage,
             date_range=DateRangeRequest(
-                min_date=backup.meta.date_range_start,
-                max_date=backup.meta.date_range_end,
+                min_date=backup.meta.date_range_start.date(),
+                max_date=backup.meta.date_range_end.date(),
             ),
         )
 
