@@ -11,7 +11,7 @@ from src.workflows import RangedBackupWorkflow
 
 
 class TestCreateRangedBackupWorkflow:
-    def test_success(
+    def test_success_single_day(
         self,
         test_ranker: RankerModel,
         test_ranged_backup_workflow: RangedBackupWorkflow,

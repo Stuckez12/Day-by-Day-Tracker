@@ -58,7 +58,7 @@ def downgrade() -> None:
                 table_schema="public", table_name="backups", column_name="backup_type"
             )
         ],
-        enum_values_to_rename=[("RANGED_DAY", "RANGED")],
+        enum_values_to_rename=[("RANGED_DAY", "RANGED"), ("RANGED_WEEK", "RANGED")],
     )
     op.drop_constraint("fk_backups_parent_backup_id", "backups", type_="foreignkey")
     op.drop_column("backups", "parent_backup_id")

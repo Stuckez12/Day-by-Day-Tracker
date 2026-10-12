@@ -37,23 +37,29 @@ def database_ranged_backup(
         max_date=datetime.strptime(end_date, "%Y-%m-%d"),
     )
 
-    # Decide whether ranged backup is a single day or a week
-    backup_type = BackupType.RANGED_DAY
-
-    if date_range.min_date != date_range.max_date:
-        day_length = date_range.max_date - date_range.min_date
-
-        if day_length.days != 7:
-            raise ValueError("Variable date range provided was not a week")
-
-        backup_type = BackupType.RANGED_WEEK
-
     backup_data = BackupCreate(
         celery_id=cast(str, self.request.id),
         trigger_method=BackupTriggerMethod(trigger),
         status=BackupStatus.RUNNING,
-        backup_type=backup_type,
+        backup_type=BackupType.RANGED_DAY,
     )
+
+    # Decide whether ranged backup is a single day or a week
+    if date_range.min_date != date_range.max_date:
+        day_length = date_range.max_date - date_range.min_date
+
+        if day_length.days != 6:  # An extra day will be added to cover the entire week
+            return BackupSchema.model_validate(
+                {
+                    "id": FILLER_UUID4,
+                    "status": BackupStatus.FAILURE,
+                    "error_message": "Variable date range provided was not a week",
+                    "error_traceback": traceback.format_exc(),
+                    **backup_data.model_dump(mode="json", exclude={"status"}),
+                }
+            ).model_dump(mode="json")
+
+        backup_data.backup_type = BackupType.RANGED_WEEK
 
     try:
         update_task_state(self, db, metadata={"stage": "Initialising Backup Task"})
@@ -97,7 +103,7 @@ def database_ranged_backup(
         # update_task_state(self, db, metadata={"stage": "Creating Object Storage Backups"})
 
         update_task_state(self, db, metadata={"stage": "Compiling Metadata"})
-        workflow.generate_metadata(backup_type)
+        workflow.generate_metadata(backup_data.backup_type)
 
         update_task_state(self, db, metadata={"stage": "Packaging Backup"})
         workflow.zip_all_backup_files()

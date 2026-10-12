@@ -108,6 +108,7 @@ class BackupSchema(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
     id: UUID
+    parent_backup_id: UUID | None = None
     celery_id: UUID
     trigger_method: BackupTriggerMethod
     status: BackupStatus
