@@ -17,7 +17,12 @@ from src.workflows import RangedBackupWorkflow
 
 @shared_task(bind=True)
 def database_ranged_backup(
-    self: Task, trigger: str, start_date: str, end_date: str, *args, **kwargs
+    self: Task,
+    trigger: str,
+    start_date: str,
+    end_date: str,
+    *args,
+    **kwargs,  # TODO THIS PR: Add extra argument to make it either point to a BackupType (will need Daily/Weekly ranged backup enum value types then)
 ) -> dict:
     db_gen = get_db()
     db = next(db_gen)
@@ -27,20 +32,37 @@ def database_ranged_backup(
 
     start_time = time.perf_counter()
 
+    date_range = DateRangeRequest(
+        min_date=datetime.strptime(start_date, "%Y-%m-%d"),
+        max_date=datetime.strptime(end_date, "%Y-%m-%d"),
+    )
+
     backup_data = BackupCreate(
         celery_id=cast(str, self.request.id),
         trigger_method=BackupTriggerMethod(trigger),
         status=BackupStatus.RUNNING,
-        backup_type=BackupType.RANGED,
+        backup_type=BackupType.RANGED_DAY,
     )
+
+    # Decide whether ranged backup is a single day or a week
+    if date_range.min_date != date_range.max_date:
+        day_length = date_range.max_date - date_range.min_date
+
+        if day_length.days != 6:  # An extra day will be added to cover the entire week
+            return BackupSchema.model_validate(
+                {
+                    "id": FILLER_UUID4,
+                    "status": BackupStatus.FAILURE,
+                    "error_message": "Variable date range provided was not a week",
+                    "error_traceback": traceback.format_exc(),
+                    **backup_data.model_dump(mode="json", exclude={"status"}),
+                }
+            ).model_dump(mode="json")
+
+        backup_data.backup_type = BackupType.RANGED_WEEK
 
     try:
         update_task_state(self, db, metadata={"stage": "Initialising Backup Task"})
-
-        date_range = DateRangeRequest(
-            min_date=datetime.strptime(start_date, "%Y-%m-%d"),
-            max_date=datetime.strptime(end_date, "%Y-%m-%d"),
-        )
 
         service = BackupService(db=db, backup_db=backup_db)
         backup_record = service.create(backup_data)
@@ -81,7 +103,7 @@ def database_ranged_backup(
         # update_task_state(self, db, metadata={"stage": "Creating Object Storage Backups"})
 
         update_task_state(self, db, metadata={"stage": "Compiling Metadata"})
-        workflow.generate_metadata(BackupType.RANGED)
+        workflow.generate_metadata(backup_data.backup_type)
 
         update_task_state(self, db, metadata={"stage": "Packaging Backup"})
         workflow.zip_all_backup_files()
@@ -89,6 +111,7 @@ def database_ranged_backup(
         update_task_state(self, db, metadata={"stage": "Saving Packaged Backup"})
         workflow.upload_zip_to_object_storage()
         workflow.record_backup_into_database()
+        workflow.link_parent_backup()
 
         update_task_state(self, db, metadata={"stage": "Finalising Backup Task"})
         end_time = time.perf_counter()

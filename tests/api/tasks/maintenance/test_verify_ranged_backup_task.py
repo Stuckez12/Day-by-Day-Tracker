@@ -28,7 +28,7 @@ class TestVerifyRangedBackupTask:
         )
         backup = VerifiedBackupResultSchema.model_validate(task.result)
         assert backup.verified is True, backup.error_traceback
-        assert backup.backup_type == BackupType.RANGED
+        assert backup.backup_type == BackupType.RANGED_DAY
         assert backup.error_message is None
         assert backup.error_traceback is None
 

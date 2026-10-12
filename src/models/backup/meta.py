@@ -48,7 +48,7 @@ class MetaModel(BackupBaseModel):
     zip_path: Mapped[str] = mapped_column(String, nullable=False)
     zip_size_bytes: Mapped[int] = mapped_column(Integer, nullable=False)
 
-    backup: Mapped["BackupModel"] = relationship(
+    backup: Mapped[BackupModel] = relationship(
         "BackupModel",
         back_populates="meta",
     )

@@ -254,7 +254,7 @@ def test_ranged_backup_zip_stored(
         celery_id=uuid.uuid4(),
         trigger_method=BackupTriggerMethod.MANUAL,
         status=BackupStatus.SUCCESS,
-        backup_type=BackupType.RANGED,
+        backup_type=BackupType.RANGED_DAY,
         duration=10.0,
         error_message=None,
         error_traceback=None,
@@ -264,7 +264,7 @@ def test_ranged_backup_zip_stored(
 
     metadata = Metadata(
         backup_id=str(backup_model.id),
-        backup_type=BackupType.RANGED,
+        backup_type=BackupType.RANGED_DAY,
         created_at=utcnow(),
         database_alembic_version="00000000",
         app_version=app_config.APP_VERSION,
@@ -828,6 +828,27 @@ def test_metadata(test_backup_session: Session, test_metadata_schema: Metadata):
     test_backup_session.commit()
 
 
+@pytest.fixture(scope="function")
+def test_metadata_2(test_backup_session: Session, test_metadata_schema_2: Metadata):
+    file_data = FileObjectMetadataSchema(
+        ContentType="application/zip",
+        ContentLength=100,
+        bucket="temp",
+        directory=Path("/temp_2.file"),
+        LastModified=utcnow(),
+    )
+
+    model = MetaModel(test_metadata_schema_2, file_data)
+
+    test_backup_session.add(model)
+    test_backup_session.commit()
+
+    yield model
+
+    test_backup_session.delete(model)
+    test_backup_session.commit()
+
+
 ################################################################################
 # Schemas
 ################################################################################
@@ -856,4 +877,35 @@ def test_metadata_schema(test_backup: BackupModel):
             )
         ],
         data=MetadataData(date_range=MetadataDateRange(start=utcnow(), end=utcnow())),
+    )
+
+
+@pytest.fixture(scope="function")
+def test_metadata_schema_2(test_backup_2: BackupModel):
+    yield Metadata(
+        backup_id=str(test_backup_2.id),
+        backup_type=BackupType.LOGICAL,
+        created_at=utcnow(),
+        database_alembic_version="00000000",
+        app_version=app_config.APP_VERSION,
+        tool=MetadataTool(name="pg_dump", version="17.11"),
+        files=[
+            MetadataFiles(
+                name="backup.dump",
+                type="backup",
+                size_bytes=9001,
+                checksum=MetadataChecksum(
+                    algorithm="sha256",
+                    value="val",
+                    verified=False,
+                    last_verified=utcnow(),
+                ),
+            )
+        ],
+        data=MetadataData(
+            date_range=MetadataDateRange(
+                start=utcnow() - timedelta(days=2),
+                end=utcnow() - timedelta(days=2),
+            )
+        ),
     )

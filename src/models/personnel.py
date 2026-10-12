@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from typing import TYPE_CHECKING
 
 from sqlalchemy import Boolean, String
@@ -21,7 +23,7 @@ class PersonnelModel(BaseModel):
     first_name: Mapped[str] = mapped_column(String, nullable=False)
     last_name: Mapped[str] = mapped_column(String, nullable=False)
 
-    ranker: Mapped["RankerModel"] = relationship(
+    ranker: Mapped[RankerModel] = relationship(
         back_populates="personnel", cascade="all, delete-orphan"
     )
 
