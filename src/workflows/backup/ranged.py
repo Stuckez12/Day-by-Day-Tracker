@@ -233,6 +233,8 @@ class RangedBackupWorkflow(BaseBackupWorkflow):
             json.dump(data, file, default=str)
 
     def link_parent_backup(self):
+        """This can be either a LOGICAL or RANGED backup. UPLOADED is also allowed as they are LOGICAL in disguise"""
+
         if self.backup_record.meta is None:
             raise ValueError("Backup record does not have any attached metadata")
 
@@ -245,7 +247,6 @@ class RangedBackupWorkflow(BaseBackupWorkflow):
             .join(MetaModel, BackupModel.id == MetaModel.backup_id)
             .filter(
                 BackupModel.id != self.backup_record.id,
-                BackupModel.meta.is_not(None),
                 BackupModel.status == BackupStatus.SUCCESS,
                 MetaModel.date_range_end < self.metadata_date_range.start,
             )
@@ -254,4 +255,5 @@ class RangedBackupWorkflow(BaseBackupWorkflow):
         )
 
         if backup is not None:
-            self.backup_record.parent_backup = backup.id
+            logging.info(f"Linking ranged backup to existing backup: {backup.id}")
+            self.backup_record.parent_backup_id = backup.id

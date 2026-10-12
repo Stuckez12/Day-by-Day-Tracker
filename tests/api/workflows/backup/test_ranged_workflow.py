@@ -5,7 +5,7 @@ from datetime import date
 import pytest
 from sqlalchemy.orm import Session
 
-from src.models import RankerModel
+from src.models import BackupModel, MetaModel, RankerModel
 from src.schemas import Metadata
 from src.workflows import RangedBackupWorkflow
 
@@ -86,3 +86,20 @@ class TestApplyRangedBackupWorkflow:
 class TestVerifyRangedBackupWorkflow:
     def test_success(self):
         pass
+
+
+class TestLinkParentBackupWorkflow:
+    def test_success(
+        self,
+        test_backup_session: Session,
+        test_backup: BackupModel,
+        test_backup_2: BackupModel,
+        test_metadata: MetaModel,
+        test_metadata_2: MetaModel,
+        test_ranged_backup_workflow: RangedBackupWorkflow,
+    ):
+        test_ranged_backup_workflow.link_parent_backup()
+        test_backup_session.commit()
+        test_backup_session.refresh(test_backup)
+        test_backup_session.refresh(test_backup_2)
+        assert test_backup.parent_backup_id == test_backup_2.id

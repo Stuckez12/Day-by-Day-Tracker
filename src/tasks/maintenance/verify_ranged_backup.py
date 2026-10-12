@@ -32,7 +32,7 @@ def verify_ranged_backup(self: Task, backup_id: UUID, *args, **kwargs) -> dict:
         service = BackupService(db=db, backup_db=backup_db)
         backup = service.get_by_backup_id(backup_id)
 
-        if backup.backup_type != BackupType.RANGED:
+        if backup.backup_type not in [BackupType.RANGED_DAY, BackupType.RANGED_WEEK]:
             raise ValueError("Backup is not of type RANGED")
 
         if backup.meta is None:

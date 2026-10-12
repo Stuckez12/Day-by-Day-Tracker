@@ -2,7 +2,7 @@ from datetime import datetime
 from typing import Literal
 from uuid import UUID
 
-from pydantic import BaseModel, ConfigDict
+from pydantic import BaseModel, ConfigDict, field_validator
 
 from src.enums import BackupStatus, BackupTriggerMethod, BackupType
 from src.settings import app_config
@@ -66,6 +66,14 @@ class Metadata(BaseModel):
             raise ValueError("No files in the metadata object have been recorded")
 
         return self.files[0].checksum
+
+    @field_validator("backup_type", mode="before")
+    @classmethod
+    def support_prior_enum_values(cls, value: str):
+        if value == "RANGED":
+            value = BackupType.RANGED_DAY.value
+
+        return value
 
 
 class RecordMetadata(BaseModel):

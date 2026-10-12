@@ -17,6 +17,9 @@ if TYPE_CHECKING:
 class BackupModel(BackupBaseModel):
     __tablename__ = "backups"
 
+    parent_backup_id: Mapped[UUID | None] = mapped_column(
+        ForeignKey("backups.id", ondelete="SET NULL"), default=None, nullable=True
+    )
     celery_id: Mapped[UUID] = mapped_column(DBUUID(as_uuid=True), nullable=False)
     trigger_method: Mapped[BackupTriggerMethod] = mapped_column(
         Enum(BackupTriggerMethod), nullable=False
@@ -28,12 +31,13 @@ class BackupModel(BackupBaseModel):
     error_message: Mapped[str | None] = mapped_column(String, nullable=True)
     error_traceback: Mapped[str | None] = mapped_column(String, nullable=True)
 
-    parent_backup: Mapped[UUID | None] = mapped_column(
-        ForeignKey("backups.id", ondelete="SET NULL"), default=None, nullable=True
+    parent_backup: Mapped[BackupModel | None] = relationship(
+        "BackupModel", back_populates="children_backup", remote_side="BackupModel.id"
+    )
+    children_backup: Mapped[list[BackupModel]] = relationship(
+        "BackupModel", back_populates="parent_backup"
     )
 
     meta: Mapped[MetaModel | None] = relationship(
-        "MetaModel",
-        cascade="all, delete-orphan",
-        back_populates="backup",
+        "MetaModel", back_populates="backup", cascade="all, delete-orphan"
     )

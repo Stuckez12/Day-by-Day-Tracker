@@ -105,7 +105,7 @@ class TestValidateBackupTypeWorkflow:
 
     def test_no_metadata(self, test_base_backup_workflow: BaseBackupWorkflow):
         with pytest.raises(ValueError, match="Metadata not set"):
-            test_base_backup_workflow.validate_backup_type(BackupType.RANGED)
+            test_base_backup_workflow.validate_backup_type(BackupType.RANGED_DAY)
 
     def test_invalid_backup_type(
         self,
@@ -117,7 +117,7 @@ class TestValidateBackupTypeWorkflow:
         invalid_backup_type = (
             BackupType.LOGICAL
             if test_metadata_schema.backup_type != BackupType.LOGICAL
-            else BackupType.RANGED
+            else BackupType.RANGED_DAY
         )
 
         with pytest.raises(ValueError, match="Provided backup type is incompatible"):

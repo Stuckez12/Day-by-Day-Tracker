@@ -32,20 +32,31 @@ def database_ranged_backup(
 
     start_time = time.perf_counter()
 
+    date_range = DateRangeRequest(
+        min_date=datetime.strptime(start_date, "%Y-%m-%d"),
+        max_date=datetime.strptime(end_date, "%Y-%m-%d"),
+    )
+
+    # Decide whether ranged backup is a single day or a week
+    backup_type = BackupType.RANGED_DAY
+
+    if date_range.min_date != date_range.max_date:
+        day_length = date_range.max_date - date_range.min_date
+
+        if day_length.days != 7:
+            raise ValueError("Variable date range provided was not a week")
+
+        backup_type = BackupType.RANGED_WEEK
+
     backup_data = BackupCreate(
         celery_id=cast(str, self.request.id),
         trigger_method=BackupTriggerMethod(trigger),
         status=BackupStatus.RUNNING,
-        backup_type=BackupType.RANGED,
+        backup_type=backup_type,
     )
 
     try:
         update_task_state(self, db, metadata={"stage": "Initialising Backup Task"})
-
-        date_range = DateRangeRequest(
-            min_date=datetime.strptime(start_date, "%Y-%m-%d"),
-            max_date=datetime.strptime(end_date, "%Y-%m-%d"),
-        )
 
         service = BackupService(db=db, backup_db=backup_db)
         backup_record = service.create(backup_data)
@@ -86,7 +97,7 @@ def database_ranged_backup(
         # update_task_state(self, db, metadata={"stage": "Creating Object Storage Backups"})
 
         update_task_state(self, db, metadata={"stage": "Compiling Metadata"})
-        workflow.generate_metadata(BackupType.RANGED)
+        workflow.generate_metadata(backup_type)
 
         update_task_state(self, db, metadata={"stage": "Packaging Backup"})
         workflow.zip_all_backup_files()
