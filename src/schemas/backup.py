@@ -109,7 +109,7 @@ class BackupSchema(BaseModel):
 
     id: UUID
     parent_backup_id: UUID | None = None
-    celery_id: UUID
+    celery_id: UUID | None = None
     trigger_method: BackupTriggerMethod
     status: BackupStatus
     backup_type: BackupType

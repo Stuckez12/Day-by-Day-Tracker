@@ -10,7 +10,7 @@ from src.core import get_backup_db, get_db
 from src.core.s3_storage import ObjectStorage
 from src.enums import BackupStatus, BackupTriggerMethod, BackupType
 from src.schemas import BackupCreate, BackupSchema
-from src.services import BackupService
+from src.services import BackupService, TaskService
 from src.workflows import LogicalBackupWorkflow
 
 
@@ -57,11 +57,13 @@ def database_logical_backup(self: Task, trigger: str, *args, **kwargs) -> dict:
 
     try:
         s3_storage = ObjectStorage()
+        task_service = TaskService(db)
         workflow = LogicalBackupWorkflow(
             db=db,
             backup_db=backup_db,
             backup_record=backup_record,
             object_storage=s3_storage,
+            task_service=task_service,
         )
 
         update_task_state(self, db, metadata={"stage": "Creating Logical Backup"})

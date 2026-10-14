@@ -10,7 +10,7 @@ from sqlalchemy.exc import NoResultFound
 
 from src.common.dependencies import PersonnelServiceDep
 from src.exc import HTTP_EXC_INVALID_TOKEN, HTTP_EXC_PERSONNEL_DOES_NOT_EXIST
-from src.models.personnel import PersonnelModel
+from src.models import PersonnelModel
 from src.settings import app_config
 
 

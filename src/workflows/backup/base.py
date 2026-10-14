@@ -3,15 +3,16 @@ import logging
 import shutil
 import subprocess
 from pathlib import Path
-from typing import cast
+from typing import Never, cast
 from zipfile import ZIP_DEFLATED, ZipFile
 
 from sqlalchemy import text
 from sqlalchemy.orm import Session
 
 from src.common import utcnow
+from src.core import TaskCancelled
 from src.core.s3_storage import ObjectStorage
-from src.enums import BackupType, ObjectType
+from src.enums import BackupType, ObjectType, TaskStatus
 from src.models import BackupModel, MetaModel
 from src.schemas import (
     Metadata,
@@ -20,6 +21,7 @@ from src.schemas import (
     MetadataFiles,
     MetadataTool,
 )
+from src.services import TaskService
 from src.settings import app_config
 from src.utils import delete_folder, sha256_file
 
@@ -32,11 +34,13 @@ class BaseBackupWorkflow:
         backup_db: Session,
         backup_record: BackupModel,
         object_storage: ObjectStorage,
+        task_service: TaskService,
     ) -> None:
         self.db = db
         self.backup_db = backup_db
         self.backup_record = backup_record
         self.object_storage = object_storage
+        self.task_service = task_service
 
         # File paths
         temp_path = app_config.TEMPORARY_PATH + "/backup"
@@ -66,7 +70,12 @@ class BaseBackupWorkflow:
 
         return "sha256", checksum
 
-    def update_verification_metadata_record(self, verified: bool = True):
+    def update_verification_metadata_record(
+        self, verified: bool = True, check_if_task_cancelled: bool = True
+    ):
+        if check_if_task_cancelled:
+            self._was_workflow_cancelled()
+
         if self.backup_record.meta is None:
             raise ValueError("Backup record does not have any attached metadata")
 
@@ -80,6 +89,8 @@ class BaseBackupWorkflow:
     # ------------------------ Metadata ------------------------ #
 
     def generate_metadata(self, backup_type: BackupType):
+        self._was_workflow_cancelled()
+
         if self.metadata_tool is None:
             raise ValueError("Backup tool used not set")
 
@@ -126,6 +137,8 @@ class BaseBackupWorkflow:
         )
 
     def retrieve_metadata_from_file(self):
+        self._was_workflow_cancelled()
+
         if not self.extracted_zip:
             raise ValueError("ZIP file not extracted")
 
@@ -148,6 +161,8 @@ class BaseBackupWorkflow:
                 break
 
     def validate_backup_type(self, backup_type: BackupType):
+        self._was_workflow_cancelled()
+
         if self.metadata is None:
             raise ValueError("Metadata not set")
 
@@ -155,6 +170,8 @@ class BaseBackupWorkflow:
             raise ValueError("Provided backup type is incompatible")
 
     def validate_metadata_checksums(self):
+        self._was_workflow_cancelled()
+
         if self.metadata is None:
             raise ValueError("Metadata not set")
 
@@ -171,6 +188,8 @@ class BaseBackupWorkflow:
     # ------------------------ ZIP File ------------------------ #
 
     def zip_all_backup_files(self) -> None:
+        self._was_workflow_cancelled()
+
         if self.backup_file_path is None:
             raise ValueError("Backup file path not set")
 
@@ -195,6 +214,8 @@ class BaseBackupWorkflow:
                 zf.write(file, arcname=file.name)
 
     def upload_zip_to_object_storage(self) -> None:
+        self._was_workflow_cancelled()
+
         if self.zipped_backup_file_path is None:
             raise ValueError("Zipped file path not set")
 
@@ -205,6 +226,8 @@ class BaseBackupWorkflow:
             self.backup_uploaded = True
 
     def retrieve_zip_file(self) -> None:
+        self._was_workflow_cancelled()
+
         if self.backup_record.meta is None:
             raise ValueError("Backup record does not have any attached metadata")
 
@@ -231,6 +254,8 @@ class BaseBackupWorkflow:
         self.extracted_zip = True
 
     def retrieve_downloaded_zip_file(self, new_backup_path: str) -> None:
+        self._was_workflow_cancelled()
+
         file_data = self.object_storage.download_file(
             ObjectType.BACKUP, new_backup_path
         )
@@ -245,7 +270,18 @@ class BaseBackupWorkflow:
 
     # ------------------------- Utils -------------------------- #
 
+    def _was_workflow_cancelled(self) -> Never | None:
+        if self.backup_record.celery_id is None:
+            raise RuntimeError("Backup workflow was not assigned a Task ID")
+
+        task = self.task_service.get_by_task_id(self.backup_record.celery_id)
+
+        if task.status == TaskStatus.CANCELLED:
+            raise TaskCancelled
+
     def record_backup_into_database(self) -> None:
+        self._was_workflow_cancelled()
+
         if self.metadata is None:
             raise ValueError("Metadata not set")
 
@@ -265,6 +301,8 @@ class BaseBackupWorkflow:
 
         self.backup_db.add(model)
         self.backup_db.flush([model])
+
+        self.backup_record.set_successful()
 
     def cleanup(self) -> None:
         try:

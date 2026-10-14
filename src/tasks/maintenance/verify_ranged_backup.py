@@ -11,7 +11,7 @@ from src.core import get_backup_db, get_db
 from src.core.s3_storage import ObjectStorage
 from src.enums import BackupType
 from src.schemas import DateRangeRequest, VerifiedBackupResultSchema
-from src.services import BackupService
+from src.services import BackupService, TaskService
 from src.workflows import RangedBackupWorkflow
 
 
@@ -71,11 +71,13 @@ def verify_ranged_backup(self: Task, backup_id: UUID, *args, **kwargs) -> dict:
 
     try:
         s3_storage = ObjectStorage()
+        task_service = TaskService(db)
         workflow = RangedBackupWorkflow(
             db=db,
             backup_db=backup_db,
             backup_record=backup,
             object_storage=s3_storage,
+            task_service=task_service,
             date_range=DateRangeRequest(
                 min_date=backup.meta.date_range_start.date(),
                 max_date=backup.meta.date_range_end.date(),
@@ -109,7 +111,9 @@ def verify_ranged_backup(self: Task, backup_id: UUID, *args, **kwargs) -> dict:
 
         if workflow:
             try:
-                workflow.update_verification_metadata_record(verified=False)
+                workflow.update_verification_metadata_record(
+                    verified=False, check_if_task_cancelled=True
+                )
 
                 backup_db.commit()
 

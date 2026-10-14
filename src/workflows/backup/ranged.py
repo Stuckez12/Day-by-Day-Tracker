@@ -8,19 +8,19 @@ from sqlalchemy import Engine, desc, select
 from sqlalchemy.orm import Session
 
 import src.models as table_objects
-from src.common.utils import utcnow
+from src.common import utcnow
 from src.core.s3_storage import ObjectStorage
-from src.enums.backup.status import BackupStatus
-from src.models import BackupModel, TaskModel
-from src.models.backup.meta import MetaModel
+from src.enums import BackupStatus
+from src.models import BackupModel, MetaModel, TaskModel
 from src.models.base import Base, BaseModel
-from src.schemas import DateRangeRequest
-from src.schemas.backup import (
+from src.schemas import (
+    DateRangeRequest,
     MetadataChecksum,
     MetadataDateRange,
     MetadataFiles,
     MetadataTool,
 )
+from src.services import TaskService
 from src.workflows.backup.base import BaseBackupWorkflow
 
 
@@ -36,6 +36,7 @@ class RangedBackupWorkflow(BaseBackupWorkflow):
         backup_db: Session,
         backup_record: BackupModel,
         object_storage: ObjectStorage,
+        task_service: TaskService,
         date_range: DateRangeRequest,
     ) -> None:
         super().__init__(
@@ -43,6 +44,7 @@ class RangedBackupWorkflow(BaseBackupWorkflow):
             backup_db=backup_db,
             backup_record=backup_record,
             object_storage=object_storage,
+            task_service=task_service,
         )
 
         self.start_date = date_range.min_date
@@ -56,6 +58,8 @@ class RangedBackupWorkflow(BaseBackupWorkflow):
     # ------------------------ DB Backup ----------------------- #
 
     def create_ranged_backup(self) -> None:
+        self._was_workflow_cancelled()
+
         result = {}
         self.metadata_date_range = cast(MetadataDateRange, self.metadata_date_range)
 
@@ -233,6 +237,8 @@ class RangedBackupWorkflow(BaseBackupWorkflow):
             json.dump(data, file, default=str)
 
     def link_parent_backup(self):
+        self._was_workflow_cancelled()
+
         """This can be either a LOGICAL or RANGED backup. UPLOADED is also allowed as they are LOGICAL in disguise"""
 
         if self.backup_record.meta is None:

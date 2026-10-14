@@ -1,7 +1,7 @@
 import uuid
 from datetime import datetime
 
-from sqlalchemy import DateTime, Integer, String
+from sqlalchemy import DateTime, Enum, Integer, String
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import Mapped, mapped_column
 
@@ -14,7 +14,7 @@ class TaskModel(BaseModel):
 
     task_id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), nullable=False)
     name: Mapped[str] = mapped_column(String, nullable=False)
-    status: Mapped[str] = mapped_column(String, nullable=False)
+    status: Mapped[TaskStatus] = mapped_column(Enum(TaskStatus), nullable=False)
     retries: Mapped[int] = mapped_column(Integer, default=0, nullable=False)
 
     started_at: Mapped[datetime] = mapped_column(DateTime, nullable=True)
@@ -25,4 +25,4 @@ class TaskModel(BaseModel):
     def __init__(self, task_id: uuid.UUID, name: str, status: TaskStatus):
         self.task_id = task_id
         self.name = name
-        self.status = status.value
+        self.status = status

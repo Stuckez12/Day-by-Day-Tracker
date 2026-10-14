@@ -11,7 +11,7 @@ from src.core import get_backup_db, get_db
 from src.core.s3_storage import ObjectStorage
 from src.enums import BackupType
 from src.schemas import VerifiedBackupResultSchema
-from src.services import BackupService
+from src.services import BackupService, TaskService
 from src.workflows import LogicalBackupWorkflow
 
 
@@ -71,11 +71,13 @@ def verify_logical_backup(self: Task, backup_id: UUID, *args, **kwargs) -> dict:
 
     try:
         s3_storage = ObjectStorage()
+        task_service = TaskService(db)
         workflow = LogicalBackupWorkflow(
             db=db,
             backup_db=backup_db,
             backup_record=backup,
             object_storage=s3_storage,
+            task_service=task_service,
         )
 
         update_task_state(self, db, metadata={"stage": "Retrieving Backup ZIP File"})
@@ -108,7 +110,9 @@ def verify_logical_backup(self: Task, backup_id: UUID, *args, **kwargs) -> dict:
 
         if workflow:
             try:
-                workflow.update_verification_metadata_record(verified=False)
+                workflow.update_verification_metadata_record(
+                    verified=False, check_if_task_cancelled=False
+                )
 
                 backup_db.commit()
 

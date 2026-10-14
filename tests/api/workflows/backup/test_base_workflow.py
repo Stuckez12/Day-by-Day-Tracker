@@ -10,7 +10,7 @@ from src.core.s3_storage import ObjectStorage
 from src.enums import BackupType, ObjectType
 from src.models import MetaModel
 from src.schemas import Metadata, MetadataDateRange, MetadataTool
-from src.workflows.backup import BaseBackupWorkflow
+from src.workflows.backup.base import BaseBackupWorkflow
 
 
 class TestUpdateMetadataBackupWorkflow:

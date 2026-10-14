@@ -6,3 +6,4 @@ class BackupStatus(Enum):
     SUCCESS = "SUCCESS"
     FAILURE = "FAILURE"
     UPLOADED = "UPLOADED"
+    VERIFYING = "VERIFYING"

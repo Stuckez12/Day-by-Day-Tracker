@@ -9,15 +9,15 @@ from sqlalchemy.orm import Session
 from sqlalchemy_utils import drop_database
 
 from src.common import utcnow
-from src.core.database.recreate_db import recreate_database
+from src.core.database import recreate_database
 from src.core.s3_storage import ObjectStorage
-from src.models import BackupModel
-from src.models.ranking import RankerModel
+from src.models import BackupModel, RankerModel
 from src.schemas import (
     MetadataChecksum,
     MetadataDateRange,
     MetadataFiles,
 )
+from src.services import TaskService
 from src.settings import app_config
 from src.workflows.backup.base import BaseBackupWorkflow
 
@@ -30,17 +30,21 @@ class LogicalBackupWorkflow(BaseBackupWorkflow):
         backup_db: Session,
         backup_record: BackupModel,
         object_storage: ObjectStorage,
+        task_service: TaskService,
     ) -> None:
         super().__init__(
             db=db,
             backup_db=backup_db,
             backup_record=backup_record,
             object_storage=object_storage,
+            task_service=task_service,
         )
 
     # ------------------------ DB Backup ----------------------- #
 
     def create_logical_database_backup(self) -> None:
+        self._was_workflow_cancelled()
+
         date = datetime.now().strftime("%Y-%b-%d")
         backup_file_name = f"{app_config.DATABASE_DB_NAME}-backup-{date}"
 
@@ -139,6 +143,8 @@ STDERR: {e.stderr}
 """)
 
     def verify_backup_file(self) -> None:
+        self._was_workflow_cancelled()
+
         test_database_name = "restore_backup_test"
         temp_db_url = recreate_database(test_database_name)
 

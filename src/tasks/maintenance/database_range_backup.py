@@ -11,7 +11,7 @@ from src.core import get_backup_db, get_db
 from src.core.s3_storage import ObjectStorage
 from src.enums import BackupStatus, BackupTriggerMethod, BackupType
 from src.schemas import BackupCreate, BackupSchema, DateRangeRequest
-from src.services import BackupService
+from src.services import BackupService, TaskService
 from src.workflows import RangedBackupWorkflow
 
 
@@ -88,11 +88,13 @@ def database_ranged_backup(
 
     try:
         s3_storage = ObjectStorage()
+        task_service = TaskService(db)
         workflow = RangedBackupWorkflow(
             db=db,
             backup_db=backup_db,
             backup_record=backup_record,
             object_storage=s3_storage,
+            task_service=task_service,
             date_range=date_range,
         )
 
