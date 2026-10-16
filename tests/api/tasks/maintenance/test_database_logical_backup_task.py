@@ -1,10 +1,11 @@
 import pytest
 from celery.result import AsyncResult
 from pytest_mock import MockerFixture
+from sqlalchemy.orm import Session
 
 from src.common import utcnow
 from src.enums import BackupStatus, BackupTriggerMethod
-from src.models import BackupModel
+from src.models import BackupModel, TaskModel
 from src.schemas import BackupSchema
 from src.tasks import database_logical_backup
 from src.workflows import LogicalBackupWorkflow
@@ -17,6 +18,8 @@ class TestDatabaseLogicalBackupTask:
         mocker: MockerFixture,
         celery_worker: None,
         test_logical_backup_zip_stored: BackupModel,
+        test_task_1: TaskModel,
+        test_backup_session: Session,
     ):
         mocker.patch.object(
             LogicalBackupWorkflow,
@@ -25,33 +28,53 @@ class TestDatabaseLogicalBackupTask:
         )
         assert test_logical_backup_zip_stored.meta
 
-        task: AsyncResult = database_logical_backup.delay(
-            trigger=BackupTriggerMethod.MANUAL.value
+        task: AsyncResult = database_logical_backup.apply_async(
+            kwargs={"trigger": BackupTriggerMethod.MANUAL.value},
+            task_id=str(test_task_1.task_id),
         )
         backup = BackupSchema.model_validate(task.result)
-        assert backup.status == BackupStatus.SUCCESS
-        assert backup.trigger_method == BackupTriggerMethod.MANUAL
-        assert backup.duration is not None
-        assert backup.duration > 0
-        assert backup.error_message is None
-        assert backup.error_traceback is None
-        assert backup.meta is not None
+        try:
+            assert backup.status == BackupStatus.SUCCESS
+            assert backup.trigger_method == BackupTriggerMethod.MANUAL
+            assert backup.duration is not None
+            assert backup.duration > 0
+            assert backup.error_message is None
+            assert backup.error_traceback is None
+            assert backup.meta is not None
+        finally:
+            record = test_backup_session.get(BackupModel, backup.id)
+            if record is not None:
+                test_backup_session.delete(record)
+                test_backup_session.commit()
 
-    def test_workflow_failure(self, mocker: MockerFixture, celery_worker: None):
+    def test_workflow_failure(
+        self,
+        mocker: MockerFixture,
+        celery_worker: None,
+        test_task_1: TaskModel,
+        test_backup_session: Session,
+    ):
         mocker.patch.object(
             LogicalBackupWorkflow,
             "create_logical_database_backup",
             side_effect=RuntimeError,
         )
 
-        task: AsyncResult = database_logical_backup.delay(
-            trigger=BackupTriggerMethod.MANUAL.value
+        task: AsyncResult = database_logical_backup.apply_async(
+            kwargs={"trigger": BackupTriggerMethod.MANUAL.value},
+            task_id=str(test_task_1.task_id),
         )
         backup = BackupSchema.model_validate(task.result)
-        assert backup.status == BackupStatus.FAILURE
-        assert backup.trigger_method == BackupTriggerMethod.MANUAL
-        assert backup.duration is not None
-        assert backup.duration > 0
-        assert backup.error_message is not None
-        assert backup.error_traceback is not None
-        assert backup.meta is None
+        try:
+            assert backup.status == BackupStatus.FAILURE
+            assert backup.trigger_method == BackupTriggerMethod.MANUAL
+            assert backup.duration is not None
+            assert backup.duration > 0
+            assert backup.error_message is not None
+            assert backup.error_traceback is not None
+            assert backup.meta is None
+        finally:
+            record = test_backup_session.get(BackupModel, backup.id)
+            if record is not None:
+                test_backup_session.delete(record)
+                test_backup_session.commit()

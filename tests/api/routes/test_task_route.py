@@ -63,7 +63,7 @@ class TestGetPaginatedTasksRoute:
         test_task_3: TaskModel,
     ):
         result = test_client_admin_session.get(
-            f"/task/paginated?task_status={test_task_2.status}"
+            f"/task/paginated?task_status={test_task_2.status.value}"
         )
         assert result.status_code == status.HTTP_200_OK
 

@@ -4,10 +4,10 @@ import traceback
 from datetime import datetime
 from typing import cast
 
+import src.core as core
 from celery import Task, shared_task
 from src.common.celery import update_task_state
 from src.constants import FILLER_UUID4
-from src.core import get_backup_db, get_db
 from src.core.s3_storage import ObjectStorage
 from src.enums import BackupStatus, BackupTriggerMethod, BackupType
 from src.schemas import BackupCreate, BackupSchema, DateRangeRequest
@@ -24,10 +24,10 @@ def database_ranged_backup(
     *args,
     **kwargs,  # TODO THIS PR: Add extra argument to make it either point to a BackupType (will need Daily/Weekly ranged backup enum value types then)
 ) -> dict:
-    db_gen = get_db()
+    db_gen = core.get_db()
     db = next(db_gen)
 
-    backup_db_gen = get_backup_db()
+    backup_db_gen = core.get_backup_db()
     backup_db = next(backup_db_gen)
 
     start_time = time.perf_counter()

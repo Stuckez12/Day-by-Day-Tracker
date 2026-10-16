@@ -5,9 +5,9 @@ from uuid import UUID
 
 from sqlalchemy.exc import NoResultFound
 
+import src.core as core
 from celery import Task, shared_task
 from src.common.celery import update_task_state
-from src.core import get_backup_db, get_db
 from src.core.s3_storage import ObjectStorage
 from src.enums import BackupType
 from src.schemas import VerifiedBackupResultSchema
@@ -17,10 +17,10 @@ from src.workflows import LogicalBackupWorkflow
 
 @shared_task(bind=True)
 def verify_logical_backup(self: Task, backup_id: UUID, *args, **kwargs) -> dict:
-    db_gen = get_db()
+    db_gen = core.get_db()
     db = next(db_gen)
 
-    backup_db_gen = get_backup_db()
+    backup_db_gen = core.get_backup_db()
     backup_db = next(backup_db_gen)
 
     celery_id = cast(UUID, self.request.id)

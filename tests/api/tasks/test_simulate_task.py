@@ -4,12 +4,20 @@ import pytest
 from celery.result import AsyncResult
 from pytest_mock import MockerFixture
 
+from src.models import TaskModel
 from src.tasks import simulate_celery_task
 
 
 @pytest.mark.usefixtures("mock_task_db")
 class TestSimulateTask:
-    def test_simulate(self, mocker: MockerFixture, celery_worker: None):
+    def test_simulate(
+        self,
+        mocker: MockerFixture,
+        celery_worker: None,
+        test_task_1: TaskModel,
+    ):
         mocker.patch.object(time, "sleep", return_value=None)
-        task: AsyncResult = simulate_celery_task.delay()
+        task: AsyncResult = simulate_celery_task.apply_async(
+            kwargs={}, task_id=str(test_task_1.task_id)
+        )
         assert task.result["progress"] == 100  # type: ignore

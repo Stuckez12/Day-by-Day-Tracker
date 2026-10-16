@@ -237,8 +237,6 @@ class RangedBackupWorkflow(BaseBackupWorkflow):
             json.dump(data, file, default=str)
 
     def link_parent_backup(self):
-        self._was_workflow_cancelled()
-
         """This can be either a LOGICAL or RANGED backup. UPLOADED is also allowed as they are LOGICAL in disguise"""
 
         if self.backup_record.meta is None:
