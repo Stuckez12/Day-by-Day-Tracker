@@ -56,7 +56,7 @@ from src.services import (
 )
 from src.settings import app_config
 from src.workflows import LogicalBackupWorkflow, RangedBackupWorkflow
-from src.workflows.backup import BaseBackupWorkflow
+from src.workflows.backup.base import BaseBackupWorkflow
 from tests.api.constants import VALID_PASSWORD
 
 
@@ -178,6 +178,7 @@ def test_ranged_backup_zip_name() -> Path:
 @pytest.fixture(scope="function")
 def test_logical_backup_zip_stored(
     test_backup_session: Session,
+    test_task_1: TaskModel,
     test_object_storage: ObjectStorage,
     test_logical_backup_zip_name: Path,
 ) -> Generator[BackupModel, None, None]:
@@ -187,7 +188,7 @@ def test_logical_backup_zip_stored(
         )
 
     backup_model = BackupModel(
-        celery_id=uuid.uuid4(),
+        celery_id=test_task_1.task_id,
         trigger_method=BackupTriggerMethod.MANUAL,
         status=BackupStatus.SUCCESS,
         backup_type=BackupType.LOGICAL,
@@ -242,6 +243,7 @@ def test_logical_backup_zip_stored(
 @pytest.fixture(scope="function")
 def test_ranged_backup_zip_stored(
     test_backup_session: Session,
+    test_task_1: TaskModel,
     test_object_storage: ObjectStorage,
     test_ranged_backup_zip_name: Path,
 ) -> Generator[BackupModel, None, None]:
@@ -251,7 +253,7 @@ def test_ranged_backup_zip_stored(
         )
 
     backup_model = BackupModel(
-        celery_id=uuid.uuid4(),
+        celery_id=test_task_1.task_id,
         trigger_method=BackupTriggerMethod.MANUAL,
         status=BackupStatus.SUCCESS,
         backup_type=BackupType.RANGED_DAY,
@@ -541,12 +543,14 @@ def test_base_backup_workflow(
     test_backup_session: Session,
     test_backup: BackupModel,
     test_object_storage: ObjectStorage,
+    test_task_service: TaskService,
 ):
     yield BaseBackupWorkflow(
         db=test_session,
         backup_db=test_backup_session,
         backup_record=test_backup,
         object_storage=test_object_storage,
+        task_service=test_task_service,
     )
 
 
@@ -556,12 +560,14 @@ def test_logical_backup_workflow(
     test_backup_session: Session,
     test_backup: BackupModel,
     test_object_storage: ObjectStorage,
+    test_task_service: TaskService,
 ):
     yield LogicalBackupWorkflow(
         db=test_session,
         backup_db=test_backup_session,
         backup_record=test_backup,
         object_storage=test_object_storage,
+        task_service=test_task_service,
     )
 
 
@@ -571,6 +577,7 @@ def test_ranged_backup_workflow(
     test_backup_session: Session,
     test_backup: BackupModel,
     test_object_storage: ObjectStorage,
+    test_task_service: TaskService,
     test_date_today: date,
 ):
     yield RangedBackupWorkflow(
@@ -578,6 +585,7 @@ def test_ranged_backup_workflow(
         backup_db=test_backup_session,
         backup_record=test_backup,
         object_storage=test_object_storage,
+        task_service=test_task_service,
         date_range=DateRangeRequest(
             min_date=test_date_today - timedelta(days=1),
             max_date=test_date_today + timedelta(days=1),
@@ -766,9 +774,9 @@ def test_task_3(test_session: Session):
 
 
 @pytest.fixture(scope="function")
-def test_backup(test_backup_session: Session):
+def test_backup(test_backup_session: Session, test_task_1: TaskModel):
     model = BackupModel(
-        celery_id=uuid.uuid4(),
+        celery_id=test_task_1.task_id,
         trigger_method=BackupTriggerMethod.MANUAL,
         status=BackupStatus.SUCCESS,
         backup_type=BackupType.LOGICAL,
@@ -787,9 +795,9 @@ def test_backup(test_backup_session: Session):
 
 
 @pytest.fixture(scope="function")
-def test_backup_2(test_backup_session: Session):
+def test_backup_2(test_backup_session: Session, test_task_1: TaskModel):
     model = BackupModel(
-        celery_id=uuid.uuid4(),
+        celery_id=test_task_1.task_id,
         trigger_method=BackupTriggerMethod.SCHEDULED,
         status=BackupStatus.SUCCESS,
         backup_type=BackupType.LOGICAL,

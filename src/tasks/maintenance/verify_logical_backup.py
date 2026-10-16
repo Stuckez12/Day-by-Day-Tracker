@@ -5,22 +5,22 @@ from uuid import UUID
 
 from sqlalchemy.exc import NoResultFound
 
+import src.core as core
 from celery import Task, shared_task
 from src.common.celery import update_task_state
-from src.core import get_backup_db, get_db
 from src.core.s3_storage import ObjectStorage
 from src.enums import BackupType
 from src.schemas import VerifiedBackupResultSchema
-from src.services import BackupService
+from src.services import BackupService, TaskService
 from src.workflows import LogicalBackupWorkflow
 
 
 @shared_task(bind=True)
 def verify_logical_backup(self: Task, backup_id: UUID, *args, **kwargs) -> dict:
-    db_gen = get_db()
+    db_gen = core.get_db()
     db = next(db_gen)
 
-    backup_db_gen = get_backup_db()
+    backup_db_gen = core.get_backup_db()
     backup_db = next(backup_db_gen)
 
     celery_id = cast(UUID, self.request.id)
@@ -37,6 +37,9 @@ def verify_logical_backup(self: Task, backup_id: UUID, *args, **kwargs) -> dict:
 
         if backup.meta is None:
             raise ValueError("Backup has no metadata")
+
+        backup.set_verifying(celery_id)
+        backup_db.commit()
 
     except NoResultFound as e:
         backup_db_gen.close()
@@ -71,11 +74,13 @@ def verify_logical_backup(self: Task, backup_id: UUID, *args, **kwargs) -> dict:
 
     try:
         s3_storage = ObjectStorage()
+        task_service = TaskService(db)
         workflow = LogicalBackupWorkflow(
             db=db,
             backup_db=backup_db,
             backup_record=backup,
             object_storage=s3_storage,
+            task_service=task_service,
         )
 
         update_task_state(self, db, metadata={"stage": "Retrieving Backup ZIP File"})
@@ -93,6 +98,7 @@ def verify_logical_backup(self: Task, backup_id: UUID, *args, **kwargs) -> dict:
         update_task_state(self, db, metadata={"stage": "Finalising Verification Task"})
         workflow.update_verification_metadata_record()
 
+        backup.set_successful()
         backup_db.commit()
 
         return VerifiedBackupResultSchema(
@@ -108,12 +114,15 @@ def verify_logical_backup(self: Task, backup_id: UUID, *args, **kwargs) -> dict:
 
         if workflow:
             try:
-                workflow.update_verification_metadata_record(verified=False)
-
-                backup_db.commit()
+                workflow.update_verification_metadata_record(
+                    verified=False, check_if_task_cancelled=False
+                )
 
             except Exception:
                 logging.exception("Failed to record backup verification failure")
+
+        backup.set_failed()
+        backup_db.commit()
 
         return VerifiedBackupResultSchema(
             id=backup_id,

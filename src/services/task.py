@@ -1,5 +1,6 @@
 import uuid
 from datetime import timedelta
+from typing import Any
 
 from celery.result import AsyncResult
 from sqlalchemy.orm import Session
@@ -25,8 +26,8 @@ class TaskService(BaseDBService[TaskModel]):
     def get_by_task_id(self, task_id: uuid.UUID) -> TaskModel:
         return self.db.query(TaskModel).filter(TaskModel.task_id == task_id).one()
 
-    def task_progress(self, task_ref: TaskModel):
-        if task_ref.status == TaskStatus.PENDING.value:
+    def task_progress(self, task_ref: TaskModel) -> dict[str, Any]:
+        if task_ref.status == TaskStatus.PENDING:
             raise ValueError("Task is waiting to be processed")
 
         task: AsyncResult = AsyncResult(str(task_ref.task_id))
@@ -63,3 +64,11 @@ class TaskService(BaseDBService[TaskModel]):
             query = query.filter(TaskModel.ended_at - TaskModel.started_at >= time_dur)
 
         return query
+
+    def cancel_task(self, task: TaskModel):
+        if not task.is_processing:
+            raise ValueError("Unable to cancel task that is not being processed")
+
+        task.status = TaskStatus.CANCELLED
+
+        self.db.commit()

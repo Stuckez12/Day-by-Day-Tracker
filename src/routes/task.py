@@ -9,14 +9,18 @@ from sqlalchemy.exc import NoResultFound
 from src.common import TaskServiceDep
 from src.core.permission_validator import PermissionValidator
 from src.enums import TaskStatus
-from src.exc import HTTP_EXC_TASK_NOT_FOUND
+from src.exc import HTTP_EXC_TASK_NOT_FOUND, HTTP_EXC_TASK_NOT_PROCESSING
 from src.schemas import TaskPaginated, TaskSchema
 
 
 api = APIRouter(prefix="/task", tags=["Task"])
 
 
-@api.get("", status_code=status.HTTP_200_OK, response_model=TaskSchema)
+@api.get(
+    "",
+    status_code=status.HTTP_200_OK,
+    response_model=TaskSchema,
+)
 def get_task(service: TaskServiceDep, task_id: uuid.UUID = Query(...)):
     try:
         return service.get_by_task_id(task_id)
@@ -72,3 +76,20 @@ def get_task_status(service: TaskServiceDep, task_id: uuid.UUID):
 
     except NoResultFound:
         raise HTTP_EXC_TASK_NOT_FOUND
+
+
+@api.patch(
+    "/{task_id}/cancel",
+    status_code=status.HTTP_204_NO_CONTENT,
+    dependencies=[Depends(PermissionValidator(admin_route=True))],
+)
+def cancel_task(service: TaskServiceDep, task_id: uuid.UUID):
+    try:
+        task = service.get_by_task_id(task_id)
+        service.cancel_task(task)
+
+    except NoResultFound:
+        raise HTTP_EXC_TASK_NOT_FOUND
+
+    except ValueError:
+        raise HTTP_EXC_TASK_NOT_PROCESSING

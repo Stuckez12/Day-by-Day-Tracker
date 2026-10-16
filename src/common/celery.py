@@ -28,8 +28,8 @@ def update_task_state(
     try:
         task_ref = service.get_by_task_id(cast(uuid.UUID, task.request.id))
 
-        if task_ref.status != status.value:
-            task_ref.status = status.value
+        if task_ref.status != TaskStatus.CANCELLED and task_ref.status != status:
+            task_ref.status = status
 
             db.commit()
 

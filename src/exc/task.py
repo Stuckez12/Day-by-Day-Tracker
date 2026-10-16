@@ -20,3 +20,7 @@ HTTP_EXC_INVALID_TASK_DATE_RANGE = HTTPException(
     status_code=status.HTTP_400_BAD_REQUEST,
     detail="Started at time is larger than ended at time",
 )
+HTTP_EXC_TASK_NOT_PROCESSING = HTTPException(
+    status_code=status.HTTP_400_BAD_REQUEST,
+    detail="Unable to cancel task that is not being processed",
+)

@@ -1,9 +1,13 @@
+import uuid
 from datetime import datetime, timedelta
 from unittest.mock import MagicMock, patch
 
+import pytest
 from fastapi import status
 from fastapi.testclient import TestClient
+from sqlalchemy.orm import Session
 
+from src.enums import TaskStatus
 from src.exc import HTTP_EXC_NOT_AN_ADMIN
 from src.models import TaskModel
 from src.schemas import TaskSchema
@@ -63,7 +67,7 @@ class TestGetPaginatedTasksRoute:
         test_task_3: TaskModel,
     ):
         result = test_client_admin_session.get(
-            f"/task/paginated?task_status={test_task_2.status}"
+            f"/task/paginated?task_status={test_task_2.status.value}"
         )
         assert result.status_code == status.HTTP_200_OK
 
@@ -204,9 +208,7 @@ class TestGetPaginatedTasksRoute:
 
 class TestGetTaskRoute:
     def test_success(
-        self,
-        test_client_admin_session: TestClient,
-        test_task_1: TaskModel,
+        self, test_client_admin_session: TestClient, test_task_1: TaskModel
     ):
         result = test_client_admin_session.get(
             "/task", params={"task_id": str(test_task_1.task_id)}
@@ -272,6 +274,14 @@ class TestGetTaskStatusRoute:
             "info": {"result": "done"},
         }
 
+    def test_non_admin_restricted(self, test_client_user_session: TestClient):
+        result = test_client_user_session.get(f"/task/{uuid.uuid4()}/status")
+        assert result.status_code == HTTP_EXC_NOT_AN_ADMIN.status_code
+
+        data = result.json()
+        assert "detail" in data
+        assert data["detail"] == HTTP_EXC_NOT_AN_ADMIN.detail
+
     def test_not_found(
         self, test_client_admin_session: TestClient, test_task_2: TaskModel
     ):
@@ -289,3 +299,58 @@ class TestGetTaskStatusRoute:
 
         data = result.json()
         assert data["detail"] == "Task is waiting to be processed"
+
+
+class TestCancelTaskRoute:
+    @pytest.mark.parametrize("task_status", [TaskStatus.RUNNING, TaskStatus.PENDING])
+    def test_success_cancel_processing_task(
+        self,
+        test_session: Session,
+        test_client_admin_session: TestClient,
+        test_task_1: TaskModel,
+        task_status: TaskStatus,
+    ):
+        test_task_1.status = task_status
+        test_session.commit()
+
+        result = test_client_admin_session.patch(f"/task/{test_task_1.task_id}/cancel")
+        assert result.status_code == status.HTTP_204_NO_CONTENT
+
+        test_session.refresh(test_task_1)
+        assert test_task_1.status == TaskStatus.CANCELLED
+
+    @pytest.mark.parametrize(
+        "task_status", [TaskStatus.FAILED, TaskStatus.SUCCESS, TaskStatus.CANCELLED]
+    )
+    def test_failure_cancel_non_processing_task(
+        self,
+        test_session: Session,
+        test_client_admin_session: TestClient,
+        test_task_1: TaskModel,
+        task_status: TaskStatus,
+    ):
+        test_task_1.status = task_status
+        test_session.commit()
+
+        result = test_client_admin_session.patch(f"/task/{test_task_1.task_id}/cancel")
+        assert result.status_code == status.HTTP_400_BAD_REQUEST
+
+        data = result.json()
+        assert data["detail"] == "Unable to cancel task that is not being processed"
+
+    def test_non_admin_restricted(
+        self, test_client_user_session: TestClient, test_task_1: TaskModel
+    ):
+        result = test_client_user_session.patch(f"/task/{test_task_1.task_id}/cancel")
+        assert result.status_code == HTTP_EXC_NOT_AN_ADMIN.status_code
+
+        data = result.json()
+        assert "detail" in data
+        assert data["detail"] == HTTP_EXC_NOT_AN_ADMIN.detail
+
+    def test_not_found(self, test_client_admin_session: TestClient):
+        result = test_client_admin_session.patch(f"/task/{uuid.uuid4()}/cancel")
+        assert result.status_code == status.HTTP_404_NOT_FOUND
+
+        data = result.json()
+        assert data["detail"] == "Task does not exist"

@@ -6,7 +6,7 @@ from sqlalchemy.orm import Session
 from src.core.password_hash import pwd_hash
 from src.models import PersonnelModel
 from src.schemas import CreatePersonnelRequest, LogInRequest
-from src.services.personnel import PersonnelService
+from src.services.personnel import PersonnelService  # Direct reference
 from src.settings import app_config
 
 

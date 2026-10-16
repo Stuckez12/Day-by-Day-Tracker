@@ -4,14 +4,14 @@ import traceback
 from typing import cast
 from uuid import UUID
 
+import src.core as core
 from celery import Task, shared_task
 from src.common.celery import update_task_state
 from src.constants import FILLER_UUID4
-from src.core import get_backup_db, get_db
 from src.core.s3_storage import ObjectStorage
 from src.enums import BackupStatus, BackupTriggerMethod, BackupType
 from src.schemas import BackupCreate, VerifiedBackupResultSchema
-from src.services import BackupService
+from src.services import BackupService, TaskService
 from src.workflows import LogicalBackupWorkflow
 
 
@@ -19,10 +19,10 @@ from src.workflows import LogicalBackupWorkflow
 # verify task can do all the work after (this wpould more or less be a duplicate)
 @shared_task(bind=True)
 def uploaded_backup_record_creation(self: Task, new_backup_file: str, *args, **kwargs):
-    db_gen = get_db()
+    db_gen = core.get_db()
     db = next(db_gen)
 
-    backup_db_gen = get_backup_db()
+    backup_db_gen = core.get_backup_db()
     backup_db = next(backup_db_gen)
 
     celery_id = cast(UUID, self.request.id)
@@ -59,11 +59,13 @@ def uploaded_backup_record_creation(self: Task, new_backup_file: str, *args, **k
 
     try:
         s3_storage = ObjectStorage()
+        task_service = TaskService(db)
         workflow = LogicalBackupWorkflow(
             db=db,
             backup_db=backup_db,
             backup_record=backup,
             object_storage=s3_storage,
+            task_service=task_service,
         )
 
         update_task_state(self, db, metadata={"stage": "Retrieving Backup ZIP File"})

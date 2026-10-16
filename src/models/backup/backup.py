@@ -20,7 +20,7 @@ class BackupModel(BackupBaseModel):
     parent_backup_id: Mapped[UUID | None] = mapped_column(
         ForeignKey("backups.id", ondelete="SET NULL"), default=None, nullable=True
     )
-    celery_id: Mapped[UUID] = mapped_column(DBUUID(as_uuid=True), nullable=False)
+    celery_id: Mapped[UUID | None] = mapped_column(DBUUID(as_uuid=True), nullable=True)
     trigger_method: Mapped[BackupTriggerMethod] = mapped_column(
         Enum(BackupTriggerMethod), nullable=False
     )
@@ -41,3 +41,32 @@ class BackupModel(BackupBaseModel):
     meta: Mapped[MetaModel | None] = relationship(
         "MetaModel", back_populates="backup", cascade="all, delete-orphan"
     )
+
+    @property
+    def is_being_processed(self) -> bool:
+        return (
+            self.status in [BackupStatus.RUNNING, BackupStatus.VERIFYING]
+            or self.celery_id is not None
+        )
+
+    def set_running(self, celery_id: UUID | str):
+        if isinstance(celery_id, str):
+            celery_id = UUID(celery_id)
+
+        self.status = BackupStatus.RUNNING
+        self.celery_id = celery_id
+
+    def set_verifying(self, celery_id: UUID | str):
+        if isinstance(celery_id, str):
+            celery_id = UUID(celery_id)
+
+        self.status = BackupStatus.VERIFYING
+        self.celery_id = celery_id
+
+    def set_successful(self):
+        self.status = BackupStatus.SUCCESS
+        self.celery_id = None
+
+    def set_failed(self):
+        self.status = BackupStatus.FAILURE
+        self.celery_id = None

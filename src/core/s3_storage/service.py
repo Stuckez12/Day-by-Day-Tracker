@@ -6,7 +6,7 @@ import boto3
 from botocore.exceptions import ClientError
 from fastapi import Depends, HTTPException
 
-from src.core.s3_storage.schemas import (
+from src.core.s3_storage import (
     FileObjectDownloadSchema,
     FileObjectMetadataSchema,
 )
