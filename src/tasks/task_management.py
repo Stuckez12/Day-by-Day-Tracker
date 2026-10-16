@@ -47,7 +47,10 @@ def before_task_execution(task_id: str, **kwargs):
         task_record = service.get_by_task_id(uuid.UUID(task_id))
 
         task_record.started_at = datetime.now(timezone.utc)
-        task_record.status = TaskStatus.RUNNING
+
+        if task_record.status != TaskStatus.CANCELLED:
+            task_record.status = TaskStatus.RUNNING
+
         db.commit()
 
     except NoResultFound:
@@ -74,7 +77,10 @@ def finalise_success_task(sender: Task, **kwargs):
         task_record = service.get_by_task_id(task_id)
 
         task_record.ended_at = datetime.now(timezone.utc)
-        task_record.status = TaskStatus.SUCCESS
+
+        if task_record.status != TaskStatus.CANCELLED:
+            task_record.status = TaskStatus.SUCCESS
+
         db.commit()
 
     except NoResultFound:
@@ -99,7 +105,10 @@ def finalise_failure_task(sender: Task, exception: Exception | None = None, **kw
         task_record = service.get_by_task_id(task_id)
 
         task_record.ended_at = datetime.now(timezone.utc)
-        task_record.status = TaskStatus.FAILED
+
+        if task_record.status != TaskStatus.CANCELLED:
+            task_record.status = TaskStatus.FAILED
+
         task_record.error = str(exception)
         db.commit()
 

@@ -6,7 +6,7 @@ from pytest_mock import MockerFixture
 from sqlalchemy.orm import Session
 
 from src.common import utcnow
-from src.enums import BackupStatus, BackupTriggerMethod, BackupType
+from src.enums import BackupStatus, BackupTriggerMethod, BackupType, TaskStatus
 from src.models import BackupModel, TaskModel
 from src.schemas import BackupSchema
 from src.tasks import database_ranged_backup
@@ -31,6 +31,7 @@ class TestDatabaseRangedBackupTask:
             task_id=str(test_task_1.task_id),
         )
         backup = BackupSchema.model_validate(task.result)
+
         try:
             assert backup.status == BackupStatus.SUCCESS
             assert backup.backup_type == BackupType.RANGED_DAY
@@ -40,8 +41,10 @@ class TestDatabaseRangedBackupTask:
             assert backup.error_message is None
             assert backup.error_traceback is None
             assert backup.meta is not None
+
         finally:
             record = test_backup_session.get(BackupModel, backup.id)
+
             if record is not None:
                 test_backup_session.delete(record)
                 test_backup_session.commit()
@@ -65,6 +68,7 @@ class TestDatabaseRangedBackupTask:
             task_id=str(test_task_1.task_id),
         )
         backup = BackupSchema.model_validate(task.result)
+
         try:
             assert backup.status == BackupStatus.SUCCESS
             assert backup.backup_type == BackupType.RANGED_WEEK
@@ -74,8 +78,10 @@ class TestDatabaseRangedBackupTask:
             assert backup.error_message is None
             assert backup.error_traceback is None
             assert backup.meta is not None
+
         finally:
             record = test_backup_session.get(BackupModel, backup.id)
+
             if record is not None:
                 test_backup_session.delete(record)
                 test_backup_session.commit()
@@ -139,6 +145,7 @@ class TestDatabaseRangedBackupTask:
             task_id=str(test_task_1.task_id),
         )
         backup = BackupSchema.model_validate(task.result)
+
         try:
             assert backup.status == BackupStatus.FAILURE
             assert backup.trigger_method == BackupTriggerMethod.MANUAL
@@ -147,8 +154,48 @@ class TestDatabaseRangedBackupTask:
             assert backup.error_message is not None
             assert backup.error_traceback is not None
             assert backup.meta is None
+
         finally:
             record = test_backup_session.get(BackupModel, backup.id)
+
+            if record is not None:
+                test_backup_session.delete(record)
+                test_backup_session.commit()
+
+    def test_task_cancelled(
+        self,
+        celery_worker: None,
+        test_session: Session,
+        test_task_1: TaskModel,
+        test_backup_session: Session,
+    ):
+        test_task_1.status = TaskStatus.CANCELLED
+        test_session.commit()
+
+        date_now = utcnow()
+
+        task: AsyncResult = database_ranged_backup.apply_async(
+            kwargs={
+                "trigger": BackupTriggerMethod.MANUAL.value,
+                "start_date": date_now.strftime("%Y-%m-%d"),
+                "end_date": date_now.strftime("%Y-%m-%d"),
+            },
+            task_id=str(test_task_1.task_id),
+        )
+        backup = BackupSchema.model_validate(task.result)
+
+        try:
+            assert backup.status == BackupStatus.FAILURE
+            assert backup.trigger_method == BackupTriggerMethod.MANUAL
+            assert backup.duration is not None
+            assert backup.duration > 0
+            assert backup.error_message is not None
+            assert backup.error_traceback is not None
+            assert backup.meta is None
+
+        finally:
+            record = test_backup_session.get(BackupModel, backup.id)
+
             if record is not None:
                 test_backup_session.delete(record)
                 test_backup_session.commit()

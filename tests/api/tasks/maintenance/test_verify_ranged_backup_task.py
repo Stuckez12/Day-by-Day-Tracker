@@ -7,6 +7,7 @@ from pytest_mock import MockerFixture
 from sqlalchemy.orm import Session
 
 from src.enums import BackupType
+from src.enums.task_status import TaskStatus
 from src.models import BackupModel, TaskModel
 from src.schemas import VerifiedBackupResultSchema
 from src.tasks import verify_ranged_backup
@@ -101,6 +102,26 @@ class TestVerifyRangedBackupTask:
         mocker.patch.object(
             RangedBackupWorkflow, "retrieve_zip_file", side_effect=RuntimeError
         )
+
+        task: AsyncResult = verify_ranged_backup.apply_async(
+            kwargs={"backup_id": test_ranged_backup_zip_stored.id},
+            task_id=str(test_task_1.task_id),
+        )
+        backup = VerifiedBackupResultSchema.model_validate(task.result)
+        assert backup.verified is False
+        assert backup.backup_type == test_ranged_backup_zip_stored.backup_type
+        assert backup.error_message is not None
+        assert backup.error_traceback is not None
+
+    def test_task_cancelled(
+        self,
+        celery_worker: None,
+        test_session: Session,
+        test_ranged_backup_zip_stored: BackupModel,
+        test_task_1: TaskModel,
+    ):
+        test_task_1.status = TaskStatus.CANCELLED
+        test_session.commit()
 
         task: AsyncResult = verify_ranged_backup.apply_async(
             kwargs={"backup_id": test_ranged_backup_zip_stored.id},

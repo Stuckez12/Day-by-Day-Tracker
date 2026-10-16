@@ -26,3 +26,7 @@ class TaskModel(BaseModel):
         self.task_id = task_id
         self.name = name
         self.status = status
+
+    @property
+    def is_processing(self):
+        return self.status in [TaskStatus.PENDING, TaskStatus.RUNNING]

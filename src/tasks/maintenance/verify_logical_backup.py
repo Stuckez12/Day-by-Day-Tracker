@@ -38,6 +38,9 @@ def verify_logical_backup(self: Task, backup_id: UUID, *args, **kwargs) -> dict:
         if backup.meta is None:
             raise ValueError("Backup has no metadata")
 
+        backup.set_verifying(celery_id)
+        backup_db.commit()
+
     except NoResultFound as e:
         backup_db_gen.close()
         db_gen.close()
@@ -95,6 +98,7 @@ def verify_logical_backup(self: Task, backup_id: UUID, *args, **kwargs) -> dict:
         update_task_state(self, db, metadata={"stage": "Finalising Verification Task"})
         workflow.update_verification_metadata_record()
 
+        backup.set_successful()
         backup_db.commit()
 
         return VerifiedBackupResultSchema(
@@ -114,10 +118,11 @@ def verify_logical_backup(self: Task, backup_id: UUID, *args, **kwargs) -> dict:
                     verified=False, check_if_task_cancelled=False
                 )
 
-                backup_db.commit()
-
             except Exception:
                 logging.exception("Failed to record backup verification failure")
+
+        backup.set_failed()
+        backup_db.commit()
 
         return VerifiedBackupResultSchema(
             id=backup_id,
