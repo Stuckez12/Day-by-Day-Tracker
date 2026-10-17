@@ -1,5 +1,6 @@
 from src.tasks import task_management
 from src.tasks.maintenance import (
+    backup_scheduler,
     database_logical_backup,
     database_ranged_backup,
     uploaded_backup_record_creation,

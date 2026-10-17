@@ -9,6 +9,7 @@ from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from src.enums import BackupType, TaskScheduleStatus
 from src.models.backup.base import BackupBaseModel
+from src.schemas.backup.schedule import CreateScheduledBackupSchema
 from src.utils import utcnow
 
 
@@ -19,7 +20,7 @@ if TYPE_CHECKING:
 class BackupScheduleModel(BackupBaseModel):
     __tablename__ = "backup-scheduler"
 
-    celery_id: Mapped[uuid.UUID] = mapped_column(UUID, nullable=False)
+    celery_id: Mapped[uuid.UUID | None] = mapped_column(UUID, nullable=True)
     backup_id: Mapped[UUID] = mapped_column(
         ForeignKey("backups.id", ondelete="CASCADE"), nullable=True, default=None
     )
@@ -38,24 +39,14 @@ class BackupScheduleModel(BackupBaseModel):
         String, nullable=True, default=None
     )
 
-    backup: Mapped[BackupModel] = relationship(
-        "BackupModel",
-        back_populates="schedule",
-    )
+    backup: Mapped[BackupModel] = relationship("BackupModel", back_populates="schedule")
 
-    def __init__(
-        self,
-        celery_id: uuid.UUID,
-        backup_type: BackupType,
-        scheduled_for: datetime,
-        date_range_start: datetime | None = None,
-        date_range_end: datetime | None = None,
-    ):
-        self.celery_id = celery_id
-        self.backup_type = backup_type
-        self.scheduled_for = scheduled_for
-        self.date_range_start = date_range_start
-        self.date_range_end = date_range_end
+    def __init__(self, data: CreateScheduledBackupSchema):
+        self.celery_id = data.celery_id
+        self.backup_type = data.backup_type
+        self.scheduled_for = data.scheduled_for
+        self.date_range_start = data.date_range_start
+        self.date_range_end = data.date_range_end
 
         self.status = TaskScheduleStatus.QUEUED
         self.dispatched_at = utcnow()
