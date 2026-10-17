@@ -8,7 +8,6 @@ from sqlalchemy import func
 from sqlalchemy.orm import Session
 from sqlalchemy_utils import drop_database
 
-from src.common import utcnow
 from src.core.database import recreate_database
 from src.core.s3_storage import ObjectStorage
 from src.models import BackupModel, RankerModel
@@ -19,6 +18,7 @@ from src.schemas import (
 )
 from src.services import TaskService
 from src.settings import app_config
+from src.utils import utcnow
 from src.workflows.backup.base import BaseBackupWorkflow
 
 

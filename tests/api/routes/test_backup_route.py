@@ -7,8 +7,7 @@ from pytest_mock import MockerFixture
 from sqlalchemy import delete
 from sqlalchemy.orm import Session
 
-from src.core.s3_storage import ObjectStorage
-from src.enums import ObjectType
+from src.core.s3_storage import ObjectStorage, ObjectType
 from src.exc import HTTP_EXC_NOT_AN_ADMIN
 from src.models import BackupModel
 from src.schemas import BackupSchema

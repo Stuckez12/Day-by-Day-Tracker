@@ -22,7 +22,7 @@ def database_ranged_backup(
     start_date: str,
     end_date: str,
     *args,
-    **kwargs,  # TODO THIS PR: Add extra argument to make it either point to a BackupType (will need Daily/Weekly ranged backup enum value types then)
+    **kwargs,
 ) -> dict:
     db_gen = core.get_db()
     db = next(db_gen)

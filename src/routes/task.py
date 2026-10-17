@@ -6,7 +6,7 @@ from fastapi_pagination import Page, Params
 from fastapi_pagination.ext.sqlalchemy import paginate
 from sqlalchemy.exc import NoResultFound
 
-from src.common import TaskServiceDep
+from src.common.dependencies import TaskServiceDep
 from src.core.permission_validator import PermissionValidator
 from src.enums import TaskStatus
 from src.exc import HTTP_EXC_TASK_NOT_FOUND, HTTP_EXC_TASK_NOT_PROCESSING

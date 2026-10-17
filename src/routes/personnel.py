@@ -3,7 +3,8 @@ from uuid import UUID
 from fastapi import APIRouter, Depends, Query, status
 from sqlalchemy.exc import NoResultFound
 
-from src.common import CurrentPersonnel, PersonnelServiceDep
+from src.common import CurrentPersonnel
+from src.common.dependencies import PersonnelServiceDep
 from src.core.permission_validator import PermissionValidator
 from src.exc import HTTP_EXC_PERSONNEL_DOES_NOT_EXIST
 from src.schemas import (

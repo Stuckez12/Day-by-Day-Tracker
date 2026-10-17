@@ -1,7 +1,15 @@
 import hashlib
 import logging
 import shutil
+from datetime import datetime, timezone
 from pathlib import Path
+
+
+# ------------------------- DATETIMES ------------------------- #
+
+
+def utcnow() -> datetime:
+    return datetime.now(timezone.utc)
 
 
 # ------------------------- CHECKSUMS ------------------------- #

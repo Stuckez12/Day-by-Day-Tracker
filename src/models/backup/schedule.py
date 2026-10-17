@@ -7,9 +7,9 @@ from typing import TYPE_CHECKING
 from sqlalchemy import UUID, DateTime, Enum, ForeignKey, String
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
-from src.common.utils import utcnow
 from src.enums import BackupType, TaskScheduleStatus
 from src.models.backup.base import BackupBaseModel
+from src.utils import utcnow
 
 
 if TYPE_CHECKING:

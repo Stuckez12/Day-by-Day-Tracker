@@ -20,20 +20,19 @@ from sqlalchemy_utils import create_database, database_exists
 from testcontainers.core.container import DockerContainer
 
 from celery import current_app as current_celery_app
-from src.common import utcnow
 from src.common.security import create_access_token
 from src.core import get_backup_db, get_db
 from src.core.password_hash import pwd_hash
 from src.core.s3_storage import (
     FileObjectMetadataSchema,
     ObjectStorage,
+    ObjectType,
     get_object_storage_service,
 )
 from src.enums import (
     BackupStatus,
     BackupTriggerMethod,
     BackupType,
-    ObjectType,
     TaskStatus,
 )
 from src.main import fastapi_app
@@ -55,6 +54,7 @@ from src.services import (
     TaskService,
 )
 from src.settings import app_config
+from src.utils import utcnow
 from src.workflows import LogicalBackupWorkflow, RangedBackupWorkflow
 from src.workflows.backup.base import BaseBackupWorkflow
 from tests.api.constants import VALID_PASSWORD
