@@ -69,10 +69,6 @@ class BackupSchedulerService(BackupService):
     def get_schedule(self, schedule_id: UUID):
         pass
 
-    # TODO: Delete this
-    def get_all_schedules(self):
-        return self.backup_db.query(BackupScheduleModel).all()
-
     def get_schedules_query(
         self, data: ScheduledBackupFilters
     ) -> Query[BackupScheduleModel]:

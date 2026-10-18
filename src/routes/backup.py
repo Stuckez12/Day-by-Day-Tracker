@@ -1,4 +1,3 @@
-from typing import cast
 from uuid import UUID
 
 from celery.result import AsyncResult
@@ -8,12 +7,13 @@ from sqlalchemy.exc import NoResultFound
 
 from src.core.permission_validator import PermissionValidator
 from src.core.s3_storage import ObjectStorageDep, ObjectType
+from src.enums.backup.backup_id_type import BackupIDType
 from src.exc import (
     HTTP_EXC_BACKUP_FILENAME_PRESENT,
     HTTP_EXC_BACKUP_NOT_FOUND,
+    HTTP_EXC_INVALID_BACKUP_ID_SPECIFICATION,
     HTTP_EXC_NO_BACKUP_FILENAME,
     HTTP_EXC_NO_BACKUP_METADATA,
-    HTTP_EXC_NO_VALID_BACKUP_ID,
     HTTP_EXC_UPLOAD_BACKUP_FILE,
 )
 from src.schemas import BackupSchema, TaskIDSchema
@@ -26,29 +26,6 @@ api = APIRouter(
     tags=["Backup"],
     dependencies=[Depends(PermissionValidator(admin_route=True))],
 )
-
-
-@api.get("", response_model=BackupSchema, status_code=status.HTTP_200_OK)
-def get_backup(
-    service: BackupServiceDep,
-    backup_id: UUID | None = Query(None),
-    celery_id: UUID | None = Query(None),
-):
-    if backup_id is None and celery_id is None:
-        raise HTTP_EXC_NO_VALID_BACKUP_ID
-
-    if backup_id:
-        try:
-            return service.get_by_backup_id(backup_id)
-
-        except NoResultFound:
-            raise HTTP_EXC_BACKUP_NOT_FOUND
-
-    try:
-        return service.get_by_task_id(cast(UUID, celery_id))
-
-    except NoResultFound:
-        raise HTTP_EXC_BACKUP_NOT_FOUND
 
 
 @api.get("/all", response_model=list[BackupSchema], status_code=status.HTTP_200_OK)
@@ -79,6 +56,31 @@ async def upload_backup(object_storage: ObjectStorageDep, file: UploadFile):
 
     except Exception:
         raise HTTP_EXC_UPLOAD_BACKUP_FILE
+
+
+@api.get("/{backup_id}", response_model=BackupSchema, status_code=status.HTTP_200_OK)
+def get_backup(
+    service: BackupServiceDep,
+    backup_id: UUID,
+    id_type: BackupIDType = Query(default=BackupIDType.BACKUP),
+):
+    match id_type:
+        case BackupIDType.BACKUP:
+            try:
+                return service.get_by_backup_id(backup_id)
+
+            except NoResultFound:
+                raise HTTP_EXC_BACKUP_NOT_FOUND
+
+        case BackupIDType.CELERY:
+            try:
+                return service.get_by_task_id(backup_id)
+
+            except NoResultFound:
+                raise HTTP_EXC_BACKUP_NOT_FOUND
+
+        case _:
+            raise HTTP_EXC_INVALID_BACKUP_ID_SPECIFICATION
 
 
 @api.get(
