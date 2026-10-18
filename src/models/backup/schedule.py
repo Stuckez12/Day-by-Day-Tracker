@@ -20,7 +20,7 @@ if TYPE_CHECKING:
 class BackupScheduleModel(BackupBaseModel):
     __tablename__ = "backup-scheduler"
 
-    celery_id: Mapped[uuid.UUID | None] = mapped_column(UUID, nullable=True)
+    celery_id: Mapped[uuid.UUID] = mapped_column(UUID, nullable=False)
     backup_id: Mapped[UUID] = mapped_column(
         ForeignKey("backups.id", ondelete="CASCADE"), nullable=True, default=None
     )
@@ -31,8 +31,12 @@ class BackupScheduleModel(BackupBaseModel):
         Enum(TaskScheduleStatus), nullable=False
     )
 
-    date_range_start: Mapped[datetime | None] = mapped_column(DateTime, nullable=False)
-    date_range_end: Mapped[datetime | None] = mapped_column(DateTime, nullable=False)
+    date_range_start: Mapped[datetime | None] = mapped_column(
+        DateTime, nullable=True, default=None
+    )
+    date_range_end: Mapped[datetime | None] = mapped_column(
+        DateTime, nullable=True, default=None
+    )
 
     dispatched_at: Mapped[datetime] = mapped_column(DateTime, nullable=False)
     dispatch_error: Mapped[str | None] = mapped_column(

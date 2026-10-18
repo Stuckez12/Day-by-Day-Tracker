@@ -1,8 +1,8 @@
 """Scheduling backups
 
-Revision ID: 7de642064e23
+Revision ID: cb18a2d23289
 Revises: fafd1223bedf
-Create Date: 2026-10-17 12:38:49.640815
+Create Date: 2026-10-18 09:19:52.249538
 
 """
 
@@ -14,7 +14,7 @@ from sqlalchemy.dialects import postgresql
 
 
 # revision identifiers, used by Alembic.
-revision: str = "7de642064e23"
+revision: str = "cb18a2d23289"
 down_revision: Union[str, Sequence[str], None] = "fafd1223bedf"
 branch_labels: Union[str, Sequence[str], None] = None
 depends_on: Union[str, Sequence[str], None] = None
@@ -56,8 +56,8 @@ def upgrade() -> None:
             ),
             nullable=False,
         ),
-        sa.Column("date_range_start", sa.DateTime(), nullable=False),
-        sa.Column("date_range_end", sa.DateTime(), nullable=False),
+        sa.Column("date_range_start", sa.DateTime(), nullable=True),
+        sa.Column("date_range_end", sa.DateTime(), nullable=True),
         sa.Column("dispatched_at", sa.DateTime(), nullable=False),
         sa.Column("dispatch_error", sa.String(), nullable=True),
         sa.Column("id", sa.UUID(), nullable=False),

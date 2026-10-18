@@ -6,7 +6,6 @@ from fastapi import APIRouter, Depends, Query, UploadFile, status
 from fastapi.responses import StreamingResponse
 from sqlalchemy.exc import NoResultFound
 
-from src.common.dependencies import BackupServiceDep
 from src.core.permission_validator import PermissionValidator
 from src.core.s3_storage import ObjectStorageDep, ObjectType
 from src.exc import (
@@ -18,6 +17,7 @@ from src.exc import (
     HTTP_EXC_UPLOAD_BACKUP_FILE,
 )
 from src.schemas import BackupSchema, TaskIDSchema
+from src.services.dependencies import BackupServiceDep
 from src.tasks import uploaded_backup_record_creation, verify_logical_backup
 
 
