@@ -12,6 +12,7 @@ from src.schemas.backup.backup import BackupSchema
 class ScheduledBackupSchema(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
+    id: UUID
     celery_id: UUID
     backup_id: UUID | None = None
 

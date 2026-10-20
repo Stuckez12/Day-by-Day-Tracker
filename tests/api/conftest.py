@@ -16,6 +16,7 @@ from fastapi.testclient import TestClient
 from pytest import TempPathFactory
 from sqlalchemy import Engine, create_engine
 from sqlalchemy.orm import Session, sessionmaker
+from sqlalchemy.orm.exc import ObjectDeletedError
 from sqlalchemy_utils import create_database, database_exists
 from testcontainers.core.container import DockerContainer
 
@@ -36,8 +37,16 @@ from src.enums import (
     TaskStatus,
 )
 from src.main import fastapi_app
-from src.models import BackupModel, MetaModel, PersonnelModel, RankerModel, TaskModel
+from src.models import (
+    BackupModel,
+    BackupScheduleModel,
+    MetaModel,
+    PersonnelModel,
+    RankerModel,
+    TaskModel,
+)
 from src.schemas import (
+    CreateScheduledBackupSchema,
     Metadata,
     MetadataChecksum,
     MetadataData,
@@ -53,6 +62,7 @@ from src.services import (
     RankingService,
     TaskService,
 )
+from src.services.backup.scheduler import BackupSchedulerService
 from src.settings import app_config
 from src.utils import utcnow
 from src.workflows import LogicalBackupWorkflow, RangedBackupWorkflow
@@ -236,8 +246,12 @@ def test_logical_backup_zip_stored(
         ObjectType.BACKUP, test_logical_backup_zip_name.name
     )
 
-    test_backup_session.delete(backup_model)
-    test_backup_session.commit()
+    try:
+        test_backup_session.delete(backup_model)
+        test_backup_session.commit()
+
+    except ObjectDeletedError:
+        test_backup_session.rollback()
 
 
 @pytest.fixture(scope="function")
@@ -299,8 +313,12 @@ def test_ranged_backup_zip_stored(
 
     test_object_storage.delete_file(ObjectType.BACKUP, test_ranged_backup_zip_name.name)
 
-    test_backup_session.delete(backup_model)
-    test_backup_session.commit()
+    try:
+        test_backup_session.delete(backup_model)
+        test_backup_session.commit()
+
+    except ObjectDeletedError:
+        test_backup_session.rollback()
 
 
 ################################################################################
@@ -450,8 +468,12 @@ def test_session_personnel(test_session: Session):
 
     yield model
 
-    test_session.delete(model)
-    test_session.commit()
+    try:
+        test_session.delete(model)
+        test_session.commit()
+
+    except ObjectDeletedError:
+        test_session.rollback()
 
 
 @pytest.fixture(scope="session")
@@ -469,8 +491,12 @@ def test_session_admin(test_session: Session):
 
     yield model
 
-    test_session.delete(model)
-    test_session.commit()
+    try:
+        test_session.delete(model)
+        test_session.commit()
+
+    except ObjectDeletedError:
+        test_session.rollback()
 
 
 @pytest.fixture
@@ -530,6 +556,11 @@ def test_ranking_service(test_session: Session):
 @pytest.fixture(scope="function")
 def test_task_service(test_session: Session):
     yield TaskService(db=test_session)
+
+
+@pytest.fixture(scope="function")
+def test_backup_scheduler_service(test_session: Session, test_backup_session: Session):
+    yield BackupSchedulerService(db=test_session, backup_db=test_backup_session)
 
 
 ################################################################################
@@ -612,8 +643,12 @@ def test_personnel(test_session: Session):
 
     yield model
 
-    test_session.delete(model)
-    test_session.commit()
+    try:
+        test_session.delete(model)
+        test_session.commit()
+
+    except ObjectDeletedError:
+        test_session.rollback()
 
 
 @pytest.fixture(scope="function")
@@ -630,8 +665,12 @@ def test_personnel_2(test_session: Session):
 
     yield model
 
-    test_session.delete(model)
-    test_session.commit()
+    try:
+        test_session.delete(model)
+        test_session.commit()
+
+    except ObjectDeletedError:
+        test_session.rollback()
 
 
 @pytest.fixture(scope="function")
@@ -648,8 +687,12 @@ def test_personnel_3(test_session: Session):
 
     yield model
 
-    test_session.delete(model)
-    test_session.commit()
+    try:
+        test_session.delete(model)
+        test_session.commit()
+
+    except ObjectDeletedError:
+        test_session.rollback()
 
 
 @pytest.fixture(scope="function")
@@ -667,8 +710,12 @@ def test_ranker(
 
     yield model
 
-    test_session.delete(model)
-    test_session.commit()
+    try:
+        test_session.delete(model)
+        test_session.commit()
+
+    except ObjectDeletedError:
+        test_session.rollback()
 
 
 @pytest.fixture(scope="function")
@@ -684,8 +731,12 @@ def test_ranker_set_date(test_session: Session, test_session_personnel: Personne
 
     yield model
 
-    test_session.delete(model)
-    test_session.commit()
+    try:
+        test_session.delete(model)
+        test_session.commit()
+
+    except ObjectDeletedError:
+        test_session.rollback()
 
 
 @pytest.fixture(scope="function")
@@ -703,8 +754,12 @@ def test_ranker_none(
 
     yield model
 
-    test_session.delete(model)
-    test_session.commit()
+    try:
+        test_session.delete(model)
+        test_session.commit()
+
+    except ObjectDeletedError:
+        test_session.rollback()
 
 
 @pytest.fixture(scope="function")
@@ -725,8 +780,12 @@ def test_task_1(test_session: Session):
 
     yield model
 
-    test_session.delete(model)
-    test_session.commit()
+    try:
+        test_session.delete(model)
+        test_session.commit()
+
+    except ObjectDeletedError:
+        test_session.rollback()
 
 
 @pytest.fixture(scope="function")
@@ -747,8 +806,12 @@ def test_task_2(test_session: Session):
 
     yield model
 
-    test_session.delete(model)
-    test_session.commit()
+    try:
+        test_session.delete(model)
+        test_session.commit()
+
+    except ObjectDeletedError:
+        test_session.rollback()
 
 
 @pytest.fixture(scope="function")
@@ -769,8 +832,12 @@ def test_task_3(test_session: Session):
 
     yield model
 
-    test_session.delete(model)
-    test_session.commit()
+    try:
+        test_session.delete(model)
+        test_session.commit()
+
+    except ObjectDeletedError:
+        test_session.rollback()
 
 
 @pytest.fixture(scope="function")
@@ -790,8 +857,12 @@ def test_backup(test_backup_session: Session, test_task_1: TaskModel):
 
     yield model
 
-    test_backup_session.delete(model)
-    test_backup_session.commit()
+    try:
+        test_backup_session.delete(model)
+        test_backup_session.commit()
+
+    except ObjectDeletedError:
+        test_backup_session.rollback()
 
 
 @pytest.fixture(scope="function")
@@ -811,8 +882,58 @@ def test_backup_2(test_backup_session: Session, test_task_1: TaskModel):
 
     yield model
 
-    test_backup_session.delete(model)
+    try:
+        test_backup_session.delete(model)
+        test_backup_session.commit()
+
+    except ObjectDeletedError:
+        test_backup_session.rollback()
+
+
+@pytest.fixture(scope="function")
+def test_logical_backup_schedule(test_backup_session: Session):
+    data = CreateScheduledBackupSchema(
+        celery_id=uuid.uuid4(),
+        backup_type=BackupType.LOGICAL,
+        scheduled_for=datetime.now(),
+    )
+    model = BackupScheduleModel(data)
+
+    test_backup_session.add(model)
     test_backup_session.commit()
+
+    yield model
+
+    try:
+        test_backup_session.delete(model)
+        test_backup_session.commit()
+
+    except ObjectDeletedError:
+        test_backup_session.rollback()
+
+
+@pytest.fixture(scope="function")
+def test_ranged_day_backup_schedule(test_backup_session: Session):
+    data = CreateScheduledBackupSchema(
+        celery_id=uuid.uuid4(),
+        backup_type=BackupType.RANGED_DAY,
+        scheduled_for=datetime.now(),
+        date_range_start=datetime.now(),
+        date_range_end=datetime.now(),
+    )
+    model = BackupScheduleModel(data)
+
+    test_backup_session.add(model)
+    test_backup_session.commit()
+
+    yield model
+
+    try:
+        test_backup_session.delete(model)
+        test_backup_session.commit()
+
+    except ObjectDeletedError:
+        test_backup_session.rollback()
 
 
 @pytest.fixture(scope="function")
@@ -832,8 +953,12 @@ def test_metadata(test_backup_session: Session, test_metadata_schema: Metadata):
 
     yield model
 
-    test_backup_session.delete(model)
-    test_backup_session.commit()
+    try:
+        test_backup_session.delete(model)
+        test_backup_session.commit()
+
+    except ObjectDeletedError:
+        test_backup_session.rollback()
 
 
 @pytest.fixture(scope="function")
@@ -853,8 +978,12 @@ def test_metadata_2(test_backup_session: Session, test_metadata_schema_2: Metada
 
     yield model
 
-    test_backup_session.delete(model)
-    test_backup_session.commit()
+    try:
+        test_backup_session.delete(model)
+        test_backup_session.commit()
+
+    except ObjectDeletedError:
+        test_backup_session.rollback()
 
 
 ################################################################################
@@ -917,3 +1046,11 @@ def test_metadata_schema_2(test_backup_2: BackupModel):
             )
         ),
     )
+
+
+@pytest.fixture
+def scheduler_today():
+    return utcnow().replace(hour=0, minute=0, second=0, microsecond=0, tzinfo=None)
+
+
+################################################################################

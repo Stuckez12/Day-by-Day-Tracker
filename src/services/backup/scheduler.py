@@ -48,7 +48,7 @@ class BackupSchedulerService(BackupService):
                     trigger=BackupTriggerMethod.SCHEDULED.value
                 ).apply_async(task_id=str(model.celery_id), eta=model.scheduled_for)
 
-            case BackupType.RANGED_WEEK:
+            case BackupType.RANGED_WEEK | BackupType.RANGED_DAY:
                 database_ranged_backup.s(
                     trigger=BackupTriggerMethod.SCHEDULED.value,
                     start_date=cast(datetime, model.date_range_start).strftime(
@@ -57,17 +57,12 @@ class BackupSchedulerService(BackupService):
                     end_date=cast(datetime, model.date_range_end).strftime("%Y-%m-%d"),
                 ).apply_async(task_id=str(model.celery_id), eta=model.scheduled_for)
 
-            case BackupType.RANGED_DAY:
-                database_ranged_backup.s(
-                    trigger=BackupTriggerMethod.SCHEDULED.value,
-                    start_date=cast(datetime, model.date_range_start).strftime(
-                        "%Y-%m-%d"
-                    ),
-                    end_date=cast(datetime, model.date_range_end).strftime("%Y-%m-%d"),
-                ).apply_async(task_id=str(model.celery_id), eta=model.scheduled_for)
-
-    def get_schedule(self, schedule_id: UUID):
-        pass
+    def get_schedule(self, schedule_id: UUID) -> BackupScheduleModel:
+        return (
+            self.backup_db.query(BackupScheduleModel)
+            .filter(BackupScheduleModel.id == schedule_id)
+            .one()
+        )
 
     def get_schedules_query(
         self, data: ScheduledBackupFilters
@@ -111,8 +106,8 @@ class BackupSchedulerService(BackupService):
 
         return query
 
-    def generate_schedules(self) -> list[BackupScheduleModel]:
-        day_range = 130  # TODO: Replace with configurable application settings param
+    def generate_schedules(self, day_range: int = 130) -> list[BackupScheduleModel]:
+        # day_range = 130  # TODO: Replace with configurable application settings param
 
         today = utcnow()
         from_date = today.date()
