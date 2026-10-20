@@ -30,11 +30,14 @@ class TestRegistrationRoute:
         assert result.status_code == status.HTTP_201_CREATED
 
         data = result.json()
+        personnel = SlimPersonnelSchema.model_validate(data)
         assert UUID(data["id"])
-        assert data["first_name"] == request_data["first_name"]
-        assert data["last_name"] == request_data["last_name"]
+        assert personnel.first_name == request_data["first_name"]
+        assert personnel.last_name == request_data["last_name"]
 
-        test_session.query(PersonnelModel).delete()
+        test_session.query(PersonnelModel).filter(
+            PersonnelModel.id == personnel.id
+        ).delete()
         test_session.commit()
 
     @pytest.mark.parametrize(

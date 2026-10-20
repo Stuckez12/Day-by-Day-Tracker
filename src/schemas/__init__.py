@@ -12,6 +12,7 @@ from src.schemas.backup import (
     MetadataFileType,
     MetadataTool,
     ScheduledBackupFilters,
+    ScheduledBackupSchema,
     VerifiedBackupResultSchema,
 )
 from src.schemas.common import DateRangeRequest, DateRequest, DetailSchema, TaskIDSchema

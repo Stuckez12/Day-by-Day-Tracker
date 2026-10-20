@@ -14,6 +14,7 @@ from src.exc.ranking import (
     HTTP_EXC_RANK_OLDER_THAN_TWO_WEEKS,
     HTTP_EXC_RANKING_NOT_FOUND,
 )
+from src.exc.schedule import HTTP_EXC_BACKUP_SCHEDULE_NOT_FOUND
 from src.exc.security import HTTP_EXC_INVALID_TOKEN
 from src.exc.task import (
     HTTP_EXC_INVALID_TASK_DATE_RANGE,

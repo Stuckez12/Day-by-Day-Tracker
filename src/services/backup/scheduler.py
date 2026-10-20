@@ -23,6 +23,7 @@ from .backup import BackupService
 class BackupSchedulerService(BackupService):
     def __init__(self, db: Session, backup_db: Session) -> None:
         super().__init__(db=db, backup_db=backup_db)
+        self.model = BackupScheduleModel
 
     def create_schedule(self, data: CreateScheduledBackupSchema) -> BackupScheduleModel:
         model = BackupScheduleModel(data)
@@ -63,6 +64,10 @@ class BackupSchedulerService(BackupService):
             .filter(BackupScheduleModel.id == schedule_id)
             .one()
         )
+
+    def delete_schedule(self, schedule: BackupScheduleModel) -> None:
+        self.backup_db.delete(schedule)
+        self.backup_db.commit()
 
     def get_schedules_query(
         self, data: ScheduledBackupFilters

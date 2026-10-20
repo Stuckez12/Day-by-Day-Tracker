@@ -188,6 +188,25 @@ class TestGetSchedule:
             test_backup_scheduler_service.get_schedule(uuid.uuid4())
 
 
+class TestDeleteSchedule:
+    def test_success(
+        self,
+        test_backup_session: Session,
+        test_backup_scheduler_service: BackupSchedulerService,
+        test_logical_backup_schedule: BackupScheduleModel,
+    ):
+        schedule_id = test_logical_backup_schedule.id
+
+        test_backup_scheduler_service.delete_schedule(test_logical_backup_schedule)
+
+        result = (
+            test_backup_session.query(BackupScheduleModel)
+            .filter(BackupScheduleModel.id == schedule_id)
+            .first()
+        )
+        assert result is None
+
+
 class TestGenerateSchedules:
     def test_success(
         self,

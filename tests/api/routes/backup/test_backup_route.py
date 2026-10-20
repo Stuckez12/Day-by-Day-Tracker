@@ -120,7 +120,7 @@ class TestUploadBackupRoute:
     ):
         task_id = str(uuid.uuid4())
         mocker.patch(
-            "src.routes.backup.uploaded_backup_record_creation",
+            "src.routes.backup.base.uploaded_backup_record_creation",
             **{"s.return_value.apply_async.return_value": mocker.Mock(id=task_id)},
         )
 
@@ -215,7 +215,7 @@ class TestVerifyBackupRoute:
         task_id = str(uuid.uuid4())
 
         mocker.patch(
-            "src.routes.backup.verify_logical_backup",
+            "src.routes.backup.base.verify_logical_backup",
             **{"s.return_value.apply_async.return_value": mocker.Mock(id=task_id)},
         )
 

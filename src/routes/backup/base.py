@@ -20,12 +20,15 @@ from src.schemas import BackupSchema, TaskIDSchema
 from src.services.dependencies import BackupServiceDep
 from src.tasks import uploaded_backup_record_creation, verify_logical_backup
 
+from .schedule import api as schedule_api
+
 
 api = APIRouter(
     prefix="/backup",
     tags=["Backup"],
     dependencies=[Depends(PermissionValidator(admin_route=True))],
 )
+api.include_router(schedule_api)
 
 
 @api.get("/all", response_model=list[BackupSchema], status_code=status.HTTP_200_OK)
