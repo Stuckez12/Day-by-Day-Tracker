@@ -33,7 +33,7 @@ def run_task_simulation(_: Request):
 )
 def run_database_logical_backup(_: Request):
     task: AsyncResult = database_logical_backup.delay(
-        trigger=BackupTriggerMethod.MANUAL.value
+        trigger=BackupTriggerMethod.MANUAL.value,
     )
 
     return task.get()

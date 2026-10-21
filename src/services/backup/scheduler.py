@@ -4,12 +4,10 @@ from typing import cast
 from uuid import UUID
 
 from celery.exceptions import OperationalError
+from sqlalchemy.exc import DBAPIError
 from sqlalchemy.orm import Query, Session
 
-from src.enums import BackupType
-from src.enums.backup.status import BackupStatus
-from src.enums.backup.trigger_method import BackupTriggerMethod
-from src.main import celery_app
+from src.enums import BackupStatus, BackupTriggerMethod, BackupType, TaskScheduleStatus
 from src.models import BackupModel, BackupScheduleModel, MetaModel
 from src.schemas import (
     BackupFilters,
@@ -30,13 +28,6 @@ class BackupSchedulerService(BackupService):
         model = BackupScheduleModel(data)
 
         self.backup_db.add(model)
-
-        try:
-            self._schedule_backup_task_type(model)
-
-        except OperationalError:
-            model.dispatch_error = f"Unable to schedule backup task for {model.scheduled_for.strftime('%Y-%m-%d')}. Connection error"
-
         self.backup_db.commit()
         self.backup_db.refresh(model)
 
@@ -48,17 +39,32 @@ class BackupSchedulerService(BackupService):
         match model.backup_type:
             case BackupType.LOGICAL:
                 database_logical_backup.s(
-                    trigger=BackupTriggerMethod.SCHEDULED.value
-                ).apply_async(task_id=str(model.celery_id), eta=model.scheduled_for)
+                    date_triggered=utcnow().strftime("%Y-%m-%d"),
+                    trigger=BackupTriggerMethod.SCHEDULED.value,
+                ).apply_async(task_id=str(model.celery_id), countdown=300)
 
             case BackupType.RANGED_WEEK | BackupType.RANGED_DAY:
                 database_ranged_backup.s(
+                    date_triggered=utcnow().strftime("%Y-%m-%d"),
                     trigger=BackupTriggerMethod.SCHEDULED.value,
                     start_date=cast(datetime, model.date_range_start).strftime(
                         "%Y-%m-%d"
                     ),
                     end_date=cast(datetime, model.date_range_end).strftime("%Y-%m-%d"),
-                ).apply_async(task_id=str(model.celery_id), eta=model.scheduled_for)
+                ).apply_async(task_id=str(model.celery_id), countdown=300)
+
+    def schedule_backup_task_type(self, model: BackupScheduleModel) -> None:
+        try:
+            self._schedule_backup_task_type(model)
+
+            model.status = TaskScheduleStatus.QUEUED
+            self.backup_db.commit()
+
+        except OperationalError:
+            self.backup_db.rollback()
+
+            model.dispatch_error = f"Unable to schedule backup task for {model.scheduled_for.strftime('%Y-%m-%d')}. Connection error"
+            self.backup_db.commit()
 
     def get_schedule(self, schedule_id: UUID) -> BackupScheduleModel:
         return (
@@ -68,6 +74,8 @@ class BackupSchedulerService(BackupService):
         )
 
     def delete_schedule(self, schedule: BackupScheduleModel) -> None:
+        from src.main import celery_app
+
         celery_app.control.revoke(str(schedule.celery_id), terminate=False)
 
         self.backup_db.delete(schedule)
@@ -87,10 +95,7 @@ class BackupSchedulerService(BackupService):
             )
 
         if data.scheduled_to is not None:
-            query = query.filter(
-                BackupScheduleModel.scheduled_for
-                <= data.scheduled_to + timedelta(days=1)
-            )
+            query = query.filter(BackupScheduleModel.scheduled_for <= data.scheduled_to)
 
         if data.status is not None:
             query = query.filter(BackupScheduleModel.status == data.status)
@@ -128,7 +133,7 @@ class BackupSchedulerService(BackupService):
 
         future_schedules: list[BackupScheduleModel] = query.all()
         mapped_schedules = {
-            schedule.scheduled_for.date(): schedule for schedule in future_schedules
+            schedule.scheduled_for: schedule for schedule in future_schedules
         }
 
         dates_to_schedule = self._get_unscheduled_dates(
@@ -169,9 +174,12 @@ class BackupSchedulerService(BackupService):
                 date_range_end=date_range_end,
             )
 
-            new_schedule = self.create_schedule(data)
+            try:
+                new_schedule = self.create_schedule(data)
+                created_schedules.append(new_schedule)
 
-            created_schedules.append(new_schedule)
+            except DBAPIError:
+                self.backup_db.rollback()
 
         return created_schedules
 
@@ -254,3 +262,30 @@ class BackupSchedulerService(BackupService):
                 backup_type_order[current_date] = backup_type_data
 
         return backup_type_order
+
+    def assign_schedule(self, backup: BackupModel, assign_date: date):
+        schedule = (
+            self.backup_db.query(BackupScheduleModel)
+            .filter(BackupScheduleModel.scheduled_for == assign_date)
+            .one()
+        )
+
+        schedule.backup_id = backup.id
+        schedule.status = TaskScheduleStatus.RUNNING
+        self.backup_db.commit()
+
+    def update_schedule_status(
+        self, backup: BackupModel, schedule_status: TaskScheduleStatus
+    ):
+        schedule = (
+            self.backup_db.query(BackupScheduleModel)
+            .filter(BackupScheduleModel.backup_id == backup.id)
+            .first()
+        )
+
+        if schedule is None:
+            return
+
+        schedule.status = schedule_status
+        schedule.celery_id = backup.celery_id
+        self.backup_db.commit()

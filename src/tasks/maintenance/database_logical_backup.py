@@ -1,6 +1,7 @@
 import logging
 import time
 import traceback
+from datetime import date
 from typing import cast
 
 import src.core as core
@@ -10,12 +11,15 @@ from src.constants import FILLER_UUID4
 from src.core.s3_storage import ObjectStorage
 from src.enums import BackupStatus, BackupTriggerMethod, BackupType, TaskScheduleStatus
 from src.schemas import BackupCreate, BackupSchema
-from src.services import BackupService, TaskService
+from src.services import TaskService
+from src.services.backup.scheduler import BackupSchedulerService
 from src.workflows import LogicalBackupWorkflow
 
 
 @shared_task(bind=True)
-def database_logical_backup(self: Task, trigger: str, *args, **kwargs) -> dict:
+def database_logical_backup(
+    self: Task, trigger: str, date_triggered: str | None = None, *args, **kwargs
+) -> dict:
     db_gen = core.get_db()
     db = next(db_gen)
 
@@ -33,10 +37,14 @@ def database_logical_backup(self: Task, trigger: str, *args, **kwargs) -> dict:
 
     try:
         update_task_state(self, db, metadata={"stage": "Initialising Backup Task"})
-        service = BackupService(db=db, backup_db=backup_db)
+        service = BackupSchedulerService(db=db, backup_db=backup_db)
         backup_record = service.create(backup_data)
 
-        service.update_potential_schedule(backup_record, TaskScheduleStatus.RUNNING)
+        if (
+            backup_data.trigger_method == BackupTriggerMethod.SCHEDULED
+            and date_triggered is not None
+        ):
+            service.assign_schedule(backup_record, date.fromisoformat(date_triggered))
 
     except Exception as e:
         backup_db_gen.close()
@@ -97,7 +105,7 @@ def database_logical_backup(self: Task, trigger: str, *args, **kwargs) -> dict:
 
         backup_db.commit()
 
-        service.update_potential_schedule(backup_record, TaskScheduleStatus.SUCCESS)
+        service.update_schedule_status(backup_record, TaskScheduleStatus.SUCCESS)
 
         return BackupSchema.model_validate(backup_record).model_dump(mode="json")
 
@@ -118,7 +126,7 @@ def database_logical_backup(self: Task, trigger: str, *args, **kwargs) -> dict:
 
         backup_db.commit()
 
-        service.update_potential_schedule(backup_record, TaskScheduleStatus.FAILED)
+        service.update_schedule_status(backup_record, TaskScheduleStatus.FAILED)
 
         return BackupSchema.model_validate(backup_record).model_dump(mode="json")
 

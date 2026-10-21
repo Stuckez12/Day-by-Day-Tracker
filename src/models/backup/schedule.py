@@ -1,10 +1,10 @@
 from __future__ import annotations
 
 import uuid
-from datetime import datetime
+from datetime import date, datetime
 from typing import TYPE_CHECKING
 
-from sqlalchemy import UUID, DateTime, Enum, ForeignKey, String
+from sqlalchemy import UUID, Date, DateTime, Enum, ForeignKey, String
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from src.enums import BackupType, TaskScheduleStatus
@@ -20,13 +20,15 @@ if TYPE_CHECKING:
 class BackupScheduleModel(BackupBaseModel):
     __tablename__ = "backup-scheduler"
 
-    celery_id: Mapped[uuid.UUID] = mapped_column(UUID, nullable=False)
-    backup_id: Mapped[UUID] = mapped_column(
+    celery_id: Mapped[uuid.UUID | None] = mapped_column(
+        UUID, nullable=True, default=None
+    )
+    backup_id: Mapped[uuid.UUID | None] = mapped_column(
         ForeignKey("backups.id", ondelete="CASCADE"), nullable=True, default=None
     )
 
     backup_type: Mapped[BackupType] = mapped_column(Enum(BackupType), nullable=False)
-    scheduled_for: Mapped[datetime] = mapped_column(DateTime, nullable=False)
+    scheduled_for: Mapped[date] = mapped_column(Date, nullable=False)
     status: Mapped[TaskScheduleStatus] = mapped_column(
         Enum(TaskScheduleStatus), nullable=False
     )
