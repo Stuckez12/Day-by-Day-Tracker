@@ -1,15 +1,18 @@
 from datetime import date, datetime
 from uuid import UUID
 
+from celery.exceptions import OperationalError
 from fastapi import APIRouter, Depends, Query, status
-from fastapi_pagination import Params
+from fastapi_pagination import Page, Params
 from fastapi_pagination.ext.sqlalchemy import paginate
 from sqlalchemy.exc import NoResultFound
 
 from src.core.permission_validator import PermissionValidator
-from src.enums import BackupType
-from src.enums.task_schedule_status import TaskScheduleStatus
-from src.exc import HTTP_EXC_BACKUP_SCHEDULE_NOT_FOUND
+from src.enums import BackupType, TaskScheduleStatus
+from src.exc import (
+    HTTP_EXC_BACKUP_SCHEDULE_NOT_FOUND,
+    HTTP_EXC_ERROR_CANCELLING_QUEUED_TASK,
+)
 from src.schemas import (
     CreateScheduledBackupSchema,
     ScheduledBackupFilters,
@@ -38,7 +41,7 @@ def create_backup_schedule(
 
 @api.get(
     "/search",
-    response_model=ScheduledBackupSchema,
+    response_model=Page[ScheduledBackupSchema],
     status_code=status.HTTP_200_OK,
 )
 def search_backup_schedules(
@@ -75,7 +78,11 @@ def search_backup_schedules(
     status_code=status.HTTP_200_OK,
 )
 def get_backup_schedule(service: BackupSchedulerServiceDep, schedule_id: UUID):
-    return service.get_schedule(schedule_id)
+    try:
+        return service.get_schedule(schedule_id)
+
+    except NoResultFound:
+        raise HTTP_EXC_BACKUP_SCHEDULE_NOT_FOUND
 
 
 @api.delete("/{schedule_id}", status_code=status.HTTP_204_NO_CONTENT)
@@ -86,3 +93,6 @@ def delete_backup_schedule(service: BackupSchedulerServiceDep, schedule_id: UUID
 
     except NoResultFound:
         raise HTTP_EXC_BACKUP_SCHEDULE_NOT_FOUND
+
+    except OperationalError:
+        raise HTTP_EXC_ERROR_CANCELLING_QUEUED_TASK

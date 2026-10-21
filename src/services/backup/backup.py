@@ -3,8 +3,8 @@ from uuid import UUID
 from sqlalchemy import or_
 from sqlalchemy.orm import Query, Session, selectinload
 
-from src.enums import BackupStatus
-from src.models import BackupModel
+from src.enums import BackupStatus, TaskScheduleStatus
+from src.models import BackupModel, BackupScheduleModel
 from src.schemas import BackupCreate, BackupFilters
 from src.services.base import BaseDBService
 
@@ -81,3 +81,18 @@ class BackupService(BaseDBService[BackupModel]):
         self.backup_db.refresh(backup)
 
         return backup
+
+    def update_potential_schedule(
+        self, backup: BackupModel, schedule_status: TaskScheduleStatus
+    ):
+        schedule = (
+            self.backup_db.query(BackupScheduleModel)
+            .filter(BackupScheduleModel.backup_id == backup.id)
+            .first()
+        )
+
+        if schedule is None:
+            return
+
+        schedule.status = schedule_status
+        self.backup_db.commit()

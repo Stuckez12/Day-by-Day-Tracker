@@ -9,7 +9,7 @@ from celery import Task, shared_task
 from src.common.celery import update_task_state
 from src.constants import FILLER_UUID4
 from src.core.s3_storage import ObjectStorage
-from src.enums import BackupStatus, BackupTriggerMethod, BackupType
+from src.enums import BackupStatus, BackupTriggerMethod, BackupType, TaskScheduleStatus
 from src.schemas import BackupCreate, BackupSchema, DateRangeRequest
 from src.services import BackupService, TaskService
 from src.workflows import RangedBackupWorkflow
@@ -67,6 +67,8 @@ def database_ranged_backup(
         service = BackupService(db=db, backup_db=backup_db)
         backup_record = service.create(backup_data)
 
+        service.update_potential_schedule(backup_record, TaskScheduleStatus.RUNNING)
+
     except Exception as e:
         backup_db_gen.close()
         db_gen.close()
@@ -123,6 +125,8 @@ def database_ranged_backup(
 
         backup_db.commit()
 
+        service.update_potential_schedule(backup_record, TaskScheduleStatus.SUCCESS)
+
         return BackupSchema.model_validate(backup_record).model_dump(mode="json")
 
     except Exception as e:
@@ -141,6 +145,8 @@ def database_ranged_backup(
         logging.error(backup_record.error_message)
 
         backup_db.commit()
+
+        service.update_potential_schedule(backup_record, TaskScheduleStatus.FAILED)
 
         return BackupSchema.model_validate(backup_record).model_dump(mode="json")
 

@@ -21,8 +21,8 @@ def create_worker():
     )
     worker.conf.beat_schedule = {
         "weekly-database-backup": {
-            "task": "src.tasks.maintenance.database_logical_backup.database_logical_backup",
-            "schedule": crontab(day_of_week="mon", hour=3, minute=0),
+            "task": "src.tasks.maintenance.backup_scheduler.backup_scheduler",
+            "schedule": crontab(month_of_year="*/3", hour=23, minute=55),
         },
     }
 

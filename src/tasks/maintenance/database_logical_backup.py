@@ -8,7 +8,7 @@ from celery import Task, shared_task
 from src.common.celery import update_task_state
 from src.constants import FILLER_UUID4
 from src.core.s3_storage import ObjectStorage
-from src.enums import BackupStatus, BackupTriggerMethod, BackupType
+from src.enums import BackupStatus, BackupTriggerMethod, BackupType, TaskScheduleStatus
 from src.schemas import BackupCreate, BackupSchema
 from src.services import BackupService, TaskService
 from src.workflows import LogicalBackupWorkflow
@@ -35,6 +35,8 @@ def database_logical_backup(self: Task, trigger: str, *args, **kwargs) -> dict:
         update_task_state(self, db, metadata={"stage": "Initialising Backup Task"})
         service = BackupService(db=db, backup_db=backup_db)
         backup_record = service.create(backup_data)
+
+        service.update_potential_schedule(backup_record, TaskScheduleStatus.RUNNING)
 
     except Exception as e:
         backup_db_gen.close()
@@ -95,6 +97,8 @@ def database_logical_backup(self: Task, trigger: str, *args, **kwargs) -> dict:
 
         backup_db.commit()
 
+        service.update_potential_schedule(backup_record, TaskScheduleStatus.SUCCESS)
+
         return BackupSchema.model_validate(backup_record).model_dump(mode="json")
 
     except Exception as e:
@@ -113,6 +117,8 @@ def database_logical_backup(self: Task, trigger: str, *args, **kwargs) -> dict:
         logging.error(backup_record.error_message)
 
         backup_db.commit()
+
+        service.update_potential_schedule(backup_record, TaskScheduleStatus.FAILED)
 
         return BackupSchema.model_validate(backup_record).model_dump(mode="json")
 

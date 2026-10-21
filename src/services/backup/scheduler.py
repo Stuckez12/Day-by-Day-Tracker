@@ -9,6 +9,7 @@ from sqlalchemy.orm import Query, Session
 from src.enums import BackupType
 from src.enums.backup.status import BackupStatus
 from src.enums.backup.trigger_method import BackupTriggerMethod
+from src.main import celery_app
 from src.models import BackupModel, BackupScheduleModel, MetaModel
 from src.schemas import (
     BackupFilters,
@@ -36,7 +37,8 @@ class BackupSchedulerService(BackupService):
         except OperationalError:
             model.dispatch_error = f"Unable to schedule backup task for {model.scheduled_for.strftime('%Y-%m-%d')}. Connection error"
 
-        self.backup_db.flush()
+        self.backup_db.commit()
+        self.backup_db.refresh(model)
 
         return model
 
@@ -66,6 +68,8 @@ class BackupSchedulerService(BackupService):
         )
 
     def delete_schedule(self, schedule: BackupScheduleModel) -> None:
+        celery_app.control.revoke(str(schedule.celery_id), terminate=False)
+
         self.backup_db.delete(schedule)
         self.backup_db.commit()
 
@@ -166,8 +170,6 @@ class BackupSchedulerService(BackupService):
             )
 
             new_schedule = self.create_schedule(data)
-
-            self.backup_db.commit()
 
             created_schedules.append(new_schedule)
 
