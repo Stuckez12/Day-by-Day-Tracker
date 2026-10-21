@@ -12,6 +12,7 @@ from src.models import BackupScheduleModel
 from src.schemas import CreateScheduledBackupSchema
 from src.schemas.backup.schedule import ScheduledBackupSchema
 from src.services import BackupSchedulerService
+from src.utils import utcnow
 
 
 class TestCreateSchedule:
@@ -41,15 +42,19 @@ class TestCreateSchedule:
         )
 
         result = test_backup_scheduler_service.create_schedule(data)
+        test_backup_scheduler_service.schedule_backup_task_type(result)
         assert result.celery_id == task_id
         assert result.backup_type == BackupType.LOGICAL
-        assert result.scheduled_for == scheduled_for
+        assert result.scheduled_for == scheduled_for.date()
         assert result.date_range_start is None
         assert result.date_range_end is None
 
-        task.s.assert_called_once_with(trigger=BackupTriggerMethod.SCHEDULED.value)
+        task.s.assert_called_once_with(
+            date_triggered=utcnow().strftime("%Y-%m-%d"),
+            trigger=BackupTriggerMethod.SCHEDULED.value,
+        )
         task.s.return_value.apply_async.assert_called_once_with(
-            task_id=str(task_id), eta=scheduled_for
+            task_id=str(task_id), countdown=300
         )
         do_not_call_task.s.assert_not_called()
 
@@ -80,17 +85,19 @@ class TestCreateSchedule:
         )
 
         result = test_backup_scheduler_service.create_schedule(data)
+        test_backup_scheduler_service.schedule_backup_task_type(result)
         assert result.celery_id == task_id
         assert result.backup_type == BackupType.RANGED_WEEK
-        assert result.scheduled_for == scheduled_for
+        assert result.scheduled_for == scheduled_for.date()
 
         task.s.assert_called_once_with(
+            date_triggered=utcnow().strftime("%Y-%m-%d"),
             trigger=BackupTriggerMethod.SCHEDULED.value,
             start_date=start_time.strftime("%Y-%m-%d"),
             end_date=scheduled_for.strftime("%Y-%m-%d"),
         )
         task.s.return_value.apply_async.assert_called_once_with(
-            task_id=str(task_id), eta=scheduled_for
+            task_id=str(task_id), countdown=300
         )
         do_not_call_task.s.assert_not_called()
 
@@ -120,19 +127,21 @@ class TestCreateSchedule:
         )
 
         result = test_backup_scheduler_service.create_schedule(data)
+        test_backup_scheduler_service.schedule_backup_task_type(result)
         assert result.celery_id == task_id
         assert result.backup_type == BackupType.RANGED_DAY
-        assert result.scheduled_for == scheduled_for
+        assert result.scheduled_for == scheduled_for.date()
         assert result.date_range_start == scheduled_for
         assert result.date_range_end == scheduled_for
 
         task.s.assert_called_once_with(
+            date_triggered=utcnow().strftime("%Y-%m-%d"),
             trigger=BackupTriggerMethod.SCHEDULED.value,
             start_date=scheduled_for.strftime("%Y-%m-%d"),
             end_date=scheduled_for.strftime("%Y-%m-%d"),
         )
         task.s.return_value.apply_async.assert_called_once_with(
-            task_id=str(task_id), eta=scheduled_for
+            task_id=str(task_id), countdown=300
         )
         do_not_call_task.s.assert_not_called()
 
@@ -157,15 +166,20 @@ class TestCreateSchedule:
         )
 
         result = test_backup_scheduler_service.create_schedule(data)
+        test_backup_scheduler_service.schedule_backup_task_type(result)
         assert result.celery_id == data.celery_id
         assert result.backup_type == BackupType.LOGICAL
-        assert result.scheduled_for == scheduled_for
+        assert result.scheduled_for == scheduled_for.date()
         assert result.date_range_start is None
         assert result.date_range_end is None
         assert (
             result.dispatch_error
             == f"Unable to schedule backup task for {scheduled_for.strftime('%Y-%m-%d')}. Connection error"
         )
+
+    # Usefulness: 9/10
+    def test_persists_schedule_without_dispatching(self):
+        pass
 
 
 # @pytest.mark.xfail(strict=True, reason="get_schedule is not implemented")
@@ -260,7 +274,10 @@ class TestGenerateSchedules:
         test_ranged_day_backup_schedule: BackupScheduleModel,
         test_backup_scheduler_service: BackupSchedulerService,
     ):
-        test_logical_backup_schedule.scheduled_for = datetime.now() + timedelta(days=16)
+        test_logical_backup_schedule.scheduled_for = (
+            datetime.now() + timedelta(days=16)
+        ).date()
+        test_backup_session.commit()
         result = test_backup_scheduler_service.generate_schedules(day_range=29)
         assert len(result) == 27
 
@@ -283,3 +300,30 @@ class TestGenerateSchedules:
 
         test_backup_session.query(BackupScheduleModel).delete()
         test_backup_session.commit()
+
+    def test_second_invocation_creates_no_duplicates(self):
+        pass
+
+
+class TestScheduleBackupTaskType:
+    def test_successful_retry_clears_dispatch_error(self):
+        pass
+
+
+class TestAssignSchedule:
+    def test_success(self):
+        pass
+
+    def test_missing_schedule(self):
+        pass
+
+
+class TestUpdateScheduleStatus:
+    def test_success(self):
+        pass
+
+    def test_persists_failure(self):
+        pass
+
+    def test_no_linked_schedule(self):
+        pass

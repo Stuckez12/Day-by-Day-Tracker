@@ -439,7 +439,10 @@ def test_app(
         _get_object_storage_service
     )
 
-    with TestClient(fastapi_app, base_url="http://testserver/api/v1") as client:
+    with (
+        patch("src.app.backup_scheduler.s"),
+        TestClient(fastapi_app, base_url="http://testserver/api/v1") as client,
+    ):
         yield client
 
 

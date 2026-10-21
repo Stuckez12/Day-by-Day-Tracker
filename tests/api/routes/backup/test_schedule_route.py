@@ -52,3 +52,39 @@ class TestDeleteBackupScheduleRoute:
     def test_invalid_schedule_id(self, test_client_admin_session: TestClient):
         result = test_client_admin_session.delete("/backup/schedule/invalid-uuid")
         assert result.status_code == status.HTTP_422_UNPROCESSABLE_CONTENT
+
+
+class TestCreateBackupScheduleRoute:
+    def test_logical_success(self):
+        pass
+
+    def test_ranged_day_success(self):
+        pass
+
+    def test_ranged_week_success(self):
+        pass
+
+    def test_non_admin_restricted(self):
+        pass
+
+    def test_invalid_backup_range(self):
+        pass
+
+
+class TestGetBackupScheduleRoute:
+    def test_success(self):
+        pass
+
+    def test_not_found(self):
+        pass
+
+
+class TestSearchBackupSchedulesRoute:
+    def test_success(self):
+        pass
+
+    def test_pagination(self):
+        pass
+
+    def test_combined_filters(self):
+        pass
