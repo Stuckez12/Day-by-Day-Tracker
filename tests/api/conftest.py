@@ -15,6 +15,7 @@ from celery.contrib.testing.worker import start_worker
 from fastapi.testclient import TestClient
 from pytest import TempPathFactory
 from sqlalchemy import Engine, create_engine
+from sqlalchemy.exc import PendingRollbackError
 from sqlalchemy.orm import Session, sessionmaker
 from sqlalchemy.orm.exc import ObjectDeletedError
 from sqlalchemy_utils import create_database, database_exists
@@ -147,6 +148,23 @@ def test_backup_session(test_backup_engine: Engine) -> Generator[Session, None, 
 @pytest.fixture(scope="session")
 def test_date_today() -> Generator[date, None, None]:
     yield date.today()
+
+
+@pytest.fixture(autouse=True)
+def rollback_sessions(test_session: Session, test_backup_session: Session):
+    yield
+
+    try:
+        test_session.commit()
+
+    except PendingRollbackError:
+        test_session.rollback()
+
+    try:
+        test_backup_session.commit()
+
+    except PendingRollbackError:
+        test_backup_session.rollback()
 
 
 ################################################################################
@@ -418,18 +436,21 @@ def test_app(
     def _get_test_db():
         try:
             yield test_session
+
         finally:
             pass
 
     def _get_test_backup_db():
         try:
             yield test_backup_session
+
         finally:
             pass
 
     def _get_object_storage_service():
         try:
             yield test_object_storage
+
         finally:
             pass
 

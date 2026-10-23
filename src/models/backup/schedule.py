@@ -28,7 +28,7 @@ class BackupScheduleModel(BackupBaseModel):
     )
 
     backup_type: Mapped[BackupType] = mapped_column(Enum(BackupType), nullable=False)
-    scheduled_for: Mapped[date] = mapped_column(Date, nullable=False)
+    scheduled_for: Mapped[date] = mapped_column(Date, nullable=False, unique=True)
     status: Mapped[TaskScheduleStatus] = mapped_column(
         Enum(TaskScheduleStatus), nullable=False
     )

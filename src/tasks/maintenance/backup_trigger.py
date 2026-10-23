@@ -2,6 +2,7 @@ from datetime import date
 
 import src.core as core
 from celery import Task, shared_task
+from src.enums import TaskScheduleStatus
 from src.schemas.backup.schedule import ScheduledBackupFilters
 from src.services import BackupSchedulerService
 
@@ -26,6 +27,7 @@ def backup_trigger(self: Task, *args, **kwargs) -> None:
             ScheduledBackupFilters(
                 scheduled_from=date.today(),
                 scheduled_to=date.today(),
+                status=TaskScheduleStatus.QUEUED,
             )
         )
         schedule = query.first()

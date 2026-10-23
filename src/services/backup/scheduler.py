@@ -55,9 +55,13 @@ class BackupSchedulerService(BackupService):
 
     def schedule_backup_task_type(self, model: BackupScheduleModel) -> None:
         try:
+            if model.status != TaskScheduleStatus.QUEUED:
+                raise ValueError("Schedule is not queued")
+
             self._schedule_backup_task_type(model)
 
-            model.status = TaskScheduleStatus.QUEUED
+            model.status = TaskScheduleStatus.PUBLISHED
+            model.dispatch_error = None
             self.backup_db.commit()
 
         except OperationalError:
@@ -146,7 +150,7 @@ class BackupSchedulerService(BackupService):
         last_logical_backup_query = self.get_backups_query(
             BackupFilters(backup_type=BackupType.LOGICAL, status=BackupStatus.SUCCESS)
         )
-        last_logical_backup = last_logical_backup_query.first()
+        last_logical_backup = last_logical_backup_query.join(BackupModel.meta).first()
 
         backup_date_order = self._calculate_backup_type_order_from_logical_to_date(
             last_logical_backup, to_date
@@ -269,6 +273,9 @@ class BackupSchedulerService(BackupService):
             .filter(BackupScheduleModel.scheduled_for == assign_date)
             .one()
         )
+
+        if schedule.status != TaskScheduleStatus.PUBLISHED:
+            raise ValueError("Schedule is not published")
 
         schedule.backup_id = backup.id
         schedule.status = TaskScheduleStatus.RUNNING
