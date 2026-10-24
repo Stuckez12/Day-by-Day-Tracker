@@ -1,5 +1,5 @@
 import uuid
-from datetime import date, datetime, time, timedelta
+from datetime import date, datetime, timedelta
 from typing import cast
 from uuid import UUID
 
@@ -165,7 +165,6 @@ class BackupSchedulerService(BackupService):
                 continue
 
             backup_type = cast(BackupType, backup_date_type.get("type"))
-            scheduled_for = datetime.combine(schedule_this_date, time(23, 59))
 
             date_range_start = cast(datetime | None, backup_date_type.get("date_start"))
             date_range_end = cast(datetime | None, backup_date_type.get("date_end"))
@@ -173,7 +172,7 @@ class BackupSchedulerService(BackupService):
             data = CreateScheduledBackupSchema(
                 celery_id=uuid.uuid4(),
                 backup_type=backup_type,
-                scheduled_for=scheduled_for,
+                scheduled_for=schedule_this_date,
                 date_range_start=date_range_start,
                 date_range_end=date_range_end,
             )
@@ -203,9 +202,15 @@ class BackupSchedulerService(BackupService):
             if recorded_schedule is None:
                 schedule_dates_to_populate.append(date_select)
 
-            elif (
-                recorded_schedule.celery_id is None
-                or recorded_schedule.dispatch_error is not None
+            elif recorded_schedule.status in (
+                TaskScheduleStatus.FAILED,
+                TaskScheduleStatus.CANCELLED,
+            ) or (
+                recorded_schedule.status == TaskScheduleStatus.QUEUED
+                and (
+                    recorded_schedule.celery_id is None
+                    or recorded_schedule.dispatch_error is not None
+                )
             ):
                 self.backup_db.delete(recorded_schedule)
                 self.backup_db.flush()
@@ -294,5 +299,4 @@ class BackupSchedulerService(BackupService):
             return
 
         schedule.status = schedule_status
-        schedule.celery_id = backup.celery_id
         self.backup_db.commit()

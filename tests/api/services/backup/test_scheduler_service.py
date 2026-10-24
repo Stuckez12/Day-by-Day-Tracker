@@ -9,7 +9,7 @@ from sqlalchemy.orm import Session
 
 from src.enums import BackupType, TaskScheduleStatus
 from src.models import BackupModel, BackupScheduleModel
-from src.schemas import CreateScheduledBackupSchema
+from src.schemas import CreateScheduledBackupSchema, ScheduledBackupFilters
 from src.schemas.backup.schedule import ScheduledBackupSchema
 from src.services import BackupSchedulerService
 from src.utils import utcnow
@@ -133,6 +133,67 @@ class TestDeleteSchedule:
 
 
 class TestGenerateSchedules:
+    @pytest.mark.parametrize(
+        ("schedule_status", "regenerate_if_valid", "regenerate_if_invalid"),
+        [
+            (TaskScheduleStatus.QUEUED, False, True),
+            (TaskScheduleStatus.PUBLISHED, False, False),
+            (TaskScheduleStatus.RUNNING, False, False),
+            (TaskScheduleStatus.SUCCESS, False, False),
+            (TaskScheduleStatus.FAILED, True, True),
+            (TaskScheduleStatus.CANCELLED, True, True),
+        ],
+    )
+    @pytest.mark.parametrize("missing_task_id", [False, True])
+    @pytest.mark.parametrize("dispatch_error", [None, "Connection error"])
+    def test_regeneration_respects_schedule_status(
+        self,
+        test_backup_session: Session,
+        test_logical_backup_schedule: BackupScheduleModel,
+        test_backup_scheduler_service: BackupSchedulerService,
+        schedule_status: TaskScheduleStatus,
+        regenerate_if_valid: bool,
+        regenerate_if_invalid: bool,
+        missing_task_id: bool,
+        dispatch_error: str | None,
+    ):
+        schedule = test_logical_backup_schedule
+        schedule.status = schedule_status
+
+        if missing_task_id:
+            schedule.celery_id = None
+
+        schedule.dispatch_error = dispatch_error
+        test_backup_session.commit()
+        schedule_id = schedule.id
+
+        should_regenerate = (
+            regenerate_if_invalid
+            if missing_task_id or dispatch_error is not None
+            else regenerate_if_valid
+        )
+
+        try:
+            result = test_backup_scheduler_service.generate_schedules(day_range=1)
+            schedules = test_backup_session.query(BackupScheduleModel).all()
+            assert len(schedules) == 1
+
+            if should_regenerate:
+                assert len(result) == 1
+                assert schedules[0].id != schedule_id
+                assert schedules[0].status == TaskScheduleStatus.QUEUED
+                assert schedules[0].celery_id is not None
+                assert schedules[0].dispatch_error is None
+
+            else:
+                assert result == []
+                assert schedules[0].id == schedule_id
+                assert schedules[0].status == schedule_status
+
+        finally:
+            test_backup_session.query(BackupScheduleModel).delete()
+            test_backup_session.commit()
+
     def test_ignores_logical_backup_without_metadata(
         self,
         test_backup_session: Session,
@@ -324,8 +385,10 @@ class TestUpdateScheduleStatus:
         test_logical_backup_schedule: BackupScheduleModel,
         test_backup_scheduler_service: BackupSchedulerService,
     ):
+        celery_id = test_logical_backup_schedule.celery_id
         test_logical_backup_schedule.backup_id = test_backup.id
         test_logical_backup_schedule.status = TaskScheduleStatus.RUNNING
+        test_backup.set_successful()
         test_backup_session.commit()
 
         test_backup_scheduler_service.update_schedule_status(
@@ -333,7 +396,24 @@ class TestUpdateScheduleStatus:
         )
         test_backup_session.refresh(test_logical_backup_schedule)
         assert test_logical_backup_schedule.status == TaskScheduleStatus.SUCCESS
-        assert test_logical_backup_schedule.celery_id == test_backup.celery_id
+        assert test_backup.celery_id is None
+        assert test_logical_backup_schedule.celery_id == celery_id
+        assert test_logical_backup_schedule.backup_id == test_backup.id
+
+        schedule = test_backup_scheduler_service.get_schedule(
+            test_logical_backup_schedule.id
+        )
+        assert ScheduledBackupSchema.model_validate(schedule).celery_id == celery_id
+        schedules = test_backup_scheduler_service.get_schedules_query(
+            ScheduledBackupFilters()
+        ).all()
+        assert [
+            ScheduledBackupSchema.model_validate(row).celery_id for row in schedules
+        ] == [celery_id]
+
+        assert test_backup_scheduler_service.generate_schedules(day_range=1) == []
+        test_backup_session.refresh(test_logical_backup_schedule)
+        assert test_logical_backup_schedule.status == TaskScheduleStatus.SUCCESS
         assert test_logical_backup_schedule.backup_id == test_backup.id
 
     def test_persists_failure(
@@ -343,8 +423,10 @@ class TestUpdateScheduleStatus:
         test_logical_backup_schedule: BackupScheduleModel,
         test_backup_scheduler_service: BackupSchedulerService,
     ):
+        celery_id = test_logical_backup_schedule.celery_id
         test_logical_backup_schedule.backup_id = test_backup.id
         test_logical_backup_schedule.status = TaskScheduleStatus.RUNNING
+        test_backup.set_failed()
         test_backup_session.commit()
 
         test_backup_scheduler_service.update_schedule_status(
@@ -352,7 +434,8 @@ class TestUpdateScheduleStatus:
         )
         test_backup_session.refresh(test_logical_backup_schedule)
         assert test_logical_backup_schedule.status == TaskScheduleStatus.FAILED
-        assert test_logical_backup_schedule.celery_id == test_backup.celery_id
+        assert test_backup.celery_id is None
+        assert test_logical_backup_schedule.celery_id == celery_id
         assert test_logical_backup_schedule.backup_id == test_backup.id
 
     def test_no_linked_schedule(

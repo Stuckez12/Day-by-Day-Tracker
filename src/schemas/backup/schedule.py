@@ -18,7 +18,7 @@ class ScheduledBackupSchema(BaseModel):
     backup_id: UUID | None = None
 
     backup_type: BackupType
-    scheduled_for: datetime
+    scheduled_for: date
     status: TaskScheduleStatus
 
     date_range_start: datetime | None = None
@@ -34,7 +34,7 @@ class CreateScheduledBackupSchema(BaseModel):
     celery_id: UUID
 
     backup_type: BackupType
-    scheduled_for: datetime
+    scheduled_for: date
 
     date_range_start: datetime | None = None
     date_range_end: datetime | None = None
