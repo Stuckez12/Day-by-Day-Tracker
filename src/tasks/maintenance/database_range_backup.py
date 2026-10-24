@@ -1,7 +1,7 @@
 import logging
 import time
 import traceback
-from datetime import datetime
+from datetime import date, datetime
 from typing import cast
 
 import src.core as core
@@ -9,9 +9,10 @@ from celery import Task, shared_task
 from src.common.celery import update_task_state
 from src.constants import FILLER_UUID4
 from src.core.s3_storage import ObjectStorage
-from src.enums import BackupStatus, BackupTriggerMethod, BackupType
+from src.enums import BackupStatus, BackupTriggerMethod, BackupType, TaskScheduleStatus
 from src.schemas import BackupCreate, BackupSchema, DateRangeRequest
-from src.services import BackupService, TaskService
+from src.services import TaskService
+from src.services.backup.scheduler import BackupSchedulerService
 from src.workflows import RangedBackupWorkflow
 
 
@@ -21,8 +22,9 @@ def database_ranged_backup(
     trigger: str,
     start_date: str,
     end_date: str,
+    scheduled_backup_date: str | None = None,
     *args,
-    **kwargs,  # TODO THIS PR: Add extra argument to make it either point to a BackupType (will need Daily/Weekly ranged backup enum value types then)
+    **kwargs,
 ) -> dict:
     db_gen = core.get_db()
     db = next(db_gen)
@@ -64,8 +66,16 @@ def database_ranged_backup(
     try:
         update_task_state(self, db, metadata={"stage": "Initialising Backup Task"})
 
-        service = BackupService(db=db, backup_db=backup_db)
+        service = BackupSchedulerService(db=db, backup_db=backup_db)
         backup_record = service.create(backup_data)
+
+        if (
+            backup_data.trigger_method == BackupTriggerMethod.SCHEDULED
+            and scheduled_backup_date is not None
+        ):
+            service.assign_schedule(
+                backup_record, date.fromisoformat(scheduled_backup_date)
+            )
 
     except Exception as e:
         backup_db_gen.close()
@@ -123,6 +133,8 @@ def database_ranged_backup(
 
         backup_db.commit()
 
+        service.update_schedule_status(backup_record, TaskScheduleStatus.SUCCESS)
+
         return BackupSchema.model_validate(backup_record).model_dump(mode="json")
 
     except Exception as e:
@@ -141,6 +153,8 @@ def database_ranged_backup(
         logging.error(backup_record.error_message)
 
         backup_db.commit()
+
+        service.update_schedule_status(backup_record, TaskScheduleStatus.FAILED)
 
         return BackupSchema.model_validate(backup_record).model_dump(mode="json")
 

@@ -4,10 +4,10 @@ from fastapi import APIRouter, Depends, Request, status
 from fastapi.security import OAuth2PasswordRequestForm
 from slowapi import Limiter
 
-from src.common import AuthServiceDep
 from src.common.security import create_access_token
 from src.core import client_ipaddress
 from src.schemas import CreatePersonnelRequest, LogInRequest, SlimPersonnelSchema
+from src.services.dependencies import AuthServiceDep
 from src.settings import app_config
 
 

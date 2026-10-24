@@ -4,13 +4,6 @@ from uuid import UUID
 from pydantic import BaseModel, model_validator
 
 
-# TODO: move to tests
-class InvalidSchema(BaseModel):
-    field_1: str = "field"
-    field_2: int = 500
-    field_3: list[str] = ["field", "field", "field"]
-
-
 class DateRequest(BaseModel):
     date: date
 

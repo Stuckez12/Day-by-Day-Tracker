@@ -9,10 +9,11 @@ from fastapi import Depends, HTTPException
 from src.core.s3_storage import (
     FileObjectDownloadSchema,
     FileObjectMetadataSchema,
+    FileObjectUploaded,
 )
-from src.enums import ObjectType
-from src.schemas import FileObjectUploaded
 from src.settings import app_config
+
+from .enums import ObjectType
 
 
 if TYPE_CHECKING:

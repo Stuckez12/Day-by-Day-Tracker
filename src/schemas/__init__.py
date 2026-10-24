@@ -1,7 +1,9 @@
 from src.schemas.auth import LogInRequest
 from src.schemas.backup import (
     BackupCreate,
+    BackupFilters,
     BackupSchema,
+    CreateScheduledBackupSchema,
     Metadata,
     MetadataChecksum,
     MetadataData,
@@ -9,16 +11,11 @@ from src.schemas.backup import (
     MetadataFiles,
     MetadataFileType,
     MetadataTool,
+    ScheduledBackupFilters,
+    ScheduledBackupSchema,
     VerifiedBackupResultSchema,
 )
-from src.schemas.common import (
-    DateRangeRequest,
-    DateRequest,
-    DetailSchema,
-    InvalidSchema,
-    TaskIDSchema,
-)
-from src.schemas.file_object import FileObjectUploaded
+from src.schemas.common import DateRangeRequest, DateRequest, DetailSchema, TaskIDSchema
 from src.schemas.personnel import (
     CreatePersonnelRequest,
     PersonnelSchema,

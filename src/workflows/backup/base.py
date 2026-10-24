@@ -9,10 +9,9 @@ from zipfile import ZIP_DEFLATED, ZipFile
 from sqlalchemy import text
 from sqlalchemy.orm import Session
 
-from src.common import utcnow
 from src.core import TaskCancelled
-from src.core.s3_storage import ObjectStorage
-from src.enums import BackupType, ObjectType, TaskStatus
+from src.core.s3_storage import ObjectStorage, ObjectType
+from src.enums import BackupType, TaskStatus
 from src.models import BackupModel, MetaModel
 from src.schemas import (
     Metadata,
@@ -23,7 +22,7 @@ from src.schemas import (
 )
 from src.services import TaskService
 from src.settings import app_config
-from src.utils import delete_folder, sha256_file
+from src.utils import delete_folder, sha256_file, utcnow
 
 
 class BaseBackupWorkflow:

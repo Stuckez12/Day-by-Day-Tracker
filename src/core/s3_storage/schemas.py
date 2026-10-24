@@ -4,6 +4,8 @@ from pathlib import Path
 from botocore.response import StreamingBody
 from pydantic import BaseModel, ConfigDict, Field
 
+from .enums import ObjectType
+
 
 class FileObjectMetadataSchema(BaseModel):
     model_config = ConfigDict(extra="ignore")
@@ -24,3 +26,9 @@ class FileObjectDownloadSchema(BaseModel):
 
     file_type: str = Field(..., alias="ContentType")
     byte_size: int = Field(..., alias="ContentLength")
+
+
+class FileObjectUploaded(BaseModel):
+    message: str
+    bucket: ObjectType
+    filename: str

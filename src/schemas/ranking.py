@@ -58,9 +58,7 @@ class RankingListSchema(BaseModel):
     rankings: list[RankingRequest]
 
 
-class GetAllRankingsResponse(RankingListSchema):
-    pass
+class GetAllRankingsResponse(RankingListSchema): ...
 
 
-class GetRangedRankingsResponse(RankingListSchema):
-    pass
+class GetRangedRankingsResponse(RankingListSchema): ...

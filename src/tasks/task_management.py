@@ -14,7 +14,7 @@ from sqlalchemy.exc import NoResultFound
 import src.core as core
 from celery import Task
 from src.enums import TaskStatus
-from src.services import TaskService
+from src.services.task import TaskService
 
 
 @before_task_publish.connect

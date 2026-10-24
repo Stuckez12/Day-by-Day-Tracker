@@ -21,6 +21,7 @@ class AuthService(PersonnelService):
             raise ValueError("Email already in use")
 
         except NoResultFound:
+            # What we expect to happens
             pass
 
         try:

@@ -6,6 +6,7 @@ from sqlalchemy.orm import Session
 from src.core import get_backup_db, get_db
 from src.services import (
     AuthService,
+    BackupSchedulerService,
     BackupService,
     PersonnelService,
     RankingService,
@@ -25,6 +26,12 @@ def get_backup_service(db: DBSession, backup_db: BackupDBSession) -> BackupServi
     return BackupService(db=db, backup_db=backup_db)
 
 
+def get_backup_scheduler_service(
+    db: DBSession, backup_db: BackupDBSession
+) -> BackupSchedulerService:
+    return BackupSchedulerService(db=db, backup_db=backup_db)
+
+
 def get_personnel_service(db: DBSession) -> PersonnelService:
     return PersonnelService(db)
 
@@ -39,6 +46,9 @@ def get_task_service(db: DBSession) -> TaskService:
 
 AuthServiceDep = Annotated[AuthService, Depends(get_auth_service)]
 BackupServiceDep = Annotated[BackupService, Depends(get_backup_service)]
+BackupSchedulerServiceDep = Annotated[
+    BackupSchedulerService, Depends(get_backup_scheduler_service)
+]
 PersonnelServiceDep = Annotated[PersonnelService, Depends(get_personnel_service)]
 RankingServiceDep = Annotated[RankingService, Depends(get_ranking_service)]
 TaskServiceDep = Annotated[TaskService, Depends(get_task_service)]

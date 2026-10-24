@@ -20,9 +20,15 @@ def create_worker():
         enable_utc=True,
     )
     worker.conf.beat_schedule = {
-        "weekly-database-backup": {
-            "task": "src.tasks.maintenance.database_logical_backup.database_logical_backup",
-            "schedule": crontab(day_of_week="mon", hour=3, minute=0),
+        "backup-scheduler": {
+            "task": "src.tasks.maintenance.backup_scheduler.backup_scheduler",
+            "schedule": crontab(
+                month_of_year="*/3", day_of_month=1, hour=23, minute=55
+            ),
+        },
+        "trigger-scheduled-backups": {
+            "task": "src.tasks.maintenance.backup_trigger.backup_trigger",
+            "schedule": crontab(hour=23, minute=56),
         },
     }
 

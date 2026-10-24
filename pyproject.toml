@@ -54,6 +54,7 @@ omit = [
     "src/api.py",
     "src/app.py",
     "src/core/database/*",
+    "src/core/ipaddress.py",
     "src/core/log_format.py",
     "src/main.py",
     "src/migrations/*",

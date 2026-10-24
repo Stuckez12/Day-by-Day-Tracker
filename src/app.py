@@ -1,4 +1,6 @@
 import logging
+from contextlib import asynccontextmanager
+from typing import AsyncGenerator
 
 from fastapi import FastAPI, Request, status
 from fastapi.middleware.cors import CORSMiddleware
@@ -10,6 +12,16 @@ from src.core.database.create_db import create_db
 from src.core.database.seed_db import seed_db
 from src.core.database.upgrade_db import upgrade_db
 from src.settings import app_config
+from src.tasks import backup_scheduler
+
+
+@asynccontextmanager
+async def _lifespan(_: FastAPI) -> AsyncGenerator[None]:
+    # Ensure on fresh start of the application, the
+    # future backups have been correctly scheduled
+    backup_scheduler.s().apply_async()
+
+    yield
 
 
 def create_app():
@@ -18,6 +30,7 @@ def create_app():
         description="A web application that records user inputs regarding their day rankings, activities and summaries.",
         version=app_config.APP_VERSION,
         root_path="/api",
+        lifespan=_lifespan,
     )
 
     origins = ["*"]
