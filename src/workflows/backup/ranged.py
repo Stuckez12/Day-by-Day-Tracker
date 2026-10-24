@@ -8,7 +8,6 @@ from sqlalchemy import Engine, desc, select
 from sqlalchemy.orm import Session
 
 import src.models as table_objects
-from src.common import utcnow
 from src.core.s3_storage import ObjectStorage
 from src.enums import BackupStatus
 from src.models import BackupModel, MetaModel, TaskModel
@@ -21,6 +20,7 @@ from src.schemas import (
     MetadataTool,
 )
 from src.services import TaskService
+from src.utils import utcnow
 from src.workflows.backup.base import BaseBackupWorkflow
 
 

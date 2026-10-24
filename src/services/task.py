@@ -3,7 +3,7 @@ from datetime import timedelta
 from typing import Any
 
 from celery.result import AsyncResult
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Query, Session
 
 from src.enums import TaskStatus
 from src.models import TaskModel
@@ -30,11 +30,9 @@ class TaskService(BaseDBService[TaskModel]):
         if task_ref.status == TaskStatus.PENDING:
             raise ValueError("Task is waiting to be processed")
 
-        task: AsyncResult = AsyncResult(str(task_ref.task_id))
+        return self.get_celery_id_status(task_ref.task_id)
 
-        return {"status": task.state, "info": task.info}
-
-    def get_paginated_query(self, filters: TaskPaginated):
+    def get_paginated_query(self, filters: TaskPaginated) -> Query[TaskModel]:
         query = self.db.query(TaskModel)
 
         if filters.task_id is not None:
@@ -64,6 +62,11 @@ class TaskService(BaseDBService[TaskModel]):
             query = query.filter(TaskModel.ended_at - TaskModel.started_at >= time_dur)
 
         return query
+
+    def get_celery_id_status(self, celery_id: uuid.UUID):
+        task: AsyncResult = AsyncResult(str(celery_id))
+
+        return {"status": task.state, "info": task.info}
 
     def cancel_task(self, task: TaskModel):
         if not task.is_processing:

@@ -5,13 +5,12 @@ from src.core.password_hash import pwd_hash
 from src.models import PersonnelModel
 from src.schemas import (
     CreatePersonnelRequest,
-    InvalidSchema,
     UpdatePersonnelDetailsRequest,
     UpdatePersonnelEmailRequest,
     UpdatePersonnelPasswordRequest,
 )
 from src.services import PersonnelService
-from tests.api.constants import VALID_PASSWORD
+from tests.api.constants import VALID_PASSWORD, InvalidSchema
 
 
 class TestCreatePersonnelPersonnelService:

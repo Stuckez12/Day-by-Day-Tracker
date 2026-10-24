@@ -4,14 +4,13 @@ from uuid import UUID
 
 from pydantic import BaseModel, ConfigDict, field_validator
 
-from src.enums import BackupStatus, BackupTriggerMethod, BackupType
+from src.enums import BackupType
 from src.settings import app_config
 
 
 MetadataFileType = Literal["backup"]
 
 
-# TODO: move metadata schemas into new file and group with backup file in backup folder
 class MetadataChecksum(BaseModel):
     algorithm: str
     value: str
@@ -40,9 +39,6 @@ class MetadataData(BaseModel):
     date_range: MetadataDateRange
 
 
-# TODO: Add in a param that for ranged backups point to a ranged/logical backup
-# Ranged to Ranged the backup link should be the date range rather than the id since
-# I want all these backups to slot into any prod version with minimal conflict
 class Metadata(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
@@ -102,35 +98,3 @@ class RecordMetadata(BaseModel):
     zip_filename: str
     zip_path: str
     zip_size_bytes: int
-
-
-class BackupSchema(BaseModel):
-    model_config = ConfigDict(from_attributes=True)
-
-    id: UUID
-    parent_backup_id: UUID | None = None
-    celery_id: UUID | None = None
-    trigger_method: BackupTriggerMethod
-    status: BackupStatus
-    backup_type: BackupType
-    duration: float | None = None
-    error_message: str | None = None
-    error_traceback: str | None = None
-
-    meta: RecordMetadata | None = None
-
-
-class VerifiedBackupResultSchema(BaseModel):
-    id: UUID
-    celery_id: UUID
-    verified: bool
-    backup_type: BackupType | None = None
-    error_message: str | None = None
-    error_traceback: str | None = None
-
-
-class BackupCreate(BaseModel):
-    celery_id: str
-    trigger_method: BackupTriggerMethod
-    status: BackupStatus
-    backup_type: BackupType

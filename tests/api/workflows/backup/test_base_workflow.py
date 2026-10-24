@@ -5,11 +5,11 @@ import pytest
 from pytest_mock import MockerFixture
 from sqlalchemy.orm import Session
 
-from src.common import utcnow
-from src.core.s3_storage import ObjectStorage
-from src.enums import BackupType, ObjectType
+from src.core.s3_storage import ObjectStorage, ObjectType
+from src.enums import BackupType
 from src.models import MetaModel
 from src.schemas import Metadata, MetadataDateRange, MetadataTool
+from src.utils import utcnow
 from src.workflows.backup.base import BaseBackupWorkflow
 
 

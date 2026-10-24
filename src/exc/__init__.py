@@ -1,9 +1,9 @@
 from src.exc.backup import (
     HTTP_EXC_BACKUP_FILENAME_PRESENT,
     HTTP_EXC_BACKUP_NOT_FOUND,
+    HTTP_EXC_INVALID_BACKUP_ID_SPECIFICATION,
     HTTP_EXC_NO_BACKUP_FILENAME,
     HTTP_EXC_NO_BACKUP_METADATA,
-    HTTP_EXC_NO_VALID_BACKUP_ID,
     HTTP_EXC_UPLOAD_BACKUP_FILE,
 )
 from src.exc.permission import HTTP_EXC_NOT_AN_ADMIN
@@ -13,6 +13,10 @@ from src.exc.ranking import (
     HTTP_EXC_NO_RANK_PROVIDED,
     HTTP_EXC_RANK_OLDER_THAN_TWO_WEEKS,
     HTTP_EXC_RANKING_NOT_FOUND,
+)
+from src.exc.schedule import (
+    HTTP_EXC_BACKUP_SCHEDULE_NOT_FOUND,
+    HTTP_EXC_ERROR_CANCELLING_QUEUED_TASK,
 )
 from src.exc.security import HTTP_EXC_INVALID_TOKEN
 from src.exc.task import (

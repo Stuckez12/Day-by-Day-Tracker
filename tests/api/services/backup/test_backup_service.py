@@ -1,4 +1,5 @@
 import uuid
+from typing import cast
 
 import pytest
 from sqlalchemy.exc import NoResultFound
@@ -23,7 +24,9 @@ class TestGetBackupByTaskIDService:
     def test_success(
         self, test_backup_service: BackupService, test_backup: BackupModel
     ):
-        backup = test_backup_service.get_by_task_id(test_backup.celery_id)
+        backup = test_backup_service.get_by_task_id(
+            cast(uuid.UUID, test_backup.celery_id)
+        )
         assert backup == test_backup
 
     def test_not_found(self, test_backup_service: BackupService):

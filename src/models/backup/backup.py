@@ -11,7 +11,7 @@ from src.models.backup.base import BackupBaseModel
 
 
 if TYPE_CHECKING:
-    from src.models.backup import MetaModel
+    from src.models.backup import BackupScheduleModel, MetaModel
 
 
 class BackupModel(BackupBaseModel):
@@ -40,6 +40,9 @@ class BackupModel(BackupBaseModel):
 
     meta: Mapped[MetaModel | None] = relationship(
         "MetaModel", back_populates="backup", cascade="all, delete-orphan"
+    )
+    schedule: Mapped[BackupScheduleModel | None] = relationship(
+        "BackupScheduleModel", back_populates="backup", cascade="all"
     )
 
     @property

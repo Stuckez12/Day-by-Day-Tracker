@@ -5,11 +5,11 @@ from celery.result import AsyncResult
 from pytest_mock import MockerFixture
 from sqlalchemy.orm import Session
 
-from src.common import utcnow
 from src.enums import BackupStatus, BackupTriggerMethod, BackupType, TaskStatus
 from src.models import BackupModel, TaskModel
 from src.schemas import BackupSchema
 from src.tasks import database_ranged_backup
+from src.utils import utcnow
 from src.workflows import RangedBackupWorkflow
 
 

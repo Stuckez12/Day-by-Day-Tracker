@@ -1,3 +1,5 @@
+from src.tasks.maintenance.backup_scheduler import backup_scheduler
+from src.tasks.maintenance.backup_trigger import backup_trigger
 from src.tasks.maintenance.database_logical_backup import database_logical_backup
 from src.tasks.maintenance.database_range_backup import database_ranged_backup
 from src.tasks.maintenance.uploaded_backup_record_creation import (

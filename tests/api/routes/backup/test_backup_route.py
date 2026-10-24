@@ -7,8 +7,8 @@ from pytest_mock import MockerFixture
 from sqlalchemy import delete
 from sqlalchemy.orm import Session
 
-from src.core.s3_storage import ObjectStorage
-from src.enums import ObjectType
+from src.core.s3_storage import ObjectStorage, ObjectType
+from src.enums.backup.backup_id_type import BackupIDType
 from src.exc import HTTP_EXC_NOT_AN_ADMIN
 from src.models import BackupModel
 from src.schemas import BackupSchema
@@ -21,7 +21,7 @@ class TestGetBackupRoute:
         test_backup: BackupModel,
     ):
         result = test_client_admin_session.get(
-            "/backup", params={"backup_id": str(test_backup.id)}
+            f"/backup/{test_backup.id}", params={"id_type": BackupIDType.BACKUP.value}
         )
         assert result.status_code == status.HTTP_200_OK
 
@@ -33,7 +33,7 @@ class TestGetBackupRoute:
 
     def test_non_admin_restricted(self, test_client_user_session: TestClient):
         result = test_client_user_session.get(
-            "/backup", params={"backup_id": str(uuid.uuid4())}
+            f"/backup/{uuid.uuid4()}", params={"id_type": BackupIDType.BACKUP.value}
         )
         assert result.status_code == HTTP_EXC_NOT_AN_ADMIN.status_code
 
@@ -47,7 +47,8 @@ class TestGetBackupRoute:
         test_backup: BackupModel,
     ):
         result = test_client_admin_session.get(
-            "/backup", params={"celery_id": str(test_backup.celery_id)}
+            f"/backup/{test_backup.celery_id}",
+            params={"id_type": BackupIDType.CELERY.value},
         )
         assert result.status_code == status.HTTP_200_OK
 
@@ -57,16 +58,18 @@ class TestGetBackupRoute:
             test_backup
         )
 
-    def test_fails_when_no_id_provided(self, test_client_admin_session: TestClient):
-        result = test_client_admin_session.get("/backup")
-        assert result.status_code == status.HTTP_400_BAD_REQUEST
+    def test_invalid_id_type(self, test_client_admin_session: TestClient):
+        result = test_client_admin_session.get(
+            f"/backup/{uuid.uuid4()}", params={"id_type": "INVALID"}
+        )
+        assert result.status_code == status.HTTP_422_UNPROCESSABLE_CONTENT
 
         data = result.json()
-        assert data["detail"] == "You must provide either a backup id or celery task id"
+        assert data["detail"][0]["loc"] == ["query", "id_type"]
 
     def test_not_found(self, test_client_admin_session: TestClient):
         result = test_client_admin_session.get(
-            "/backup", params={"backup_id": str(uuid.uuid4())}
+            f"/backup/{uuid.uuid4()}", params={"id_type": BackupIDType.BACKUP.value}
         )
         assert result.status_code == status.HTTP_404_NOT_FOUND
 
@@ -75,7 +78,7 @@ class TestGetBackupRoute:
 
     def test_not_found_w_celery_id(self, test_client_admin_session: TestClient):
         result = test_client_admin_session.get(
-            "/backup", params={"celery_id": str(uuid.uuid4())}
+            f"/backup/{uuid.uuid4()}", params={"id_type": BackupIDType.CELERY.value}
         )
         assert result.status_code == status.HTTP_404_NOT_FOUND
 
@@ -117,7 +120,7 @@ class TestUploadBackupRoute:
     ):
         task_id = str(uuid.uuid4())
         mocker.patch(
-            "src.routes.backup.uploaded_backup_record_creation",
+            "src.routes.backup.base.uploaded_backup_record_creation",
             **{"s.return_value.apply_async.return_value": mocker.Mock(id=task_id)},
         )
 
@@ -212,7 +215,7 @@ class TestVerifyBackupRoute:
         task_id = str(uuid.uuid4())
 
         mocker.patch(
-            "src.routes.backup.verify_logical_backup",
+            "src.routes.backup.base.verify_logical_backup",
             **{"s.return_value.apply_async.return_value": mocker.Mock(id=task_id)},
         )
 

@@ -4,7 +4,7 @@ from typing import Annotated
 from fastapi import APIRouter, Depends, Query, status
 from sqlalchemy.exc import NoResultFound
 
-from src.common import CurrentPersonnel, RankingServiceDep
+from src.common import CurrentPersonnel
 from src.exc import HTTP_EXC_RANKING_NOT_FOUND
 from src.schemas import (
     DateRangeRequest,
@@ -13,6 +13,7 @@ from src.schemas import (
     RankingRequest,
     RankingSchema,
 )
+from src.services.dependencies import RankingServiceDep
 
 
 api = APIRouter(prefix="/ranking", tags=["Ranking"])

@@ -8,9 +8,9 @@ from fastapi.security import OAuth2PasswordBearer
 from jwt.exceptions import InvalidTokenError
 from sqlalchemy.exc import NoResultFound
 
-from src.common.dependencies import PersonnelServiceDep
 from src.exc import HTTP_EXC_INVALID_TOKEN, HTTP_EXC_PERSONNEL_DOES_NOT_EXIST
 from src.models import PersonnelModel
+from src.services.dependencies import PersonnelServiceDep
 from src.settings import app_config
 
 

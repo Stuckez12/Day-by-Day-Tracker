@@ -6,8 +6,7 @@ from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column
 
 
-class BackupBase(DeclarativeBase):
-    pass
+class BackupBase(DeclarativeBase): ...
 
 
 class BackupBaseModel(BackupBase):
