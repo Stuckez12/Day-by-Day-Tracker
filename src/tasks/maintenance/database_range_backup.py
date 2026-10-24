@@ -22,7 +22,7 @@ def database_ranged_backup(
     trigger: str,
     start_date: str,
     end_date: str,
-    date_triggered: str | None = None,
+    scheduled_backup_date: str | None = None,
     *args,
     **kwargs,
 ) -> dict:
@@ -71,9 +71,11 @@ def database_ranged_backup(
 
         if (
             backup_data.trigger_method == BackupTriggerMethod.SCHEDULED
-            and date_triggered is not None
+            and scheduled_backup_date is not None
         ):
-            service.assign_schedule(backup_record, date.fromisoformat(date_triggered))
+            service.assign_schedule(
+                backup_record, date.fromisoformat(scheduled_backup_date)
+            )
 
     except Exception as e:
         backup_db_gen.close()

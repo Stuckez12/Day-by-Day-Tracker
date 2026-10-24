@@ -6,7 +6,7 @@ from fastapi.testclient import TestClient
 from sqlalchemy.orm import Session
 
 from src.enums import BackupType, TaskScheduleStatus
-from src.exc import HTTP_EXC_NOT_AN_ADMIN
+from src.exc import HTTP_EXC_BACKUP_SCHEDULE_ALREADY_EXISTS, HTTP_EXC_NOT_AN_ADMIN
 from src.models import BackupScheduleModel
 from src.schemas import CreateScheduledBackupSchema, ScheduledBackupSchema
 
@@ -201,6 +201,27 @@ class TestCreateBackupScheduleRoute:
         assert (
             "Daily backups must cover a single calendar day" in data["detail"][0]["msg"]
         )
+
+    def test_duplicate_date_conflict(
+        self,
+        test_client_admin_session: TestClient,
+        test_logical_backup_schedule: BackupScheduleModel,
+    ):
+        schedule = test_logical_backup_schedule
+        result = test_client_admin_session.post(
+            "/backup/schedule",
+            json={
+                "celery_id": str(uuid.uuid4()),
+                "backup_type": BackupType.LOGICAL.value,
+                "scheduled_for": schedule.scheduled_for.isoformat(),
+            },
+        )
+        assert result.status_code == status.HTTP_409_CONFLICT
+        assert result.json()["detail"] == HTTP_EXC_BACKUP_SCHEDULE_ALREADY_EXISTS.detail
+
+        result = test_client_admin_session.get(f"/backup/schedule/{schedule.id}")
+        assert result.status_code == status.HTTP_200_OK
+        assert result.json()["celery_id"] == str(schedule.celery_id)
 
 
 class TestGetBackupScheduleRoute:

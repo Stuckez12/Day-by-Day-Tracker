@@ -1,8 +1,8 @@
 """Scheduling backups
 
-Revision ID: 2d591ea49fb4
+Revision ID: 43f885f79643
 Revises: fafd1223bedf
-Create Date: 2026-10-22 19:57:19.564677
+Create Date: 2026-10-24 15:53:04.594803
 
 """
 
@@ -14,7 +14,7 @@ from sqlalchemy.dialects import postgresql
 
 
 # revision identifiers, used by Alembic.
-revision: str = "2d591ea49fb4"
+revision: str = "43f885f79643"
 down_revision: Union[str, Sequence[str], None] = "fafd1223bedf"
 branch_labels: Union[str, Sequence[str], None] = None
 depends_on: Union[str, Sequence[str], None] = None

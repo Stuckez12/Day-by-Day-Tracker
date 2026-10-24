@@ -4,11 +4,11 @@ from typing import cast
 from uuid import UUID
 
 from celery.exceptions import OperationalError
-from sqlalchemy.exc import DBAPIError
+from sqlalchemy.exc import DBAPIError, IntegrityError
 from sqlalchemy.orm import Query, Session
 
 from src.enums import BackupStatus, BackupTriggerMethod, BackupType, TaskScheduleStatus
-from src.models import BackupModel, BackupScheduleModel, MetaModel
+from src.models import BackupModel, BackupScheduleModel
 from src.schemas import (
     BackupFilters,
     CreateScheduledBackupSchema,
@@ -28,7 +28,13 @@ class BackupSchedulerService(BackupService):
         model = BackupScheduleModel(data)
 
         self.backup_db.add(model)
-        self.backup_db.commit()
+        try:
+            self.backup_db.commit()
+
+        except IntegrityError:
+            self.backup_db.rollback()
+            raise
+
         self.backup_db.refresh(model)
 
         return model
@@ -39,13 +45,13 @@ class BackupSchedulerService(BackupService):
         match model.backup_type:
             case BackupType.LOGICAL:
                 database_logical_backup.s(
-                    date_triggered=utcnow().strftime("%Y-%m-%d"),
+                    scheduled_backup_date=utcnow().strftime("%Y-%m-%d"),
                     trigger=BackupTriggerMethod.SCHEDULED.value,
                 ).apply_async(task_id=str(model.celery_id), countdown=300)
 
             case BackupType.RANGED_WEEK | BackupType.RANGED_DAY:
                 database_ranged_backup.s(
-                    date_triggered=utcnow().strftime("%Y-%m-%d"),
+                    scheduled_backup_date=utcnow().strftime("%Y-%m-%d"),
                     trigger=BackupTriggerMethod.SCHEDULED.value,
                     start_date=cast(datetime, model.date_range_start).strftime(
                         "%Y-%m-%d"
@@ -227,9 +233,7 @@ class BackupSchedulerService(BackupService):
         logical_backup_date: date = utcnow().date()
 
         if logical_backup:
-            logical_backup_date = cast(
-                MetaModel, logical_backup.meta
-            ).date_range_end.date()
+            logical_backup_date = logical_backup.created_at.date()
 
         if logical_backup_date > to_date:
             raise IndexError(

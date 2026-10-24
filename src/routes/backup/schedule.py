@@ -5,11 +5,12 @@ from celery.exceptions import OperationalError
 from fastapi import APIRouter, Depends, Query, status
 from fastapi_pagination import Page, Params
 from fastapi_pagination.ext.sqlalchemy import paginate
-from sqlalchemy.exc import NoResultFound
+from sqlalchemy.exc import IntegrityError, NoResultFound
 
 from src.core.permission_validator import PermissionValidator
 from src.enums import BackupType, TaskScheduleStatus
 from src.exc import (
+    HTTP_EXC_BACKUP_SCHEDULE_ALREADY_EXISTS,
     HTTP_EXC_BACKUP_SCHEDULE_NOT_FOUND,
     HTTP_EXC_ERROR_CANCELLING_QUEUED_TASK,
 )
@@ -36,7 +37,21 @@ api = APIRouter(
 def create_backup_schedule(
     service: BackupSchedulerServiceDep, data: CreateScheduledBackupSchema
 ):
-    return service.create_schedule(data)
+    try:
+        return service.create_schedule(data)
+
+    except IntegrityError:
+        existing_schedule_query = service.get_schedules_query(
+            ScheduledBackupFilters(
+                scheduled_from=data.scheduled_for, scheduled_to=data.scheduled_for
+            )
+        )
+        existing_schedule = existing_schedule_query.first()
+
+        if existing_schedule is not None:
+            raise HTTP_EXC_BACKUP_SCHEDULE_ALREADY_EXISTS
+
+        raise
 
 
 @api.get(

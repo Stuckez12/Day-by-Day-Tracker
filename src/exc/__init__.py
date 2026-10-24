@@ -15,6 +15,7 @@ from src.exc.ranking import (
     HTTP_EXC_RANKING_NOT_FOUND,
 )
 from src.exc.schedule import (
+    HTTP_EXC_BACKUP_SCHEDULE_ALREADY_EXISTS,
     HTTP_EXC_BACKUP_SCHEDULE_NOT_FOUND,
     HTTP_EXC_ERROR_CANCELLING_QUEUED_TASK,
 )

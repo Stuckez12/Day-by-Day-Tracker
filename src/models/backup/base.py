@@ -16,7 +16,7 @@ class BackupBaseModel(BackupBase):
         UUID(as_uuid=True), default=uuid.uuid4, nullable=False, primary_key=True
     )
     created_at: Mapped[datetime] = mapped_column(
-        DateTime, default=datetime.now(timezone.utc), nullable=False
+        DateTime, default=lambda: datetime.now(timezone.utc), nullable=False
     )
     updated_at: Mapped[datetime] = mapped_column(
         DateTime,
