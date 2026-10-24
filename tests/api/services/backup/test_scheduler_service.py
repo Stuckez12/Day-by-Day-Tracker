@@ -22,7 +22,7 @@ class TestCreateSchedule:
         test_backup_scheduler_service: BackupSchedulerService,
     ):
         task_id = uuid.uuid4()
-        scheduled_for = datetime.now()
+        scheduled_for = datetime.now().date()
 
         data = CreateScheduledBackupSchema(
             celery_id=task_id,
@@ -35,7 +35,7 @@ class TestCreateSchedule:
         result = test_backup_scheduler_service.create_schedule(data)
         assert result.celery_id == task_id
         assert result.backup_type == BackupType.LOGICAL
-        assert result.scheduled_for == scheduled_for.date()
+        assert result.scheduled_for == scheduled_for
         assert result.date_range_start is None
         assert result.date_range_end is None
 
@@ -50,19 +50,22 @@ class TestCreateSchedule:
         task_id = uuid.uuid4()
         scheduled_for = datetime.now()
         start_time = scheduled_for - timedelta(days=6)
+        end_time = scheduled_for
+
+        scheduled_for = scheduled_for.date()
 
         data = CreateScheduledBackupSchema(
             celery_id=task_id,
             backup_type=BackupType.RANGED_WEEK,
             scheduled_for=scheduled_for,
             date_range_start=start_time,
-            date_range_end=scheduled_for,
+            date_range_end=end_time,
         )
 
         result = test_backup_scheduler_service.create_schedule(data)
         assert result.celery_id == task_id
         assert result.backup_type == BackupType.RANGED_WEEK
-        assert result.scheduled_for == scheduled_for.date()
+        assert result.scheduled_for == scheduled_for
 
         test_backup_session.delete(result)
         test_backup_session.commit()
@@ -78,7 +81,7 @@ class TestCreateSchedule:
         data = CreateScheduledBackupSchema(
             celery_id=task_id,
             backup_type=BackupType.RANGED_DAY,
-            scheduled_for=scheduled_for,
+            scheduled_for=scheduled_for.date(),
             date_range_start=scheduled_for,
             date_range_end=scheduled_for,
         )
@@ -267,7 +270,7 @@ class TestGenerateSchedules:
             CreateScheduledBackupSchema(
                 celery_id=uuid.uuid4(),
                 backup_type=BackupType.LOGICAL,
-                scheduled_for=datetime.now() + timedelta(days=16),
+                scheduled_for=datetime.now().date() + timedelta(days=16),
             )
         )
         result = test_backup_scheduler_service.generate_schedules(day_range=29)

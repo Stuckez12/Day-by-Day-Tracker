@@ -63,7 +63,7 @@ class TestCreateBackupScheduleRoute:
         test_client_admin_session: TestClient,
         test_backup_session: Session,
     ):
-        scheduled_for = datetime.now() + timedelta(days=200)
+        scheduled_for = datetime.now().date() + timedelta(days=200)
         payload = {
             "celery_id": str(uuid.uuid4()),
             "backup_type": BackupType.LOGICAL.value,
@@ -80,7 +80,7 @@ class TestCreateBackupScheduleRoute:
             assert data == ScheduledBackupSchema.model_validate(schedule)
             assert data.celery_id == uuid.UUID(payload["celery_id"])
             assert data.backup_type == BackupType.LOGICAL
-            assert data.scheduled_for.date() == scheduled_for.date()
+            assert data.scheduled_for == scheduled_for
             assert data.status == TaskScheduleStatus.QUEUED
             assert data.dispatch_error is None
             assert data.date_range_start is None
@@ -97,7 +97,7 @@ class TestCreateBackupScheduleRoute:
         test_client_admin_session: TestClient,
         test_backup_session: Session,
     ):
-        scheduled_for = datetime.now() + timedelta(days=200)
+        scheduled_for = datetime.now().date() + timedelta(days=200)
         payload = {
             "celery_id": str(uuid.uuid4()),
             "backup_type": BackupType.RANGED_DAY.value,
@@ -116,11 +116,14 @@ class TestCreateBackupScheduleRoute:
             assert data == ScheduledBackupSchema.model_validate(schedule)
             assert data.celery_id == uuid.UUID(payload["celery_id"])
             assert data.backup_type == BackupType.RANGED_DAY
-            assert data.scheduled_for.date() == scheduled_for.date()
+            assert data.scheduled_for == scheduled_for
             assert data.status == TaskScheduleStatus.QUEUED
             assert data.dispatch_error is None
-            assert data.date_range_start == scheduled_for
-            assert data.date_range_end == scheduled_for
+
+            assert data.date_range_start
+            assert data.date_range_start.date() == scheduled_for
+            assert data.date_range_end
+            assert data.date_range_end.date() == scheduled_for
 
         finally:
             test_backup_session.query(BackupScheduleModel).filter(
@@ -133,7 +136,7 @@ class TestCreateBackupScheduleRoute:
         test_client_admin_session: TestClient,
         test_backup_session: Session,
     ):
-        scheduled_for = datetime.now() + timedelta(days=200)
+        scheduled_for = datetime.now().date() + timedelta(days=200)
         payload = {
             "celery_id": str(uuid.uuid4()),
             "backup_type": BackupType.RANGED_WEEK.value,
@@ -152,11 +155,14 @@ class TestCreateBackupScheduleRoute:
             assert data == ScheduledBackupSchema.model_validate(schedule)
             assert data.celery_id == uuid.UUID(payload["celery_id"])
             assert data.backup_type == BackupType.RANGED_WEEK
-            assert data.scheduled_for.date() == scheduled_for.date()
+            assert data.scheduled_for == scheduled_for
             assert data.status == TaskScheduleStatus.QUEUED
             assert data.dispatch_error is None
-            assert data.date_range_start == scheduled_for - timedelta(days=6)
-            assert data.date_range_end == scheduled_for
+
+            assert data.date_range_start
+            assert data.date_range_start.date() == scheduled_for - timedelta(days=6)
+            assert data.date_range_end
+            assert data.date_range_end.date() == scheduled_for
 
         finally:
             test_backup_session.query(BackupScheduleModel).filter(
@@ -170,14 +176,14 @@ class TestCreateBackupScheduleRoute:
             json={
                 "celery_id": str(uuid.uuid4()),
                 "backup_type": BackupType.LOGICAL.value,
-                "scheduled_for": datetime.now().isoformat(),
+                "scheduled_for": datetime.now().date().isoformat(),
             },
         )
         assert result.status_code == HTTP_EXC_NOT_AN_ADMIN.status_code
         assert result.json()["detail"] == HTTP_EXC_NOT_AN_ADMIN.detail
 
     def test_invalid_backup_range(self, test_client_admin_session: TestClient):
-        scheduled_for = datetime.now()
+        scheduled_for = datetime.now().date()
         result = test_client_admin_session.post(
             "/backup/schedule",
             json={
@@ -246,7 +252,7 @@ class TestSearchBackupSchedulesRoute:
             CreateScheduledBackupSchema(
                 celery_id=uuid.uuid4(),
                 backup_type=BackupType.LOGICAL,
-                scheduled_for=datetime.now() + timedelta(days=1),
+                scheduled_for=datetime.now().date() + timedelta(days=1),
             )
         )
         test_backup_session.add(later_schedule)
@@ -283,7 +289,7 @@ class TestSearchBackupSchedulesRoute:
             CreateScheduledBackupSchema(
                 celery_id=uuid.uuid4(),
                 backup_type=BackupType.LOGICAL,
-                scheduled_for=datetime.now() + timedelta(days=1),
+                scheduled_for=datetime.now().date() + timedelta(days=1),
             )
         )
         test_backup_session.add(other_schedule)
