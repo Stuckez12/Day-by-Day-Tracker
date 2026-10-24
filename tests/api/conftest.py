@@ -919,7 +919,7 @@ def test_logical_backup_schedule(test_backup_session: Session):
     data = CreateScheduledBackupSchema(
         celery_id=uuid.uuid4(),
         backup_type=BackupType.LOGICAL,
-        scheduled_for=datetime.now(),
+        scheduled_for=datetime.now().date(),
     )
     model = BackupScheduleModel(data)
 
@@ -941,7 +941,7 @@ def test_ranged_day_backup_schedule(test_backup_session: Session):
     data = CreateScheduledBackupSchema(
         celery_id=uuid.uuid4(),
         backup_type=BackupType.RANGED_DAY,
-        scheduled_for=datetime.now(),
+        scheduled_for=datetime.now().date(),
         date_range_start=datetime.now(),
         date_range_end=datetime.now(),
     )
