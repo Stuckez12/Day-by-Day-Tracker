@@ -41,11 +41,19 @@ class AppConfig(BaseSettings):
         return f"{self.base_db_url}/{self.DATABASE_BACKUP_DB_NAME}"
 
     # Celery
-    REDIS_URL: str = "redis://redis:6379"
+    REDIS_HOST: str = "redis"
+    REDIS_PORT: int = 6379
+
+    REDIS_CELERY_DB: int = 0
+    REDIS_APP_SETTINGS_DB: int = 1
+
+    @property
+    def REDIS_URL(self):
+        return f"redis://{self.REDIS_HOST}:{self.REDIS_PORT}"
 
     @property
     def CELERY_URL(self):
-        return f"{self.REDIS_URL}/0"
+        return f"{self.REDIS_URL}/{self.REDIS_CELERY_DB}"
 
     # JWT tokens
     JWT_SECRET: str = ""
