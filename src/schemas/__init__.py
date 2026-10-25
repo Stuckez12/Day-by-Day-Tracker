@@ -1,3 +1,4 @@
+from src.schemas.application_settings import ApplicationSettingsSchema
 from src.schemas.auth import LogInRequest
 from src.schemas.backup import (
     BackupCreate,
