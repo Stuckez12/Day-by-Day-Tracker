@@ -1,10 +1,10 @@
-import logging
 from uuid import UUID
 
 from sqlalchemy import or_, select
 from sqlalchemy.orm import Query, Session, aliased, selectinload
 from sqlalchemy.sql.expression import literal
 
+from src.core.data_structure import LinkedList
 from src.enums import BackupStatus
 from src.models import BackupModel
 from src.schemas import BackupCreate, BackupFilters
@@ -84,7 +84,7 @@ class BackupService(BaseDBService[BackupModel]):
 
         return backup
 
-    def get_backup_chain(self, backup: BackupModel):
+    def get_backup_chain(self, backup: BackupModel) -> LinkedList:
         rec = self.backup_db.query(
             literal(backup.parent_backup_id).label("parent_backup_id")
         ).cte(recursive=True, name="recursive_backups")
@@ -98,7 +98,14 @@ class BackupService(BaseDBService[BackupModel]):
             )
         )
 
-        logging.info("Running Now")
-        qr = self.backup_db.query(rec).all()
+        backup_chain_list = (
+            self.backup_db.query(BackupModel)
+            .join(rec, BackupModel.id == rec.c.parent_backup_id)
+            .all()
+        )
 
-        logging.info(qr)
+        backup_chain = LinkedList.create_from_ordered_list(
+            ordered_list=backup_chain_list
+        )
+
+        return backup_chain

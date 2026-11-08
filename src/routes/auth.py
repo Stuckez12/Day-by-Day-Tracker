@@ -49,4 +49,3 @@ def log_in(
 @api.get("/test", status_code=status.HTTP_200_OK)
 def test(service: BackupServiceDep, backup_id: UUID):
     backup = service.get_by_backup_id(backup_id)
-    service.get_backup_chain(backup)
