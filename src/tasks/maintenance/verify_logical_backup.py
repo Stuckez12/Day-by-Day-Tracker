@@ -3,10 +3,10 @@ import traceback
 from typing import cast
 from uuid import UUID
 
+from celery import Task, shared_task
 from sqlalchemy.exc import NoResultFound
 
 import src.core as core
-from celery import Task, shared_task
 from src.common.celery import update_task_state
 from src.core.s3_storage import ObjectStorage
 from src.enums import BackupType

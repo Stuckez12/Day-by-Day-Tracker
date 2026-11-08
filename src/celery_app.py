@@ -1,6 +1,6 @@
+from celery import Celery
 from celery.schedules import crontab
 
-from celery import Celery
 from src.settings import app_config
 
 
@@ -28,7 +28,7 @@ def create_worker():
         },
         "trigger-scheduled-backups": {
             "task": "src.tasks.maintenance.backup_trigger.backup_trigger",
-            "schedule": crontab(hour=23, minute=56),
+            "schedule": crontab(hour=23, minute=59),
         },
     }
 

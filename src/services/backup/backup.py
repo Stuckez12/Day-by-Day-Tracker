@@ -1,7 +1,9 @@
+import logging
 from uuid import UUID
 
-from sqlalchemy import or_
-from sqlalchemy.orm import Query, Session, selectinload
+from sqlalchemy import or_, select
+from sqlalchemy.orm import Query, Session, aliased, selectinload
+from sqlalchemy.sql.expression import literal
 
 from src.enums import BackupStatus
 from src.models import BackupModel
@@ -81,3 +83,24 @@ class BackupService(BaseDBService[BackupModel]):
         self.backup_db.refresh(backup)
 
         return backup
+
+    def get_backup_chain(self, backup: BackupModel):
+        rec = self.db.query(literal(backup.id).label("id")).cte(
+            recursive=True, name="recursive_franchisee"
+        )
+        ralias = aliased(rec, name="R")
+        lalias = aliased(BackupModel, name="L")
+        rec = rec.union_all(
+            select(lalias.parent_backup).join(
+                ralias, ralias.c.id == lalias.parent_backup_id
+            )
+        )
+        qr = self.db.query(rec)
+
+        logging.info(qr)
+        logging.info(qr)
+        logging.info(qr)
+        logging.info(qr)
+        logging.info(qr)
+        logging.info(qr)
+        logging.info(qr)

@@ -2,6 +2,7 @@ import logging
 import uuid
 from datetime import datetime, timezone
 
+from celery import Task
 from celery.signals import (
     before_task_publish,
     task_failure,
@@ -12,7 +13,6 @@ from celery.signals import (
 from sqlalchemy.exc import NoResultFound
 
 import src.core as core
-from celery import Task
 from src.enums import TaskStatus
 from src.services.task import TaskService
 

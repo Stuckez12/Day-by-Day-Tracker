@@ -154,6 +154,9 @@ STDERR: {e.stderr}
         finally:
             drop_database(temp_db_url)
 
+    def restore_backup(self) -> None:
+        pass
+
     # ----------------------- File Backup ---------------------- #
 
     def create_object_folder_backup(self) -> None:

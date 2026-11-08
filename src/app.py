@@ -8,15 +8,22 @@ from fastapi.responses import JSONResponse
 from fastapi_pagination import add_pagination
 
 from src.api import api
+from src.core.app_settings import get_configurable_application_settings
 from src.core.database.create_db import create_db
+from src.core.database.restore_db import application_is_configured_to_be_restored
 from src.core.database.seed_db import seed_db
 from src.core.database.upgrade_db import upgrade_db
 from src.settings import app_config
-from src.tasks import backup_scheduler
+from src.tasks import backup_scheduler, database_restoration
 
 
 @asynccontextmanager
 async def _lifespan(_: FastAPI) -> AsyncGenerator[None]:
+    configurable_settings = get_configurable_application_settings()
+
+    if application_is_configured_to_be_restored(configurable_settings):
+        database_restoration.delay()
+
     # Ensure on fresh start of the application, the
     # future backups have been correctly scheduled
     backup_scheduler.s().apply_async()

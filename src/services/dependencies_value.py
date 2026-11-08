@@ -1,8 +1,4 @@
-from typing import TYPE_CHECKING
-
-
-if TYPE_CHECKING:
-    from src.services import BackupService
+from .backup import BackupService
 
 
 def _validate_service(obj, service_name: str, private_attribute_name: str):

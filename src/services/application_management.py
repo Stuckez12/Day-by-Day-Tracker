@@ -8,9 +8,9 @@ from src.exc import HTTP_EXC_APP_SETTINGS_NO_RESTORE_BACKUP_ID
 from src.models import BackupModel
 from src.models.base import BaseModel
 from src.schemas import ApplicationSettingsSchema
-from src.services import BackupService
 from src.services.base import BaseDBService
 
+from .backup import BackupService
 from .dependencies_value import validate_backup_service
 
 
@@ -26,7 +26,7 @@ class ApplicationManagementService(BaseDBService[BaseModel]):
     def app_settings(self) -> ApplicationSettingsSchema:
         return get_configurable_application_settings()
 
-    def get_what_backup_app_will_be_restored_to(self) -> BackupModel:
+    def get_what_backup_app_will_be_restored_to(self) -> "BackupModel":
         restore_backup_id = self.app_settings.RESTORE_DATABASE_TO_BACKUP_ID
 
         if restore_backup_id is None:

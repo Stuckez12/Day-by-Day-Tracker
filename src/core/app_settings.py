@@ -11,6 +11,9 @@ def get_configurable_application_settings() -> ApplicationSettingsSchema:
     except RedisConnectionError:
         raise ConnectionError("Unable to connect to Redis")
 
+    if redis_result is None:
+        return ApplicationSettingsSchema()
+
     return ApplicationSettingsSchema.model_validate(redis_result)
 
 

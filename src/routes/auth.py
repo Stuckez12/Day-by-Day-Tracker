@@ -1,4 +1,5 @@
 from typing import Annotated
+from uuid import UUID
 
 from fastapi import APIRouter, Depends, Request, status
 from fastapi.security import OAuth2PasswordRequestForm
@@ -7,7 +8,7 @@ from slowapi import Limiter
 from src.common.security import create_access_token
 from src.core import client_ipaddress
 from src.schemas import CreatePersonnelRequest, LogInRequest, SlimPersonnelSchema
-from src.services.dependencies import AuthServiceDep
+from src.services.dependencies import AuthServiceDep, BackupServiceDep
 from src.settings import app_config
 
 
@@ -43,3 +44,9 @@ def log_in(
         "token_type": "bearer",
         "personnel": SlimPersonnelSchema.model_validate(personnel).model_dump(),
     }
+
+
+@api.get("/test", status_code=status.HTTP_200_OK)
+def test(service: BackupServiceDep, backup_id: UUID):
+    backup = service.get_by_id(backup_id)
+    service.get_backup_chain(backup)
