@@ -85,22 +85,20 @@ class BackupService(BaseDBService[BackupModel]):
         return backup
 
     def get_backup_chain(self, backup: BackupModel):
-        rec = self.db.query(literal(backup.id).label("id")).cte(
-            recursive=True, name="recursive_franchisee"
-        )
+        rec = self.backup_db.query(
+            literal(backup.parent_backup_id).label("parent_backup_id")
+        ).cte(recursive=True, name="recursive_backups")
+
         ralias = aliased(rec, name="R")
         lalias = aliased(BackupModel, name="L")
+
         rec = rec.union_all(
-            select(lalias.parent_backup).join(
-                ralias, ralias.c.id == lalias.parent_backup_id
+            select(lalias.parent_backup_id).join(
+                ralias, ralias.c.parent_backup_id == lalias.id
             )
         )
-        qr = self.db.query(rec)
 
-        logging.info(qr)
-        logging.info(qr)
-        logging.info(qr)
-        logging.info(qr)
-        logging.info(qr)
-        logging.info(qr)
+        logging.info("Running Now")
+        qr = self.backup_db.query(rec).all()
+
         logging.info(qr)
