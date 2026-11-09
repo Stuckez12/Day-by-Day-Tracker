@@ -1,3 +1,4 @@
+from src.services.application_management import ApplicationManagementService
 from src.services.auth import AuthService
 from src.services.backup import BackupSchedulerService, BackupService
 from src.services.personnel import PersonnelService

@@ -34,7 +34,7 @@ rebuild:
 	$(MAKE) start
 
 reset:
-	$(MAKE) stop
+	$(MAKE) remove
 	$(MAKE) build-no-cache
 	$(MAKE) start
 
@@ -135,6 +135,15 @@ stop-prod:
 restart-prod:
 	$(MAKE) stop-prod
 	$(MAKE) start-prod
+	$(MAKE) check-db-prod
 
 remove-prod:
 	@docker compose -f docker-compose.prod.yaml --env-file .env.prod down
+
+check-db-prod:
+	@docker compose -f docker-compose.prod.yaml exec api alembic -c /api/alembic.ini check
+	@docker compose -f docker-compose.prod.yaml exec api alembic -c /api/alembic-backup.ini check
+
+upgrade-db-prod:
+	@docker compose -f docker-compose.prod.yaml exec api sh -c "alembic -c /api/alembic.ini upgrade head"
+	@docker compose -f docker-compose.prod.yaml exec api sh -c "alembic -c /api/alembic-backup.ini upgrade head"

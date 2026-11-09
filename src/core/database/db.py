@@ -1,3 +1,4 @@
+import logging
 from contextlib import contextmanager
 from typing import Generator
 
@@ -7,6 +8,8 @@ from sqlalchemy.pool import QueuePool
 
 from src.settings import app_config
 
+
+logging.info("FUCK\n" * 16)
 
 engine = create_engine(
     app_config.db_url,
@@ -81,3 +84,6 @@ def temporary_db_session(
     finally:
         db.close()
         engine.dispose()
+
+
+logging.info("YOU\n" * 16)

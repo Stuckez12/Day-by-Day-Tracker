@@ -1,8 +1,13 @@
+import shutil
+from pathlib import Path
 from uuid import UUID
 
-from sqlalchemy import or_
-from sqlalchemy.orm import Query, Session, selectinload
+from sqlalchemy import or_, select
+from sqlalchemy.orm import Query, Session, aliased, selectinload
+from sqlalchemy.sql.expression import literal
 
+from src.core.data_structure import LinkedList
+from src.core.s3_storage import ObjectStorage, ObjectType
 from src.enums import BackupStatus
 from src.models import BackupModel
 from src.schemas import BackupCreate, BackupFilters
@@ -81,3 +86,46 @@ class BackupService(BaseDBService[BackupModel]):
         self.backup_db.refresh(backup)
 
         return backup
+
+    def get_backup_chain(self, backup: BackupModel) -> LinkedList:
+        rec = self.backup_db.query(
+            literal(backup.parent_backup_id).label("parent_backup_id")
+        ).cte(recursive=True, name="recursive_backups")
+
+        ralias = aliased(rec, name="R")
+        lalias = aliased(BackupModel, name="L")
+
+        rec = rec.union_all(
+            select(lalias.parent_backup_id).join(
+                ralias, ralias.c.parent_backup_id == lalias.id
+            )
+        )
+
+        backup_chain_list = (
+            self.backup_db.query(BackupModel)
+            .join(rec, BackupModel.id == rec.c.parent_backup_id)
+            .all()
+        )
+
+        backup_chain = LinkedList.create_from_ordered_list(
+            ordered_list=backup_chain_list
+        )
+
+        return backup_chain
+
+    def retrieve_zip_file(
+        self, backup: BackupModel, object_storage: ObjectStorage, file_path: Path
+    ) -> Path:
+        if backup.meta is None:
+            raise ValueError("Backup has no metadata attached")
+
+        file_data = object_storage.download_file(
+            ObjectType.BACKUP, backup.meta.zip_path
+        )
+
+        zipped_backup_file_path = file_path / backup.meta.zip_filename
+
+        with open(zipped_backup_file_path, "wb") as file:
+            shutil.copyfileobj(file_data.file, file)
+
+        return zipped_backup_file_path

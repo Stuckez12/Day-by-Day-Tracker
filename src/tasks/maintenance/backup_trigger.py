@@ -1,7 +1,8 @@
 from datetime import date
 
-import src.core as core
 from celery import Task, shared_task
+
+import src.core as core
 from src.enums import TaskScheduleStatus
 from src.schemas.backup.schedule import ScheduledBackupFilters
 from src.services import BackupSchedulerService

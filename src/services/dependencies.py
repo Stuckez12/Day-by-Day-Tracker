@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from typing import Annotated
 
 from fastapi import Depends
@@ -5,6 +7,7 @@ from sqlalchemy.orm import Session
 
 from src.core import get_backup_db, get_db
 from src.services import (
+    ApplicationManagementService,
     AuthService,
     BackupSchedulerService,
     BackupService,
@@ -16,6 +19,12 @@ from src.services import (
 
 DBSession = Annotated[Session, Depends(get_db)]
 BackupDBSession = Annotated[Session, Depends(get_backup_db)]
+
+
+def get_app_management_service(
+    db: DBSession, backup_service: BackupServiceDep
+) -> ApplicationManagementService:
+    return ApplicationManagementService(db, backup_service)
 
 
 def get_auth_service(db: DBSession) -> PersonnelService:
@@ -44,6 +53,9 @@ def get_task_service(db: DBSession) -> TaskService:
     return TaskService(db)
 
 
+ApplicationManagementServiceDep = Annotated[
+    ApplicationManagementService, Depends(get_app_management_service)
+]
 AuthServiceDep = Annotated[AuthService, Depends(get_auth_service)]
 BackupServiceDep = Annotated[BackupService, Depends(get_backup_service)]
 BackupSchedulerServiceDep = Annotated[
