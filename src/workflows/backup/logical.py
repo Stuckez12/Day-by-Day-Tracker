@@ -9,6 +9,7 @@ from sqlalchemy.orm import Session
 from sqlalchemy_utils import drop_database
 
 from src.core.database import recreate_database
+from src.core.database.restore_db import restore_logical_backup_in_database
 from src.core.s3_storage import ObjectStorage
 from src.models import BackupModel, RankerModel
 from src.schemas import (
@@ -103,59 +104,22 @@ STDOUT: {e.stdout}
 STDERR: {e.stderr}
 """)
 
-    def _restore_backup_in_database(self, database_name: str) -> None:
-        if self.backup_file_path is None:
-            raise ValueError("Backup file path not set")
-
-        command = [
-            "pg_restore",
-            "--clean",
-            "--if-exists",
-            "-h",
-            app_config.DATABASE_HOST,
-            "-p",
-            str(app_config.DATABASE_PORT),
-            "-U",
-            app_config.DATABASE_USERNAME,
-            "-d",
-            database_name,
-            self.backup_file_path,
-        ]
-        env = os.environ.copy()
-        env["PGPASSWORD"] = app_config.DATABASE_PASSWORD
-
-        try:
-            subprocess.run(
-                command,
-                env=env,
-                check=True,
-                capture_output=True,
-                text=True,
-            )
-
-        except subprocess.CalledProcessError as e:
-            raise SystemError(f"""
-Unable to restore database backup
-
-RETURN CODE: {e.returncode}
-STDOUT: {e.stdout}
-STDERR: {e.stderr}
-""")
-
     def verify_backup_file(self) -> None:
         self._was_workflow_cancelled()
+
+        if self.backup_file_path is None:
+            raise ValueError("Backup file path not set")
 
         test_database_name = "restore_backup_test"
         temp_db_url = recreate_database(test_database_name)
 
         try:
-            self._restore_backup_in_database(test_database_name)
+            restore_logical_backup_in_database(
+                test_database_name, self.backup_file_path
+            )
 
         finally:
             drop_database(temp_db_url)
-
-    def restore_backup(self) -> None:
-        pass
 
     # ----------------------- File Backup ---------------------- #
 

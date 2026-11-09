@@ -1,3 +1,5 @@
+import shutil
+from pathlib import Path
 from uuid import UUID
 
 from sqlalchemy import or_, select
@@ -5,6 +7,7 @@ from sqlalchemy.orm import Query, Session, aliased, selectinload
 from sqlalchemy.sql.expression import literal
 
 from src.core.data_structure import LinkedList
+from src.core.s3_storage import ObjectStorage, ObjectType
 from src.enums import BackupStatus
 from src.models import BackupModel
 from src.schemas import BackupCreate, BackupFilters
@@ -109,3 +112,20 @@ class BackupService(BaseDBService[BackupModel]):
         )
 
         return backup_chain
+
+    def retrieve_zip_file(
+        self, backup: BackupModel, object_storage: ObjectStorage, file_path: Path
+    ) -> Path:
+        if backup.meta is None:
+            raise ValueError("Backup has no metadata attached")
+
+        file_data = object_storage.download_file(
+            ObjectType.BACKUP, backup.meta.zip_path
+        )
+
+        zipped_backup_file_path = file_path / backup.meta.zip_filename
+
+        with open(zipped_backup_file_path, "wb") as file:
+            shutil.copyfileobj(file_data.file, file)
+
+        return zipped_backup_file_path
