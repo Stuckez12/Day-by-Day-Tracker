@@ -25,6 +25,7 @@ class BackupRestorationWorkflow:
     def __init__(self) -> None:
         self.chain: LinkedList | None = None
         self.selected_chain_node: LinkedNode | None = None
+        self.restoration_database_created = False
 
     def use_chain(self, chain: LinkedList):
         self.chain = chain
@@ -62,6 +63,7 @@ class BackupRestorationWorkflow:
                 raise SystemError("Database already exists")
 
             create_database(db_url)
+            self.restoration_database_created = True
 
         except SQLAlchemyError:
             raise SystemError("Unable to create a new database")

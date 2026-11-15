@@ -14,7 +14,7 @@ def get_configurable_application_settings() -> ApplicationSettingsSchema:
     if redis_result is None:
         return ApplicationSettingsSchema()
 
-    return ApplicationSettingsSchema.model_validate(redis_result)
+    return ApplicationSettingsSchema.model_validate_json(redis_result)
 
 
 def configure_application_settings(new_settings: ApplicationSettingsSchema) -> None:

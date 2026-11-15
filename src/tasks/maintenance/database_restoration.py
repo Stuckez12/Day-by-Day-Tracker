@@ -120,7 +120,13 @@ def database_restoration(self: Task, *args, **kwargs) -> dict:
 
     finally:
         try:
-            if database_exists(app_config.restoration_db_url) and not switched:
+            # A failed restore may leave an empty or partially populated database.
+            # Only remove the staging database owned by this attempt.
+            if (
+                not switched
+                and workflow.restoration_database_created
+                and database_exists(app_config.restoration_db_url)
+            ):
                 drop_database(app_config.restoration_db_url)
 
         except Exception:
