@@ -89,14 +89,15 @@ class BackupService(BaseDBService[BackupModel]):
 
     def get_backup_chain(self, backup: BackupModel) -> LinkedList:
         rec = self.backup_db.query(
-            literal(backup.parent_backup_id).label("parent_backup_id")
+            literal(backup.id).label("parent_backup_id"),
+            literal(0).label("depth"),
         ).cte(recursive=True, name="recursive_backups")
 
         ralias = aliased(rec, name="R")
         lalias = aliased(BackupModel, name="L")
 
         rec = rec.union_all(
-            select(lalias.parent_backup_id).join(
+            select(lalias.parent_backup_id, ralias.c.depth + 1).join(
                 ralias, ralias.c.parent_backup_id == lalias.id
             )
         )
@@ -104,6 +105,7 @@ class BackupService(BaseDBService[BackupModel]):
         backup_chain_list = (
             self.backup_db.query(BackupModel)
             .join(rec, BackupModel.id == rec.c.parent_backup_id)
+            .order_by(rec.c.depth.desc())
             .all()
         )
 

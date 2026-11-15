@@ -46,7 +46,7 @@ def set_backup_for_application_to_restore_to_on_restart(
     backup_id: UUID,
 ):
     try:
-        backup = backup_service.get_by_id(backup_id)
+        backup = backup_service.get_by_backup_id(backup_id)
         service.specify_backup_app_will_be_restored_to(backup)
 
         return DetailSchema(

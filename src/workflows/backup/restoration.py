@@ -1,6 +1,8 @@
+import json
 import logging
 from pathlib import Path
 from typing import cast
+from zipfile import ZipFile
 
 from sqlalchemy import text
 from sqlalchemy.exc import SQLAlchemyError
@@ -8,7 +10,12 @@ from sqlalchemy_utils import create_database, database_exists
 
 from src.core import LinkedList, LinkedNode
 from src.core.database.db import temporary_db_session
-from src.core.database.restore_db import restore_logical_backup_in_database
+from src.core.database.restore_db import (
+    apply_ranged_backup_to_database,
+    restore_logical_backup_in_database,
+)
+from src.enums import BackupType
+from src.schemas import BackupLink
 from src.settings import app_config
 from src.utils import delete_folder, utcnow
 
@@ -22,15 +29,33 @@ class BackupRestorationWorkflow:
         self.chain = chain
         self.selected_chain_node = cast(LinkedNode, chain.get_next_node())
 
-    def restore_new_database_to_logical_backup(self):
-        restoration_db_name = app_config.DATABASE_DB_NAME
-        self._create_restoration_database(app_config.db_url)
+    def restore_new_database_to_logical_backup(self) -> None:
+        if self.selected_chain_node is None:
+            raise ValueError("No backup chain node selected")
 
-        restore_logical_backup_in_database(restoration_db_name, Path())
+        backup: BackupLink = self.selected_chain_node.item
+
+        logging.info(self.chain)
+
+        if backup.backup_type != BackupType.LOGICAL:
+            raise ValueError("Selected backup must be of type LOGICAL")
+
+        restoration_db_name = app_config.DATABASE_DB_NAME
+
+        with ZipFile(backup.zip_file_path, "r") as archive:
+            dump_file = next(
+                name for name in archive.namelist() if name.endswith(".dump")
+            )
+            backup_file_path = Path(
+                archive.extract(dump_file, backup.zip_file_path.parent)
+            )
+
+        self._create_restoration_database(restoration_db_name)
+        restore_logical_backup_in_database(restoration_db_name, backup_file_path)
 
     def _create_restoration_database(self, restore_db: str) -> None:
         try:
-            db_url = app_config.db_url + f"/{restore_db}"
+            db_url = f"{app_config.base_db_url}/{restore_db}"
 
             if database_exists(db_url):
                 raise SystemError("Database already exists")
@@ -40,49 +65,63 @@ class BackupRestorationWorkflow:
         except SQLAlchemyError:
             raise SystemError("Unable to create a new database")
 
-    def rename_current_production_database(self):
-        """
-        Rename the current database to preserve it just in case we need to revert back to it
-        """
+    def rename_current_production_database(self) -> str:
+        db_name = app_config.DATABASE_DB_NAME
+        numeric_date = int(utcnow().timestamp())
 
-        DEFAULT_DB_NAME = app_config.DATABASE_DB_NAME
-        RESTORATION_BACKUP_DB_NAME = (
-            DEFAULT_DB_NAME + f"_saved_before_restoration_at_{utcnow()}"
-        )
+        saved_name = f"{db_name}_saved_{numeric_date}"
 
         with temporary_db_session(app_config.DATABASE_MAINTENANCE_DB_NAME) as db:
             try:
+                db.execute(text(f'ALTER DATABASE "{db_name}" ALLOW_CONNECTIONS false'))
+                db.commit()
+
                 db.execute(
                     text(f"""
-                    ALTER DATABASE {DEFAULT_DB_NAME} SET SINGLE_USER WITH ROLLBACK IMMEDIATE;
-                    ALTER DATABASE {DEFAULT_DB_NAME} MODIFY NAME = {RESTORATION_BACKUP_DB_NAME};
-                    ALTER DATABASE {RESTORATION_BACKUP_DB_NAME} SET MULTI_USER;
-                    """)
+                        SELECT pg_terminate_backend(pid, 5000)
+                        FROM pg_stat_activity WHERE datname = :name;
+                        ALTER DATABASE "{db_name}" RENAME TO "{saved_name}";
+                        ALTER DATABASE "{saved_name}" ALLOW_CONNECTIONS true;
+                    """),
+                    {"name": db_name},
                 )
+                db.commit()
+
+                return saved_name
 
             except SQLAlchemyError:
-                logging.exception("Unable to rename the database")
+                db.rollback()
 
-                if database_exists(app_config.db_url):
-                    try:
-                        db.execute(
-                            text(f"ALTER DATABASE {DEFAULT_DB_NAME} SET MULTI_USER;")
-                        )
+                db.execute(text(f'ALTER DATABASE "{db_name}" ALLOW_CONNECTIONS true'))
+                db.commit()
 
-                    except SQLAlchemyError as err:
-                        logging.error(f"""DEV Intervention Required!!!!!
-When trying to recover the changes to the current database, an unexpected error occurred.
-This occurred when trying to ALTER the potential SINGLE_USER state back into a MULTI_USER state.
-
-Error Message:
-
-{err}
-""")
-
-                raise SystemError("Unable to rename the database")
+                raise
 
     def fully_restore_logical_database_to_latest_ranged_backup(self):
-        pass
+        if self.chain is None or self.selected_chain_node is None:
+            raise ValueError("No backup chain node selected")
+
+        node = self.chain.get_next_node(self.selected_chain_node)
+        with temporary_db_session(app_config.DATABASE_DB_NAME) as db:
+            while node is not None:
+                backup: BackupLink = node.item
+
+                if backup.backup_type not in (
+                    BackupType.RANGED_DAY,
+                    BackupType.RANGED_WEEK,
+                ):
+                    raise SystemError(
+                        "Backup chain has a second logical backup within the chain"
+                    )
+
+                with ZipFile(backup.zip_file_path, "r") as archive:
+                    with archive.open("dump.json") as file:
+                        data = json.load(file)
+
+                apply_ranged_backup_to_database(db, data)
+
+                self.selected_chain_node = node
+                node = self.chain.get_next_node(node)
 
     def cleanup_folder(self, folder: Path) -> None:
         try:

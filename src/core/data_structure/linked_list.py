@@ -113,6 +113,22 @@ class LinkedList(BaseModel):
 
         return linked_list
 
+    def reverse(self):
+        previous = None
+        current = self.first_node
+
+        while current is not None:
+            node = self.linked_list[current]
+            next_node = node.next
+            node.next = previous
+            previous = current
+            current = next_node
+
+        # Swap first last nodes
+        self.first_node, self.last_node = self.last_node, self.first_node
+
+        return self
+
     def modify_all_node_items(
         self, *, mod_func: Callable[[LinkedNode], LinkedNode]
     ) -> None:

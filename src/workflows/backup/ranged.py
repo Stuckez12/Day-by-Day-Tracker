@@ -4,14 +4,17 @@ from datetime import datetime, timedelta
 from pathlib import Path
 from typing import Any, cast
 
-from sqlalchemy import Engine, desc, select
+from sqlalchemy import desc, select
 from sqlalchemy.orm import Session
 
-import src.models as table_objects
+from src.core.database.restore_db import (
+    RESTRICTED_TABLES,
+    apply_ranged_backup_to_database,
+)
 from src.core.s3_storage import ObjectStorage
 from src.enums import BackupStatus
-from src.models import BackupModel, MetaModel, TaskModel
-from src.models.base import Base, BaseModel
+from src.models import BackupModel, MetaModel
+from src.models.base import Base
 from src.schemas import (
     DateRangeRequest,
     MetadataChecksum,
@@ -22,10 +25,6 @@ from src.schemas import (
 from src.services import TaskService
 from src.utils import utcnow
 from src.workflows.backup.base import BaseBackupWorkflow
-
-
-NO_BACKUP_TABLES = [TaskModel]
-RESTRICTED_TABLES = [table.__tablename__ for table in NO_BACKUP_TABLES]
 
 
 class RangedBackupWorkflow(BaseBackupWorkflow):
@@ -109,84 +108,7 @@ class RangedBackupWorkflow(BaseBackupWorkflow):
         if self.metadata is None:
             raise ValueError("Metadata not set")
 
-        if type(db.bind) != Engine:
-            raise ValueError("Database session has no engine attached")
-
-        db_name = db.bind.engine.url.database  # ty: ignore[unresolved-attribute]
-
-        if db_name is None:
-            raise ValueError("Database name not found from session")
-
-        all_tables: dict[str, type[BaseModel]] = {
-            obj.__tablename__: obj
-            for _, obj in vars(table_objects).items()
-            # Only include imported objects you have defined
-            if isinstance(obj, type)
-            # Filter out all models that dont match Base
-            and obj._sa_registry == Base.registry
-            # Filter out models that are not backed up
-            and obj.__tablename__ not in RESTRICTED_TABLES
-        }
-
-        for model in Base.metadata.sorted_tables:
-            model_obj = all_tables.get(model.name, None)
-            table_data: list[dict[str, Any]] | None = data.get(model.name, None)
-
-            if model_obj is None:
-                continue
-
-            if table_data is None:
-                logging.warning(
-                    f"Restoration of table '{model.name}' was not found in data"
-                )
-                continue
-
-            logging.info(f"Ranged seeding table: '{model.name}'")
-
-            data_ids = []
-            id_mapping: dict[str, dict[str, Any]] = {}
-
-            for row in table_data:
-                data_id = row.get("id", None)
-
-                if data_id is None:
-                    continue
-
-                data_ids.append(data_id)
-                id_mapping[data_id] = row
-
-            existing_ids = {
-                str(row.id)
-                for row in db.execute(
-                    select(model.c.id).where(model.c.id.in_(data_ids))
-                )
-            }
-
-            logging.debug(
-                f"Existing {model.name} rows: {len(existing_ids)}/{len(table_data)}"
-            )
-
-            for data_id in existing_ids:
-                db.execute(
-                    model.update()
-                    .where(model.c.id == data_id)
-                    .values(**id_mapping[data_id])
-                )
-
-                id_mapping.pop(data_id)
-
-            logging.debug(
-                f"Remaining {model.name} rows to add: {len(id_mapping)}/{len(table_data)}"
-            )
-
-            for _, id_data in id_mapping.items():
-                db.execute(model.insert().values(**id_data))
-
-            db.flush()
-
-        db.commit()
-
-        logging.info("Seeded all ranged data")
+        apply_ranged_backup_to_database(db, data)
 
     def verify_backup_file(self) -> None:
         """

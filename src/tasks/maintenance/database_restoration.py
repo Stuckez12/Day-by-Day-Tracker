@@ -1,13 +1,17 @@
+import logging
 from pathlib import Path
 from typing import cast
 from uuid import UUID
 
 from celery import Task, shared_task
+from sqlalchemy import text
 from sqlalchemy.exc import NoResultFound
+from sqlalchemy_utils import database_exists
 
 import src.core as core
 from src.core import LinkedNode
 from src.core.app_settings import get_configurable_application_settings
+from src.core.database.db import temporary_db_session
 from src.core.database.restore_db import application_is_configured_to_be_restored
 from src.core.s3_storage import ObjectStorage
 from src.models import BackupModel
@@ -22,8 +26,6 @@ TEMP_RESTORATION_PATH = Path(app_config.TEMPORARY_PATH + "/backup-restoration")
 
 @shared_task(bind=True)
 def database_restoration(self: Task, *args, **kwargs) -> dict:
-    celery_id = cast(UUID, self.request.id)
-
     configurable_settings = get_configurable_application_settings()
 
     if not application_is_configured_to_be_restored(configurable_settings):
@@ -38,6 +40,7 @@ def database_restoration(self: Task, *args, **kwargs) -> dict:
     backup_db = next(backup_db_gen)
 
     final_backup_id = cast(UUID, configurable_settings.RESTORE_DATABASE_TO_BACKUP_ID)
+    final_backup_id = UUID("b0c37212-0bfd-492b-8716-11511b501b01")
 
     object_storage = ObjectStorage()
 
@@ -57,7 +60,8 @@ def database_restoration(self: Task, *args, **kwargs) -> dict:
         mapped_file_paths: dict[UUID, Path] = {}
 
         # Locally download all stored files onto tmp disk for fast access
-        # Can become a problem if the files overall become larger than Pi Memory (although unlikely)
+        # Can become a problem if the files overall become larger
+        # than Pi Memory (although unlikely)
         for node in backup_chain.linked_list.values():
             file_path = service.retrieve_zip_file(
                 node.item, object_storage, TEMP_RESTORATION_PATH
@@ -100,16 +104,41 @@ def database_restoration(self: Task, *args, **kwargs) -> dict:
         db_gen.close()
 
     # restoration pipeline
+    saved_name = None
+
     try:
         workflow.use_chain(backup_chain)
-        workflow.rename_current_production_database()
+        saved_name = workflow.rename_current_production_database()
 
         workflow.restore_new_database_to_logical_backup()
 
         workflow.fully_restore_logical_database_to_latest_ranged_backup()
 
+        return DetailSchema(detail="Database restoration completed").model_dump(
+            mode="json"
+        )
+
     except Exception:
-        pass
+        logging.exception("Database restoration failed")
+
+        try:
+            if saved_name and not database_exists(app_config.db_url):
+                with temporary_db_session(
+                    app_config.DATABASE_MAINTENANCE_DB_NAME
+                ) as db:
+                    db.execute(
+                        text(
+                            f'ALTER DATABASE "{saved_name}" '
+                            f'RENAME TO "{app_config.DATABASE_DB_NAME}"'
+                        )
+                    )
+
+                    db.commit()
+
+        except Exception:
+            logging.exception("Unable to recover the original database")
+
+        raise
 
     finally:
         workflow.cleanup_folder(TEMP_RESTORATION_PATH)
