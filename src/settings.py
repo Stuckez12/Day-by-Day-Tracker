@@ -25,9 +25,13 @@ class AppConfig(BaseSettings):
     DATABASE_PASSWORD: str
     DATABASE_HOST: str
     DATABASE_PORT: int
+
     DATABASE_MAINTENANCE_DB_NAME: Literal["postgres"] = "postgres"
     DATABASE_DB_NAME: str = "tracker"
     DATABASE_BACKUP_DB_NAME: str = "backup-tracker"
+    DATABASE_RESTORATION_DB_NAME: str = "restoration-tracker"
+
+    DATABASE_RESTORATION_UNTIL_TIMEOUT: int = 1200
 
     @property
     def base_db_url(self):
@@ -40,6 +44,10 @@ class AppConfig(BaseSettings):
     @property
     def backup_db_url(self):
         return f"{self.base_db_url}/{self.DATABASE_BACKUP_DB_NAME}"
+
+    @property
+    def restoration_db_url(self):
+        return f"{self.base_db_url}/{self.DATABASE_RESTORATION_DB_NAME}"
 
     # Celery
     REDIS_HOST: str = "redis"
@@ -105,6 +113,7 @@ class TestAppConfig(AppConfig):
 
     DATABASE_DB_NAME: str = "test_dbdt"
     DATABASE_BACKUP_DB_NAME: str = "test_dbdt_backup"
+    DATABASE_RESTORATION_DB_NAME: str = "test_dbdt_restoration"
 
     @property
     def base_db_url(self):
@@ -117,6 +126,10 @@ class TestAppConfig(AppConfig):
     @property
     def backup_db_url(self):
         return f"{self.base_db_url}/{self.DATABASE_BACKUP_DB_NAME}"
+
+    @property
+    def restoration_db_url(self):
+        return f"{self.base_db_url}/{self.DATABASE_RESTORATION_DB_NAME}"
 
     # JWT tokens
     JWT_SECRET: str = "test-token"

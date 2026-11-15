@@ -4,7 +4,7 @@ from pathlib import Path
 from typing import cast
 from zipfile import ZipFile
 
-from sqlalchemy import text
+from sqlalchemy import select, text
 from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy_utils import create_database, database_exists
 
@@ -15,6 +15,7 @@ from src.core.database.restore_db import (
     restore_logical_backup_in_database,
 )
 from src.enums import BackupType
+from src.models.base import Base
 from src.schemas import BackupLink
 from src.settings import app_config
 from src.utils import delete_folder, utcnow
@@ -40,8 +41,6 @@ class BackupRestorationWorkflow:
         if backup.backup_type != BackupType.LOGICAL:
             raise ValueError("Selected backup must be of type LOGICAL")
 
-        restoration_db_name = app_config.DATABASE_DB_NAME
-
         with ZipFile(backup.zip_file_path, "r") as archive:
             dump_file = next(
                 name for name in archive.namelist() if name.endswith(".dump")
@@ -50,8 +49,10 @@ class BackupRestorationWorkflow:
                 archive.extract(dump_file, backup.zip_file_path.parent)
             )
 
-        self._create_restoration_database(restoration_db_name)
-        restore_logical_backup_in_database(restoration_db_name, backup_file_path)
+        self._create_restoration_database(app_config.DATABASE_RESTORATION_DB_NAME)
+        restore_logical_backup_in_database(
+            app_config.DATABASE_RESTORATION_DB_NAME, backup_file_path
+        )
 
     def _create_restoration_database(self, restore_db: str) -> None:
         try:
@@ -65,44 +66,48 @@ class BackupRestorationWorkflow:
         except SQLAlchemyError:
             raise SystemError("Unable to create a new database")
 
-    def rename_current_production_database(self) -> str:
+    def validate_restored_database(self) -> None:
+        with temporary_db_session(app_config.DATABASE_RESTORATION_DB_NAME) as db:
+            for table in Base.metadata.sorted_tables:
+                db.execute(select(table).limit(0))
+
+    def switch_restored_database_into_service(self) -> str:
         db_name = app_config.DATABASE_DB_NAME
         numeric_date = int(utcnow().timestamp())
 
         saved_name = f"{db_name}_saved_{numeric_date}"
 
         with temporary_db_session(app_config.DATABASE_MAINTENANCE_DB_NAME) as db:
-            try:
-                db.execute(text(f'ALTER DATABASE "{db_name}" ALLOW_CONNECTIONS false'))
-                db.commit()
+            production = db_name.replace('"', '""')
+            saved = saved_name.replace('"', '""')
+            restored = app_config.DATABASE_RESTORATION_DB_NAME.replace('"', '""')
 
-                db.execute(
-                    text(f"""
-                        SELECT pg_terminate_backend(pid, 5000)
-                        FROM pg_stat_activity WHERE datname = :name;
-                        ALTER DATABASE "{db_name}" RENAME TO "{saved_name}";
-                        ALTER DATABASE "{saved_name}" ALLOW_CONNECTIONS true;
-                    """),
-                    {"name": db_name},
-                )
-                db.commit()
+            db.execute(
+                text(f"""
+                    ALTER DATABASE "{production}" ALLOW_CONNECTIONS false;
+                    ALTER DATABASE "{restored}" ALLOW_CONNECTIONS false;
+                    SELECT pg_terminate_backend(pid, 5000)
+                    FROM pg_stat_activity WHERE datname IN (:production, :restored);
+                    ALTER DATABASE "{production}" RENAME TO "{saved}";
+                    ALTER DATABASE "{restored}" RENAME TO "{production}";
+                    ALTER DATABASE "{production}" ALLOW_CONNECTIONS true;
+                """),
+                {
+                    "production": db_name,
+                    "restored": app_config.DATABASE_RESTORATION_DB_NAME,
+                },
+            )
+            db.commit()
 
-                return saved_name
-
-            except SQLAlchemyError:
-                db.rollback()
-
-                db.execute(text(f'ALTER DATABASE "{db_name}" ALLOW_CONNECTIONS true'))
-                db.commit()
-
-                raise
+        return saved_name
 
     def fully_restore_logical_database_to_latest_ranged_backup(self):
         if self.chain is None or self.selected_chain_node is None:
             raise ValueError("No backup chain node selected")
 
         node = self.chain.get_next_node(self.selected_chain_node)
-        with temporary_db_session(app_config.DATABASE_DB_NAME) as db:
+
+        with temporary_db_session(app_config.DATABASE_RESTORATION_DB_NAME) as db:
             while node is not None:
                 backup: BackupLink = node.item
 

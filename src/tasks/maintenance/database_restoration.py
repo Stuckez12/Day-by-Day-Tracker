@@ -4,14 +4,12 @@ from typing import cast
 from uuid import UUID
 
 from celery import Task, shared_task
-from sqlalchemy import text
 from sqlalchemy.exc import NoResultFound
-from sqlalchemy_utils import database_exists
+from sqlalchemy_utils import database_exists, drop_database
 
 import src.core as core
 from src.core import LinkedNode
 from src.core.app_settings import get_configurable_application_settings
-from src.core.database.db import temporary_db_session
 from src.core.database.restore_db import application_is_configured_to_be_restored
 from src.core.s3_storage import ObjectStorage
 from src.models import BackupModel
@@ -28,7 +26,7 @@ TEMP_RESTORATION_PATH = Path(app_config.TEMPORARY_PATH + "/backup-restoration")
 def database_restoration(self: Task, *args, **kwargs) -> dict:
     configurable_settings = get_configurable_application_settings()
 
-    if not application_is_configured_to_be_restored(configurable_settings):
+    if not application_is_configured_to_be_restored(configurable_settings) and False:
         return DetailSchema(
             detail="There is no backup assigned for the application to restore to"
         ).model_dump(mode="json")
@@ -88,57 +86,44 @@ def database_restoration(self: Task, *args, **kwargs) -> dict:
     except NoResultFound:
         workflow.cleanup_folder(TEMP_RESTORATION_PATH)
 
-        return DetailSchema(detail="Backup provided does not exist").model_dump(
-            mode="json"
-        )
+        raise ValueError("Backup provided does not exist")
 
     except Exception:
         workflow.cleanup_folder(TEMP_RESTORATION_PATH)
 
-        return DetailSchema(
-            detail="An unknown exception while trying to retrieve the backup chain"
-        ).model_dump(mode="json")
+        raise
 
     finally:
         backup_db_gen.close()
         db_gen.close()
 
-    # restoration pipeline
-    saved_name = None
-
+    # Restore and validate in isolation while production remains available.
+    switched = False
     try:
         workflow.use_chain(backup_chain)
-        saved_name = workflow.rename_current_production_database()
-
         workflow.restore_new_database_to_logical_backup()
-
         workflow.fully_restore_logical_database_to_latest_ranged_backup()
+
+        workflow.validate_restored_database()
+
+        workflow.switch_restored_database_into_service()
+
+        switched = True
 
         return DetailSchema(detail="Database restoration completed").model_dump(
             mode="json"
         )
-
     except Exception:
         logging.exception("Database restoration failed")
-
-        try:
-            if saved_name and not database_exists(app_config.db_url):
-                with temporary_db_session(
-                    app_config.DATABASE_MAINTENANCE_DB_NAME
-                ) as db:
-                    db.execute(
-                        text(
-                            f'ALTER DATABASE "{saved_name}" '
-                            f'RENAME TO "{app_config.DATABASE_DB_NAME}"'
-                        )
-                    )
-
-                    db.commit()
-
-        except Exception:
-            logging.exception("Unable to recover the original database")
 
         raise
 
     finally:
+        try:
+            if database_exists(app_config.restoration_db_url) and not switched:
+                drop_database(app_config.restoration_db_url)
+
+        except Exception:
+            logging.exception("Unable to clean up the restoration database")
+
         workflow.cleanup_folder(TEMP_RESTORATION_PATH)

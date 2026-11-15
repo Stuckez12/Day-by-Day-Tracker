@@ -29,6 +29,7 @@ def restore_logical_backup_in_database(
 ) -> None:
     command = [
         "pg_restore",
+        "--exit-on-error",
         "--clean",
         "--if-exists",
         "-h",
