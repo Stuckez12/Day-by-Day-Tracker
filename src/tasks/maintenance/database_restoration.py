@@ -1,4 +1,3 @@
-from dataclasses import dataclass
 from pathlib import Path
 from typing import cast
 from uuid import UUID
@@ -11,23 +10,14 @@ from src.core import LinkedNode
 from src.core.app_settings import get_configurable_application_settings
 from src.core.database.restore_db import application_is_configured_to_be_restored
 from src.core.s3_storage import ObjectStorage
-from src.enums import BackupType
 from src.models import BackupModel
-from src.schemas import DetailSchema
+from src.schemas import BackupLink, DetailSchema
 from src.services import BackupService
 from src.settings import app_config
 from src.workflows import BackupRestorationWorkflow
 
 
 TEMP_RESTORATION_PATH = Path(app_config.TEMPORARY_PATH + "/backup-restoration")
-
-
-@dataclass(frozen=True)
-class BackupLink:
-    model_id: UUID
-    parent_id: UUID | None
-    backup_type: BackupType
-    zip_file_path: Path
 
 
 @shared_task(bind=True)
@@ -111,7 +101,12 @@ def database_restoration(self: Task, *args, **kwargs) -> dict:
 
     # restoration pipeline
     try:
-        pass
+        workflow.use_chain(backup_chain)
+        workflow.rename_current_production_database()
+
+        workflow.restore_new_database_to_logical_backup()
+
+        workflow.fully_restore_logical_database_to_latest_ranged_backup()
 
     except Exception:
         pass

@@ -3,6 +3,7 @@ from src.schemas.auth import LogInRequest
 from src.schemas.backup import (
     BackupCreate,
     BackupFilters,
+    BackupLink,
     BackupSchema,
     CreateScheduledBackupSchema,
     Metadata,

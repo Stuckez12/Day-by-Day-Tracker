@@ -25,6 +25,7 @@ class AppConfig(BaseSettings):
     DATABASE_PASSWORD: str
     DATABASE_HOST: str
     DATABASE_PORT: int
+    DATABASE_MAINTENANCE_DB_NAME: Literal["postgres"] = "postgres"
     DATABASE_DB_NAME: str = "tracker"
     DATABASE_BACKUP_DB_NAME: str = "backup-tracker"
 
