@@ -4,13 +4,17 @@ import subprocess
 from pathlib import Path
 from typing import Any
 
-from sqlalchemy import Engine, select
+from celery.exceptions import OperationalError
+from celery.result import AsyncResult
+from sqlalchemy import Engine, MetaData, select
 from sqlalchemy.orm import Session
 
-import src.models as table_objects
-from src.models.base import Base, BaseModel
-from src.models.task import TaskModel
+from src.core.database import temporary_db_session
+from src.enums.task_status import TaskStatus
+from src.models import TaskModel
+from src.schemas import TaskPaginated
 from src.schemas.application_settings import ApplicationSettingsSchema
+from src.services import TaskService
 from src.settings import app_config
 
 
@@ -78,23 +82,18 @@ def apply_ranged_backup_to_database(db: Session, data: dict[str, Any]) -> None:
     if db_name is None:
         raise ValueError("Database name not found from session")
 
-    all_tables: dict[str, type[BaseModel]] = {
-        obj.__tablename__: obj
-        for _, obj in vars(table_objects).items()
-        # Only include imported objects you have defined
-        if isinstance(obj, type)
-        # Filter out all models that dont match Base
-        and obj._sa_registry == Base.registry
-        # Filter out models that are not backed up
-        and obj.__tablename__ not in RESTRICTED_TABLES
-    }
+    metadata = MetaData()
+    metadata.reflect(bind=db.connection())
+    unknown_tables = set(data) - set(metadata.tables) - set(RESTRICTED_TABLES)
 
-    for model in Base.metadata.sorted_tables:
-        model_obj = all_tables.get(model.name, None)
-        table_data: list[dict[str, Any]] | None = data.get(model.name, None)
+    if unknown_tables:
+        raise ValueError(f"Unknown tables in ranged backup: {sorted(unknown_tables)}")
 
-        if model_obj is None:
+    for model in metadata.sorted_tables:
+        if model.name in RESTRICTED_TABLES or model.name == "alembic_version":
             continue
+
+        table_data: list[dict[str, Any]] | None = data.get(model.name, None)
 
         if table_data is None:
             logging.warning(
@@ -146,3 +145,55 @@ def apply_ranged_backup_to_database(db: Session, data: dict[str, Any]) -> None:
     db.commit()
 
     logging.info("Seeded all ranged data")
+
+
+def _check_if_restoration_workflow_is_running(
+    configurable_settings: ApplicationSettingsSchema,
+) -> bool:
+    with temporary_db_session(app_config.DATABASE_MAINTENANCE_DB_NAME) as db:
+        task_service = TaskService(db)
+        filter = TaskPaginated(
+            name="database_restoration",
+            task_status=[TaskStatus.PENDING, TaskStatus.RUNNING],
+        )
+        query = task_service.get_paginated_query(filter)
+
+        restoration_tasks = query.all()
+
+        if not restoration_tasks:
+            return True
+
+        if not configurable_settings.CANCEL_CURRENT_RESTORE_DATABASE_TASK:
+            return False
+
+        from src.main import celery_app
+
+        for task in restoration_tasks:
+            try:
+                logging.debug(f"Revoking restoration celery task '{task.task_id}'")
+                celery_app.control.revoke(str(task.task_id), terminate=True)
+
+            except OperationalError as exc:
+                error_msg = f"Unable to cancel restoration celery task '{task.task_id}'"
+                logging.exception(error_msg)
+
+                raise SystemError(error_msg) from exc
+
+            task_service.cancel_task(task)
+
+    return True
+
+
+def run_restoration_task(
+    configurable_settings: ApplicationSettingsSchema,
+) -> AsyncResult:
+    can_run_restoration: bool = _check_if_restoration_workflow_is_running(
+        configurable_settings
+    )
+
+    if can_run_restoration:
+        from src.tasks import database_restoration
+
+        return database_restoration.delay()
+
+    raise SystemError("There is a celery task running the restoration workflow")

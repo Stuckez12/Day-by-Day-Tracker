@@ -4,6 +4,10 @@ from pathlib import Path
 from typing import cast
 from zipfile import ZipFile
 
+from alembic import command
+from alembic.config import Config
+from alembic.migration import MigrationContext
+from alembic.script import ScriptDirectory
 from sqlalchemy import select, text
 from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy_utils import create_database, database_exists
@@ -28,6 +32,12 @@ class BackupRestorationWorkflow:
         self.restoration_database_created = False
 
     def use_chain(self, chain: LinkedList):
+        if chain.node_count > 1 and any(
+            node.item.backup_type == BackupType.UPLOADED
+            for node in chain.linked_list.values()
+        ):
+            raise ValueError("Uploaded backups must be restored by themselves")
+
         self.chain = chain
         self.selected_chain_node = cast(LinkedNode, chain.get_next_node())
 
@@ -39,8 +49,8 @@ class BackupRestorationWorkflow:
 
         logging.info(self.chain)
 
-        if backup.backup_type != BackupType.LOGICAL:
-            raise ValueError("Selected backup must be of type LOGICAL")
+        if backup.backup_type not in (BackupType.LOGICAL, BackupType.UPLOADED):
+            raise ValueError("Selected backup must be of type LOGICAL or UPLOADED")
 
         with ZipFile(backup.zip_file_path, "r") as archive:
             dump_file = next(
@@ -54,6 +64,21 @@ class BackupRestorationWorkflow:
         restore_logical_backup_in_database(
             app_config.DATABASE_RESTORATION_DB_NAME, backup_file_path
         )
+
+    def _migrate_restoration_database(self, revision: str = "head") -> None:
+        alembic_config = Config("alembic.ini")
+        alembic_config.set_main_option(
+            "sqlalchemy.url", app_config.restoration_db_url.replace("%", "%%")
+        )
+
+        scripts = ScriptDirectory.from_config(alembic_config)
+
+        with temporary_db_session(app_config.DATABASE_RESTORATION_DB_NAME) as db:
+            current = MigrationContext.configure(db.connection()).get_current_heads()
+            # Reject unknown revisions, downgrades, and unrelated migration branches.
+            list(scripts.iterate_revisions(revision, current))
+
+        command.upgrade(alembic_config, revision)
 
     def _create_restoration_database(self, restore_db: str) -> None:
         try:
@@ -69,6 +94,7 @@ class BackupRestorationWorkflow:
             raise SystemError("Unable to create a new database")
 
     def validate_restored_database(self) -> None:
+        self._migrate_restoration_database()
         with temporary_db_session(app_config.DATABASE_RESTORATION_DB_NAME) as db:
             for table in Base.metadata.sorted_tables:
                 db.execute(select(table).limit(0))
@@ -109,26 +135,35 @@ class BackupRestorationWorkflow:
 
         node = self.chain.get_next_node(self.selected_chain_node)
 
-        with temporary_db_session(app_config.DATABASE_RESTORATION_DB_NAME) as db:
-            while node is not None:
-                backup: BackupLink = node.item
+        while node is not None:
+            backup: BackupLink = node.item
 
-                if backup.backup_type not in (
-                    BackupType.RANGED_DAY,
-                    BackupType.RANGED_WEEK,
-                ):
-                    raise SystemError(
-                        "Backup chain has a second logical backup within the chain"
-                    )
+            if backup.backup_type not in (
+                BackupType.RANGED_DAY,
+                BackupType.RANGED_WEEK,
+            ):
+                raise SystemError(
+                    "Backup chain has a second logical backup within the chain"
+                )
 
-                with ZipFile(backup.zip_file_path, "r") as archive:
-                    with archive.open("dump.json") as file:
-                        data = json.load(file)
+            with ZipFile(backup.zip_file_path, "r") as archive:
+                with archive.open("metadata.json") as file:
+                    metadata = json.load(file)
 
+                revision = metadata.get("database_alembic_version")
+
+                if not isinstance(revision, str) or not revision:
+                    raise ValueError("Ranged backup has no schema revision")
+
+                with archive.open("dump.json") as file:
+                    data = json.load(file)
+
+            self._migrate_restoration_database(revision=revision)
+            with temporary_db_session(app_config.DATABASE_RESTORATION_DB_NAME) as db:
                 apply_ranged_backup_to_database(db, data)
 
-                self.selected_chain_node = node
-                node = self.chain.get_next_node(node)
+            self.selected_chain_node = node
+            node = self.chain.get_next_node(node)
 
     def cleanup_folder(self, folder: Path) -> None:
         try:

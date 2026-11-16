@@ -10,11 +10,14 @@ from fastapi_pagination import add_pagination
 from src.api import api
 from src.core.app_settings import get_configurable_application_settings
 from src.core.database.create_db import create_db
-from src.core.database.restore_db import application_is_configured_to_be_restored
+from src.core.database.restore_db import (
+    application_is_configured_to_be_restored,
+    run_restoration_task,
+)
 from src.core.database.seed_db import seed_db
 from src.core.database.upgrade_db import upgrade_db
 from src.settings import app_config
-from src.tasks import backup_scheduler, database_restoration
+from src.tasks import backup_scheduler
 
 
 @asynccontextmanager
@@ -24,7 +27,7 @@ async def _lifespan(_: FastAPI) -> AsyncGenerator[None]:
     if application_is_configured_to_be_restored(configurable_settings) or True:
         logging.warning("Application is being restored")
 
-        restoration = database_restoration.delay()
+        restoration = run_restoration_task(configurable_settings)
         restoration_result = restoration.get(
             timeout=app_config.DATABASE_RESTORATION_UNTIL_TIMEOUT
         )
