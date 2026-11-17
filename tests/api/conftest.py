@@ -11,6 +11,7 @@ import pytest
 from alembic import command
 from alembic.config import Config
 from botocore.exceptions import BotoCoreError, ClientError
+from celery import current_app as current_celery_app
 from celery.contrib.testing.worker import start_worker
 from fastapi.testclient import TestClient
 from pytest import TempPathFactory
@@ -21,7 +22,6 @@ from sqlalchemy.orm.exc import ObjectDeletedError
 from sqlalchemy_utils import create_database, database_exists
 from testcontainers.core.container import DockerContainer
 
-from celery import current_app as current_celery_app
 from src.common.security import create_access_token
 from src.core import get_backup_db, get_db
 from src.core.password_hash import pwd_hash

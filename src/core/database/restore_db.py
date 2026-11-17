@@ -16,6 +16,7 @@ from src.schemas import TaskPaginated
 from src.schemas.application_settings import ApplicationSettingsSchema
 from src.services import TaskService
 from src.settings import app_config
+from src.utils import utcnow
 
 
 NO_BACKUP_TABLES = [TaskModel]
@@ -125,10 +126,13 @@ def apply_ranged_backup_to_database(db: Session, data: dict[str, Any]) -> None:
         )
 
         for data_id in existing_ids:
+            date_time = utcnow()
             db.execute(
                 model.update()
                 .where(model.c.id == data_id)
-                .values(**id_mapping[data_id])
+                .values(
+                    **id_mapping[data_id], created_at=date_time, updated_at=date_time
+                )
             )
 
             id_mapping.pop(data_id)
@@ -138,7 +142,12 @@ def apply_ranged_backup_to_database(db: Session, data: dict[str, Any]) -> None:
         )
 
         for _, id_data in id_mapping.items():
-            db.execute(model.insert().values(**id_data))
+            date_time = utcnow()
+            db.execute(
+                model.insert().values(
+                    **id_data, created_at=date_time, updated_at=date_time
+                )
+            )
 
         db.flush()
 
@@ -150,7 +159,7 @@ def apply_ranged_backup_to_database(db: Session, data: dict[str, Any]) -> None:
 def _check_if_restoration_workflow_is_running(
     configurable_settings: ApplicationSettingsSchema,
 ) -> bool:
-    with temporary_db_session(app_config.DATABASE_MAINTENANCE_DB_NAME) as db:
+    with temporary_db_session(app_config.DATABASE_DB_NAME) as db:
         task_service = TaskService(db)
         filter = TaskPaginated(
             name="database_restoration",

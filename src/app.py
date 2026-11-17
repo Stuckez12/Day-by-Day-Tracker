@@ -16,6 +16,7 @@ from src.core.database.restore_db import (
 )
 from src.core.database.seed_db import seed_db
 from src.core.database.upgrade_db import upgrade_db
+from src.core.redis import redis_lock
 from src.settings import app_config
 from src.tasks import backup_scheduler
 
@@ -24,25 +25,32 @@ from src.tasks import backup_scheduler
 async def _lifespan(_: FastAPI) -> AsyncGenerator[None]:
     configurable_settings = get_configurable_application_settings()
 
-    if application_is_configured_to_be_restored(configurable_settings) or True:
-        logging.warning("Application is being restored")
+    with redis_lock(
+        lock_name="application-startup-restoration-execution",
+        timeout=app_config.DATABASE_RESTORATION_UNTIL_TIMEOUT,
+    ):
+        if application_is_configured_to_be_restored(configurable_settings):
+            logging.warning("Application is being restored")
 
-        restoration = run_restoration_task(configurable_settings)
-        restoration_result = restoration.get(
-            timeout=app_config.DATABASE_RESTORATION_UNTIL_TIMEOUT
-        )
+            restoration = run_restoration_task(configurable_settings)
+            restoration_result = restoration.get(
+                timeout=app_config.DATABASE_RESTORATION_UNTIL_TIMEOUT
+            )
 
-        detail: Any = restoration_result.get("detail", None)
+            detail: Any = restoration_result.get("detail", None)
 
-        if restoration_result.get("detail", None) is None:
-            raise SystemError("Restoration Task returned an invalid response")
+            if restoration_result.get("detail", None) is None:
+                raise SystemError("Restoration Task returned an invalid response")
 
-        detail = cast(str, detail)
+            detail = cast(str, detail)
 
-        if not isinstance(detail, str) or detail != "Database restoration completed":
-            raise SystemError("Unable to restore application to specified backup")
+            if (
+                not isinstance(detail, str)
+                or detail != "Database restoration completed"
+            ):
+                raise SystemError("Unable to restore application to specified backup")
 
-        logging.warning("Restoration successful")
+            logging.warning("Restoration successful")
 
     # Ensure on fresh start of the application, the
     # future backups have been correctly scheduled

@@ -64,6 +64,10 @@ class AppConfig(BaseSettings):
     def CELERY_URL(self):
         return f"{self.REDIS_URL}/{self.REDIS_CELERY_DB}"
 
+    @property
+    def REDIS_APP_SETTINGS_URL(self):
+        return f"{self.REDIS_URL}/{self.REDIS_APP_SETTINGS_DB}"
+
     # JWT tokens
     JWT_SECRET: str = ""
     JWT_EXPIRE_MINUTES: int = 480

@@ -26,7 +26,7 @@ TEMP_RESTORATION_PATH = Path(app_config.TEMPORARY_PATH + "/backup-restoration")
 def database_restoration(self: Task, *args, **kwargs) -> dict:
     configurable_settings = get_configurable_application_settings()
 
-    if not application_is_configured_to_be_restored(configurable_settings) and False:
+    if not application_is_configured_to_be_restored(configurable_settings):
         return DetailSchema(
             detail="There is no backup assigned for the application to restore to"
         ).model_dump(mode="json")
