@@ -26,6 +26,7 @@ class TaskSchema(BaseModel):
     error: str | None = None
 
 
+# TODO: rename the schema to be more descriptive of what it is
 class TaskPaginated(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 

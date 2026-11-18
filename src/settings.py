@@ -25,8 +25,13 @@ class AppConfig(BaseSettings):
     DATABASE_PASSWORD: str
     DATABASE_HOST: str
     DATABASE_PORT: int
+
+    DATABASE_MAINTENANCE_DB_NAME: Literal["postgres"] = "postgres"
     DATABASE_DB_NAME: str = "tracker"
     DATABASE_BACKUP_DB_NAME: str = "backup-tracker"
+    DATABASE_RESTORATION_DB_NAME: str = "restoration-tracker"
+
+    DATABASE_RESTORATION_UNTIL_TIMEOUT: int = 1200
 
     @property
     def base_db_url(self):
@@ -40,12 +45,28 @@ class AppConfig(BaseSettings):
     def backup_db_url(self):
         return f"{self.base_db_url}/{self.DATABASE_BACKUP_DB_NAME}"
 
+    @property
+    def restoration_db_url(self):
+        return f"{self.base_db_url}/{self.DATABASE_RESTORATION_DB_NAME}"
+
     # Celery
-    REDIS_URL: str = "redis://redis:6379"
+    REDIS_HOST: str = "redis"
+    REDIS_PORT: int = 6379
+
+    REDIS_CELERY_DB: int = 0
+    REDIS_APP_SETTINGS_DB: int = 1
+
+    @property
+    def REDIS_URL(self):
+        return f"redis://{self.REDIS_HOST}:{self.REDIS_PORT}"
 
     @property
     def CELERY_URL(self):
-        return f"{self.REDIS_URL}/0"
+        return f"{self.REDIS_URL}/{self.REDIS_CELERY_DB}"
+
+    @property
+    def REDIS_APP_SETTINGS_URL(self):
+        return f"{self.REDIS_URL}/{self.REDIS_APP_SETTINGS_DB}"
 
     # JWT tokens
     JWT_SECRET: str = ""
@@ -96,6 +117,7 @@ class TestAppConfig(AppConfig):
 
     DATABASE_DB_NAME: str = "test_dbdt"
     DATABASE_BACKUP_DB_NAME: str = "test_dbdt_backup"
+    DATABASE_RESTORATION_DB_NAME: str = "test_dbdt_restoration"
 
     @property
     def base_db_url(self):
@@ -108,6 +130,10 @@ class TestAppConfig(AppConfig):
     @property
     def backup_db_url(self):
         return f"{self.base_db_url}/{self.DATABASE_BACKUP_DB_NAME}"
+
+    @property
+    def restoration_db_url(self):
+        return f"{self.base_db_url}/{self.DATABASE_RESTORATION_DB_NAME}"
 
     # JWT tokens
     JWT_SECRET: str = "test-token"

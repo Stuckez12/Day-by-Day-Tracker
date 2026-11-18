@@ -53,6 +53,10 @@ Day by Day Tracker is a web-based app for recording, ranking, and reflecting on 
             <img src="https://cdn.simpleicons.org/celery/37814A" width="50" /><br>
             Celery
         </td>
+        <td align="center">
+            <img src="https://cdn.simpleicons.org/rustfs/FF6B35" width="50" /><br>
+            RustFS
+        </td>
     </tr>
 </table>
 

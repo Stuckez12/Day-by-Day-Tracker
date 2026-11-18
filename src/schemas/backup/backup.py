@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from pathlib import Path
 from uuid import UUID
 
 from pydantic import BaseModel, ConfigDict
@@ -51,3 +52,12 @@ class BackupFilters(BaseModel):
 
     min_duration: float | None = None
     max_duration: float | None = None
+
+
+class BackupLink(BaseModel):
+    model_config = ConfigDict(frozen=True)
+
+    model_id: UUID
+    parent_id: UUID | None
+    backup_type: BackupType
+    zip_file_path: Path

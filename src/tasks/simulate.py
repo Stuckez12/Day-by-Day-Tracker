@@ -1,8 +1,9 @@
 import logging
 import time
 
-import src.core as core
 from celery import Task, shared_task
+
+import src.core as core
 from src.common.celery import update_task_state
 
 
