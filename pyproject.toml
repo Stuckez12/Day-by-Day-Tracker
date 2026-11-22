@@ -69,6 +69,7 @@ omit = [
 
 [tool.pytest.ini_options]
 asyncio_mode="auto"
+pythonpath = ["."]
 addopts = [
     "--cov=src",
     "--cov-report=term-missing:skip-covered",
