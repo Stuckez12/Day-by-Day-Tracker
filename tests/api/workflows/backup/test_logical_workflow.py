@@ -27,10 +27,11 @@ class TestCreateLogicalDatabaseBackupWorkflow:
 
         assert test_logical_backup_workflow.metadata_tool
         assert test_logical_backup_workflow.metadata_tool.name == "pg_dump"
-        assert test_logical_backup_workflow.metadata_tool.version in [
-            "pg_dump (PostgreSQL) 17.11 (Debian 17.11-1.pgdg12+2)",
-            "pg_dump (PostgreSQL) 17.11 (Ubuntu 17.11-1.pgdg24.04+2)",
-        ]
+
+        pg_dump_version = subprocess.check_output(
+            ["pg_dump", "--version"], text=True
+        ).strip()
+        assert test_logical_backup_workflow.metadata_tool.version == pg_dump_version
         assert test_logical_backup_workflow.metadata_date_range == MetadataDateRange(
             start=test_ranker.created_at, end=test_ranker.updated_at
         )
