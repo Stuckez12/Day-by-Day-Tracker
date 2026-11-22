@@ -97,16 +97,15 @@ class LinkedList(BaseModel):
         linked_list = []
         node = self.get_next_node()
 
-        nodes_searched = 1
-
         while node is not None:
             linked_list.append(node)
-            node = self.get_next_node(node)
 
-            if nodes_searched > self.node_count:
+            if len(linked_list) > self.node_count:
                 raise ValueError(
                     "Potential infinite looping detected. More nodes were retrieved than present in linked list"
                 )
+
+            node = self.get_next_node(node)
 
         if mode == "reversed":
             linked_list.reverse()

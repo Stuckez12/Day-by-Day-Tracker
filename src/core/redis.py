@@ -37,7 +37,7 @@ def redis_lock(
     check_rate_s: float = 1,
     wait_to_acquire_lock: bool = True,
     timeout: int = 600,
-    blocking_timeout: int = 60,
+    blocking_timeout: float = 60,
 ) -> Generator[Lock, None, None]:
     """
     Used in a with statement to enforce that the following actions must be done sequentially.

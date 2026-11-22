@@ -47,7 +47,9 @@ from src.models import (
     TaskModel,
 )
 from src.schemas import (
+    ApplicationSettingsSchema,
     CreateScheduledBackupSchema,
+    DateRangeRequest,
     Metadata,
     MetadataChecksum,
     MetadataData,
@@ -55,18 +57,22 @@ from src.schemas import (
     MetadataFiles,
     MetadataTool,
 )
-from src.schemas.common import DateRangeRequest
 from src.services import (
+    ApplicationManagementService,
     AuthService,
+    BackupSchedulerService,
     BackupService,
     PersonnelService,
     RankingService,
     TaskService,
 )
-from src.services.backup.scheduler import BackupSchedulerService
 from src.settings import app_config
 from src.utils import utcnow
-from src.workflows import LogicalBackupWorkflow, RangedBackupWorkflow
+from src.workflows import (
+    BackupRestorationWorkflow,
+    LogicalBackupWorkflow,
+    RangedBackupWorkflow,
+)
 from src.workflows.backup.base import BaseBackupWorkflow
 from tests.api.constants import VALID_PASSWORD
 
@@ -557,6 +563,13 @@ def test_object_storage(test_s3_container: None):
 ################################################################################
 
 
+@pytest.fixture
+def test_application_management_service(
+    test_session: Session, test_backup_service: BackupService
+):
+    return ApplicationManagementService(test_session, test_backup_service)
+
+
 @pytest.fixture(scope="function")
 def test_auth_service(test_session: Session):
     yield AuthService(db=test_session)
@@ -646,6 +659,11 @@ def test_ranged_backup_workflow(
             max_date=test_date_today + timedelta(days=1),
         ),
     )
+
+
+@pytest.fixture
+def test_backup_restoration_workflow() -> BackupRestorationWorkflow:
+    return BackupRestorationWorkflow()
 
 
 ################################################################################
@@ -1013,6 +1031,14 @@ def test_metadata_2(test_backup_session: Session, test_metadata_schema_2: Metada
 ################################################################################
 # Schemas
 ################################################################################
+
+
+@pytest.fixture
+def test_app_settings() -> ApplicationSettingsSchema:
+    return ApplicationSettingsSchema(
+        RESTORE_DATABASE_TO_BACKUP_ID=uuid.UUID("12345678-1234-5678-1234-567812345678"),
+        CANCEL_CURRENT_RESTORE_DATABASE_TASK=True,
+    )
 
 
 @pytest.fixture(scope="function")
