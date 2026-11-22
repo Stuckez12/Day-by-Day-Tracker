@@ -1,6 +1,6 @@
 import logging
 from contextlib import asynccontextmanager
-from typing import AsyncGenerator
+from typing import Any, AsyncGenerator, cast
 
 from fastapi import FastAPI, Request, status
 from fastapi.middleware.cors import CORSMiddleware
@@ -8,15 +8,50 @@ from fastapi.responses import JSONResponse
 from fastapi_pagination import add_pagination
 
 from src.api import api
+from src.core.app_settings import get_configurable_application_settings
 from src.core.database.create_db import create_db
+from src.core.database.restore_db import (
+    application_is_configured_to_be_restored,
+    run_restoration_task,
+)
 from src.core.database.seed_db import seed_db
 from src.core.database.upgrade_db import upgrade_db
+from src.core.redis import redis_lock
 from src.settings import app_config
 from src.tasks import backup_scheduler
 
 
 @asynccontextmanager
 async def _lifespan(_: FastAPI) -> AsyncGenerator[None]:
+    configurable_settings = get_configurable_application_settings()
+
+    with redis_lock(
+        lock_name="application-startup-restoration-execution",
+        timeout=app_config.DATABASE_RESTORATION_UNTIL_TIMEOUT,
+    ):
+        if application_is_configured_to_be_restored(configurable_settings):
+            logging.warning("Application is being restored")
+
+            restoration = run_restoration_task(configurable_settings)
+            restoration_result = restoration.get(
+                timeout=app_config.DATABASE_RESTORATION_UNTIL_TIMEOUT
+            )
+
+            detail: Any = restoration_result.get("detail", None)
+
+            if restoration_result.get("detail", None) is None:
+                raise SystemError("Restoration Task returned an invalid response")
+
+            detail = cast(str, detail)
+
+            if (
+                not isinstance(detail, str)
+                or detail != "Database restoration completed"
+            ):
+                raise SystemError("Unable to restore application to specified backup")
+
+            logging.warning("Restoration successful")
+
     # Ensure on fresh start of the application, the
     # future backups have been correctly scheduled
     backup_scheduler.s().apply_async()

@@ -3,7 +3,7 @@ name = "day-by-day-tracker"
 version = "0.1.0"
 description = "Add your description here"
 readme = "README.md"
-requires-python = ">=3.13"
+requires-python = ">=3.13.18, <=3.14"
 
 dependencies = [
     "alembic>=1.17.2",
@@ -24,6 +24,7 @@ dependencies = [
     "slowapi>=0.1.10",
     "sqlalchemy>=2.0.45",
     "sqlalchemy-utils>=0.42.1",
+    "tenacity>=9.2.1",
     "uvicorn>=0.38.0",
 ]
 
@@ -56,22 +57,32 @@ omit = [
     "src/core/database/*",
     "src/core/ipaddress.py",
     "src/core/log_format.py",
+    "src/core/app_settings.py",
     "src/main.py",
     "src/migrations/*",
     "src/routes/task_run.py",
     "src/services/base.py",
+    "src/services/dependencies_value.py",
     "src/settings.py",
     "src/tasks/task_management.py",
 ]
 
 [tool.pytest.ini_options]
 asyncio_mode="auto"
-addopts = "--cov=src --cov-report=term-missing:skip-covered"
+pythonpath = ["."]
+addopts = [
+    "--cov=src",
+    "--cov-report=term-missing:skip-covered",
+    "--import-mode=importlib"
+]
 
 filterwarnings = [
   "ignore:Accessing argon2\\.__version__ is deprecated.*:DeprecationWarning",
   "ignore:DELETE statement on table .* expected to delete .* row.*:sqlalchemy.exc.SAWarning",
 ]
+
+strict_config = true
+strict_markers = true
 
 [tool.pytest_env]
 APP_ENV = "test"

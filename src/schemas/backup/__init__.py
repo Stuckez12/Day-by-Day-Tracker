@@ -1,6 +1,7 @@
 from src.schemas.backup.backup import (
     BackupCreate,
     BackupFilters,
+    BackupLink,
     BackupSchema,
     VerifiedBackupResultSchema,
 )

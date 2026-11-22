@@ -2,10 +2,10 @@ import logging
 import uuid
 from typing import Any, cast
 
+from celery import Task
 from sqlalchemy.exc import NoResultFound
 from sqlalchemy.orm import Session
 
-from celery import Task
 from src.enums import TaskStatus
 from src.services import TaskService
 

@@ -4,6 +4,7 @@ from src.tasks.maintenance import (
     backup_trigger,
     database_logical_backup,
     database_ranged_backup,
+    database_restoration,
     uploaded_backup_record_creation,
     verify_logical_backup,
     verify_ranged_backup,

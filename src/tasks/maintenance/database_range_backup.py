@@ -4,8 +4,9 @@ import traceback
 from datetime import date, datetime
 from typing import cast
 
-import src.core as core
 from celery import Task, shared_task
+
+import src.core as core
 from src.common.celery import update_task_state
 from src.constants import FILLER_UUID4
 from src.core.s3_storage import ObjectStorage

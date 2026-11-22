@@ -1,5 +1,6 @@
-import src.core as core
 from celery import Task, shared_task
+
+import src.core as core
 from src.services import BackupSchedulerService
 
 

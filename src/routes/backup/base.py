@@ -25,18 +25,25 @@ from .schedule import api as schedule_api
 
 api = APIRouter(
     prefix="/backup",
-    tags=["Backup"],
     dependencies=[Depends(PermissionValidator(admin_route=True))],
 )
-api.include_router(schedule_api)
+backup_api = APIRouter(tags=["Backup"])
 
 
-@api.get("/all", response_model=list[BackupSchema], status_code=status.HTTP_200_OK)
+@backup_api.get(
+    "/all",
+    response_model=list[BackupSchema],
+    status_code=status.HTTP_200_OK,
+)
 def get_all_backups(service: BackupServiceDep):
     return service.get_all()
 
 
-@api.post("/upload", response_model=TaskIDSchema, status_code=status.HTTP_202_ACCEPTED)
+@backup_api.post(
+    "/upload",
+    response_model=TaskIDSchema,
+    status_code=status.HTTP_202_ACCEPTED,
+)
 async def upload_backup(object_storage: ObjectStorageDep, file: UploadFile):
     if file.filename is None:
         raise HTTP_EXC_NO_BACKUP_FILENAME
@@ -61,7 +68,11 @@ async def upload_backup(object_storage: ObjectStorageDep, file: UploadFile):
         raise HTTP_EXC_UPLOAD_BACKUP_FILE
 
 
-@api.get("/{backup_id}", response_model=BackupSchema, status_code=status.HTTP_200_OK)
+@backup_api.get(
+    "/{backup_id}",
+    response_model=BackupSchema,
+    status_code=status.HTTP_200_OK,
+)
 def get_backup(
     service: BackupServiceDep,
     backup_id: UUID,
@@ -86,7 +97,7 @@ def get_backup(
             raise HTTP_EXC_INVALID_BACKUP_ID_SPECIFICATION
 
 
-@api.get(
+@backup_api.get(
     "/{backup_id}/download",
     response_model=list[BackupSchema],
     status_code=status.HTTP_200_OK,
@@ -114,8 +125,10 @@ def download_backup(
     )
 
 
-@api.patch(
-    "/{backup_id}/verify", response_model=TaskIDSchema, status_code=status.HTTP_200_OK
+@backup_api.patch(
+    "/{backup_id}/verify",
+    response_model=TaskIDSchema,
+    status_code=status.HTTP_200_OK,
 )
 def verify_backup_route(service: BackupServiceDep, backup_id: UUID):
     try:
@@ -127,3 +140,7 @@ def verify_backup_route(service: BackupServiceDep, backup_id: UUID):
     task: AsyncResult = verify_logical_backup.s(backup_id=backup.id).apply_async()
 
     return TaskIDSchema(task_id=UUID(task.id))
+
+
+api.include_router(backup_api)
+api.include_router(schedule_api)
