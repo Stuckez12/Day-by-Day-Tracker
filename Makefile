@@ -1,28 +1,35 @@
 ################################################################################
+# Makefile Parameters
+################################################################################
+
+.PHONY: tests
+
+COMPOSE_DEV =      docker compose -p dbdt-dev      -f docker-compose.dev.yaml
+COMPOSE_PRE_PROD = docker compose -p dbdt-pre-prod -f docker-compose.prod.yaml
+COMPOSE_PROD =     docker compose -p dbdt-prod     -f docker-compose.prod.yaml
+
+################################################################################
 # Development
 ################################################################################
 
 
 start:
-	@docker compose -f docker-compose.dev.yaml up -d
+	@$(COMPOSE_DEV) up -d
 
 stop:
-	@docker compose -f docker-compose.dev.yaml stop
+	@$(COMPOSE_DEV) stop
 
 build:
-	@docker compose -f docker-compose.dev.yaml build
+	@$(COMPOSE_DEV) build
 
 build-no-cache:
-	@docker compose -f docker-compose.dev.yaml build --no-cache
+	@$(COMPOSE_DEV) build --no-cache
 
 remove:
-	@docker compose -f docker-compose.dev.yaml down --remove-orphans
+	@$(COMPOSE_DEV) down --remove-orphans
 
 destroy:
-	@docker compose -f docker-compose.dev.yaml down -v --remove-orphans
-
-logs:
-	@docker compose -f docker-compose.dev.yaml logs -f
+	@$(COMPOSE_DEV) down -v --remove-orphans
 
 restart:
 	$(MAKE) stop
@@ -50,38 +57,38 @@ lint:
 
 
 check-db:
-	@docker compose -f docker-compose.dev.yaml exec api alembic -c /api/alembic.ini check
-	@docker compose -f docker-compose.dev.yaml exec api alembic -c /api/alembic-backup.ini check
+	@$(COMPOSE_DEV) exec api alembic -c /api/alembic.ini check
+	@$(COMPOSE_DEV) exec api alembic -c /api/alembic-backup.ini check
 
 upgrade-db:
-	@docker compose -f docker-compose.dev.yaml exec api sh -c "alembic -c /api/alembic.ini upgrade head"
+	@$(COMPOSE_DEV) exec api sh -c "alembic -c /api/alembic.ini upgrade head"
 
 VERSION ?= -1
 downgrade-db:
 	@echo "Downgrading to/by $(VERSION) version"
-	@docker compose -f docker-compose.dev.yaml exec api alembic -c /api/alembic.ini downgrade $(VERSION)
+	@$(COMPOSE_DEV) exec api alembic -c /api/alembic.ini downgrade $(VERSION)
 
 auto-revision-db:
 ifndef MESSAGE
 	$(error 'MESSAGE is not set. Usage: make auto-revision-db MESSAGE="message"')
 endif
-	@docker compose -f docker-compose.dev.yaml exec api alembic -c /api/alembic.ini revision --autogenerate -m "$(MESSAGE)"
-	@docker compose -f docker-compose.dev.yaml exec api chmod -R o+w src/migrations
+	@$(COMPOSE_DEV) exec api alembic -c /api/alembic.ini revision --autogenerate -m "$(MESSAGE)"
+	@$(COMPOSE_DEV) exec api chmod -R o+w src/migrations
 
 upgrade-backup-db:
-	@docker compose -f docker-compose.dev.yaml exec api sh -c "alembic -c /api/alembic-backup.ini upgrade head"
+	@$(COMPOSE_DEV) exec api sh -c "alembic -c /api/alembic-backup.ini upgrade head"
 
 VERSION ?= -1
 downgrade-backup-db:
 	@echo "Downgrading to/by $(VERSION) version"
-	@docker compose -f docker-compose.dev.yaml exec api alembic -c /api/alembic-backup.ini downgrade $(VERSION)
+	@$(COMPOSE_DEV) exec api alembic -c /api/alembic-backup.ini downgrade $(VERSION)
 
 auto-revision-backup-db:
 ifndef MESSAGE
 	$(error 'MESSAGE is not set. Usage: make auto-revision-backup-db MESSAGE="message"')
 endif
-	@docker compose -f docker-compose.dev.yaml exec api alembic -c /api/alembic-backup.ini revision --autogenerate -m "$(MESSAGE)"
-	@docker compose -f docker-compose.dev.yaml exec api chmod -R o+w src/migrations
+	@$(COMPOSE_DEV) exec api alembic -c /api/alembic-backup.ini revision --autogenerate -m "$(MESSAGE)"
+	@$(COMPOSE_DEV) exec api chmod -R o+w src/migrations
 
 
 ################################################################################
@@ -89,13 +96,12 @@ endif
 ################################################################################
 
 
-.PHONY: tests
 TEST_PATH =
 tests:
-	@docker compose -f docker-compose.dev.yaml exec db psql -U postgres -c "DROP DATABASE IF EXISTS test_dbdt;"
-	@docker compose -f docker-compose.dev.yaml exec db psql -U postgres -c "DROP DATABASE IF EXISTS test_dbdt_backup;"
+	@$(COMPOSE_DEV) exec db psql -U postgres -c "DROP DATABASE IF EXISTS test_dbdt;"
+	@$(COMPOSE_DEV) exec db psql -U postgres -c "DROP DATABASE IF EXISTS test_dbdt_backup;"
 
-	@docker compose -f docker-compose.dev.yaml exec api sh -c "pytest -vv -q -s $(TEST_PATH)"
+	@$(COMPOSE_DEV) exec api sh -c "pytest -vv -q -s $(TEST_PATH)"
 
 checks:
 	@$(MAKE) check-db
@@ -122,15 +128,43 @@ fbuild:
 
 
 ################################################################################
+# Pre Production
+################################################################################
+
+
+start-pre-prod:
+	@$(COMPOSE_PRE_PROD) --env-file .env.prod up -d
+
+stop-pre-prod:
+	@$(COMPOSE_PRE_PROD) --env-file .env.prod stop
+
+restart-pre-prod:
+	$(MAKE) stop-pre-prod
+	$(MAKE) start-pre-prod
+	$(MAKE) check-db-pre-prod
+
+remove-pre-prod:
+	@$(COMPOSE_PRE_PROD) --env-file .env.prod down
+
+check-db-pre-prod:
+	@$(COMPOSE_PRE_PROD) exec api alembic -c /api/alembic.ini check
+	@$(COMPOSE_PRE_PROD) exec api alembic -c /api/alembic-backup.ini check
+
+upgrade-db-pre-prod:
+	@$(COMPOSE_PRE_PROD) exec api sh -c "alembic -c /api/alembic.ini upgrade head"
+	@$(COMPOSE_PRE_PROD) exec api sh -c "alembic -c /api/alembic-backup.ini upgrade head"
+
+
+################################################################################
 # Production
 ################################################################################
 
 
 start-prod:
-	@docker compose -f docker-compose.prod.yaml --env-file .env.prod up -d
+	@$(COMPOSE_PROD) --env-file .env.prod up -d
 
 stop-prod:
-	@docker compose -f docker-compose.prod.yaml --env-file .env.prod stop
+	@$(COMPOSE_PROD) --env-file .env.prod stop
 
 restart-prod:
 	$(MAKE) stop-prod
@@ -138,12 +172,12 @@ restart-prod:
 	$(MAKE) check-db-prod
 
 remove-prod:
-	@docker compose -f docker-compose.prod.yaml --env-file .env.prod down
+	@$(COMPOSE_PROD) --env-file .env.prod down
 
 check-db-prod:
-	@docker compose -f docker-compose.prod.yaml exec api alembic -c /api/alembic.ini check
-	@docker compose -f docker-compose.prod.yaml exec api alembic -c /api/alembic-backup.ini check
+	@$(COMPOSE_PROD) exec api alembic -c /api/alembic.ini check
+	@$(COMPOSE_PROD) exec api alembic -c /api/alembic-backup.ini check
 
 upgrade-db-prod:
-	@docker compose -f docker-compose.prod.yaml exec api sh -c "alembic -c /api/alembic.ini upgrade head"
-	@docker compose -f docker-compose.prod.yaml exec api sh -c "alembic -c /api/alembic-backup.ini upgrade head"
+	@$(COMPOSE_PROD) exec api sh -c "alembic -c /api/alembic.ini upgrade head"
+	@$(COMPOSE_PROD) exec api sh -c "alembic -c /api/alembic-backup.ini upgrade head"
