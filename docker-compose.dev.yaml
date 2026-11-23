@@ -29,7 +29,7 @@ services:
     attach: false
 
   nginx:
-    image: nginx:alpine
+    image: nginx:1.31.9-alpine-slim
     container_name: nginx
     ports:
       - "${APP_PORT:-8080}:80"
