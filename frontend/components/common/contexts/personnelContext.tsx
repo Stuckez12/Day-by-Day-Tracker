@@ -18,6 +18,8 @@ export const PartialPersonnelContext = createContext<ContextType>({
 
     first_name: undefined,
     last_name: undefined,
+
+    is_admin: undefined,
   },
   setPartialPersonnel: () => {},
 });
