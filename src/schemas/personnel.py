@@ -11,6 +11,8 @@ class SlimPersonnelSchema(BaseModel):
     first_name: str
     last_name: str
 
+    is_admin: bool
+
 
 class PersonnelSchema(SlimPersonnelSchema):
     email: str

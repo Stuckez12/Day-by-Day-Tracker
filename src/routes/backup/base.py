@@ -1,8 +1,11 @@
+from typing import Annotated
 from uuid import UUID
 
 from celery.result import AsyncResult
 from fastapi import APIRouter, Depends, Query, UploadFile, status
 from fastapi.responses import StreamingResponse
+from fastapi_pagination import Page, Params
+from fastapi_pagination.ext.sqlalchemy import paginate
 from sqlalchemy.exc import NoResultFound
 
 from src.core.permission_validator import PermissionValidator
@@ -16,7 +19,7 @@ from src.exc import (
     HTTP_EXC_NO_BACKUP_METADATA,
     HTTP_EXC_UPLOAD_BACKUP_FILE,
 )
-from src.schemas import BackupSchema, TaskIDSchema
+from src.schemas import BackupFilters, BackupSchema, TaskIDSchema
 from src.services.dependencies import BackupServiceDep
 from src.tasks import uploaded_backup_record_creation, verify_logical_backup
 
@@ -31,18 +34,27 @@ backup_api = APIRouter(tags=["Backup"])
 
 
 @backup_api.get(
-    "/all",
-    response_model=list[BackupSchema],
-    status_code=status.HTTP_200_OK,
+    "/all", response_model=list[BackupSchema], status_code=status.HTTP_200_OK
 )
 def get_all_backups(service: BackupServiceDep):
     return service.get_all()
 
 
+@backup_api.get(
+    "/paginated", response_model=Page[BackupSchema], status_code=status.HTTP_200_OK
+)
+def get_paginated_backups(
+    service: BackupServiceDep,
+    filters: Annotated[BackupFilters, Depends()],
+    params: Params = Depends(),
+):
+    query = service.get_backups_query(filters)
+
+    return paginate(query, params)
+
+
 @backup_api.post(
-    "/upload",
-    response_model=TaskIDSchema,
-    status_code=status.HTTP_202_ACCEPTED,
+    "/upload", response_model=TaskIDSchema, status_code=status.HTTP_202_ACCEPTED
 )
 async def upload_backup(object_storage: ObjectStorageDep, file: UploadFile):
     if file.filename is None:
@@ -69,9 +81,7 @@ async def upload_backup(object_storage: ObjectStorageDep, file: UploadFile):
 
 
 @backup_api.get(
-    "/{backup_id}",
-    response_model=BackupSchema,
-    status_code=status.HTTP_200_OK,
+    "/{backup_id}", response_model=BackupSchema, status_code=status.HTTP_200_OK
 )
 def get_backup(
     service: BackupServiceDep,
@@ -126,9 +136,7 @@ def download_backup(
 
 
 @backup_api.patch(
-    "/{backup_id}/verify",
-    response_model=TaskIDSchema,
-    status_code=status.HTTP_200_OK,
+    "/{backup_id}/verify", response_model=TaskIDSchema, status_code=status.HTTP_200_OK
 )
 def verify_backup_route(service: BackupServiceDep, backup_id: UUID):
     try:
