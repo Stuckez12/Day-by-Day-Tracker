@@ -7,6 +7,7 @@ from typing import Never, cast
 from zipfile import ZIP_DEFLATED, ZipFile
 
 from sqlalchemy import text
+from sqlalchemy.exc import NoResultFound
 from sqlalchemy.orm import Session
 
 from src.core import TaskCancelled
@@ -273,7 +274,13 @@ class BaseBackupWorkflow:
         if self.backup_record.celery_id is None:
             raise RuntimeError("Backup workflow was not assigned a Task ID")
 
-        task = self.task_service.get_by_task_id(self.backup_record.celery_id)
+        try:
+            task = self.task_service.get_by_task_id(self.backup_record.celery_id)
+
+        except NoResultFound:
+            # Don't want to cancel the task if it was not found.
+            # Maybe I do but thats a later problem for me
+            return
 
         if task.status == TaskStatus.CANCELLED:
             raise TaskCancelled
